@@ -1,0 +1,714 @@
+
+COMP217  ·  ADVANCED DATABASE SYSTEMS  ·  ASSIGNMENT 3
+
+LIMKOKWING UNIVERSITY OF CREATIVE TECHNOLOGY
+Faculty of Information and Communication Technology
+Department of Software Engineering
+DATABASE AND TECHNICAL ARCHITECTURE DESIGN
+FOR THE DIGITAL LEAP INTERNSHIP MANAGEMENT SYSTEM
+Database design, three-tier architecture and secure multi-role implementation
+GROUP G  ·  BSEM 2102  ·  SEMESTER 5, YEAR 3
+Group member
+Student ID
+Mohamed Alie Kamara
+905005581
+Shadrach Saidu Saccoh Sesay
+905005695
+Musa Bayoh
+905005050
+Fatmata BF Conteh
+905005463
+Deborah Juliet Moiforay
+905005455
+
+Lecturer: Ing. Sheku Dinneh Kamara
+Date of submission: 15 November 2026
+Freetown, Sierra Leone
+
+CONTENTS
+ TOC \o "1-3" \h \z \u  HYPERLINK \l _Toc5831 1. Part A — Introduction and Context PAGEREF _Toc5831 \h 5
+ HYPERLINK \l _Toc18990 1.1 Aim and objectives PAGEREF _Toc18990 \h 5
+ HYPERLINK \l _Toc23408 1.2 Scope and stakeholders PAGEREF _Toc23408 \h 5
+ HYPERLINK \l _Toc30072 1.3 Continuity with Assignment 2 PAGEREF _Toc30072 \h 6
+ HYPERLINK \l _Toc3431 1.4 Report structure PAGEREF _Toc3431 \h 6
+ HYPERLINK \l _Toc25905 2. Part B — Database Design PAGEREF _Toc25905 \h 7
+ HYPERLINK \l _Toc18945 2.1 From data stores to relations PAGEREF _Toc18945 \h 7
+ HYPERLINK \l _Toc13880 2.2 Normalisation PAGEREF _Toc13880 \h 9
+ HYPERLINK \l _Toc17423 2.3 Integrity, transactions and indexes PAGEREF _Toc17423 \h 9
+ HYPERLINK \l _Toc31679 2.4 Data dictionary and seed data PAGEREF _Toc31679 \h 9
+ HYPERLINK \l _Toc26369 3. Part C — Technical Architecture PAGEREF _Toc26369 \h 12
+ HYPERLINK \l _Toc3190 3.1 Architectural drivers PAGEREF _Toc3190 \h 12
+ HYPERLINK \l _Toc19416 3.2 Three-tier structure PAGEREF _Toc19416 \h 12
+ HYPERLINK \l _Toc3617 3.3 Request lifecycle PAGEREF _Toc3617 \h 13
+ HYPERLINK \l _Toc22247 3.4 Technology choices PAGEREF _Toc22247 \h 14
+ HYPERLINK \l _Toc23267 3.5 Deployment and operations PAGEREF _Toc23267 \h 14
+ HYPERLINK \l _Toc19580 3.6 Trade-offs and extensibility PAGEREF _Toc19580 \h 15
+ HYPERLINK \l _Toc30135 4. Part D — Security and Access Control PAGEREF _Toc30135 \h 16
+ HYPERLINK \l _Toc23522 4.1 Threat model PAGEREF _Toc23522 \h 16
+ HYPERLINK \l _Toc12281 4.2 Authentication and sessions PAGEREF _Toc12281 \h 16
+ HYPERLINK \l _Toc23389 4.3 Authorisation PAGEREF _Toc23389 \h 16
+ HYPERLINK \l _Toc28650 4.4 Input, output and upload security PAGEREF _Toc28650 \h 17
+ HYPERLINK \l _Toc1288 4.5 Auditability and privacy PAGEREF _Toc1288 \h 17
+ HYPERLINK \l _Toc18574 5. Part E — Implementation and Role Workflows PAGEREF _Toc18574 \h 20
+ HYPERLINK \l _Toc17353 5.1 Student workflow PAGEREF _Toc17353 \h 20
+ HYPERLINK \l _Toc21857 5.2 Supervisor and mentor workflow PAGEREF _Toc21857 \h 20
+ HYPERLINK \l _Toc22704 5.3 Coordinator, management and administrator workflow PAGEREF _Toc22704 \h 20
+ HYPERLINK \l _Toc8362 5.4 Logbook state machine PAGEREF _Toc8362 \h 21
+ HYPERLINK \l _Toc9340 5.5 Assessment and publication PAGEREF _Toc9340 \h 21
+ HYPERLINK \l _Toc20856 5.6 Notifications, mail and usability PAGEREF _Toc20856 \h 22
+ HYPERLINK \l _Toc32284 5.7 Interface, guidance and mobile layout PAGEREF _Toc32284 \h 22
+ HYPERLINK \l _Toc1686 5.8 Placement messaging PAGEREF _Toc1686 \h 23
+ HYPERLINK \l _Toc1638 5.9 DIVA assistant PAGEREF _Toc1638 \h 24
+ HYPERLINK \l _Toc11758 6. Part F — Evaluation PAGEREF _Toc11758 \h 25
+ HYPERLINK \l _Toc10844 6.1 Against the objectives PAGEREF _Toc10844 \h 25
+ HYPERLINK \l _Toc25653 6.2 Defects found and corrected PAGEREF _Toc25653 \h 25
+ HYPERLINK \l _Toc20655 6.3 Limitations PAGEREF _Toc20655 \h 26
+ HYPERLINK \l _Toc1757 6.4 Recommendations PAGEREF _Toc1757 \h 26
+ HYPERLINK \l _Toc21614 7. Testing PAGEREF _Toc21614 \h 27
+ HYPERLINK \l _Toc12951 7.1 Strategy and environment PAGEREF _Toc12951 \h 27
+ HYPERLINK \l _Toc15865 7.2 Results PAGEREF _Toc15865 \h 27
+ HYPERLINK \l _Toc31472 7.3 Reproducibility PAGEREF _Toc31472 \h 28
+ HYPERLINK \l _Toc29866 8. Digital Public Good Analysis PAGEREF _Toc29866 \h 29
+ HYPERLINK \l _Toc19404 8.1 Openness and ownership PAGEREF _Toc19404 \h 29
+ HYPERLINK \l _Toc14053 8.2 Relevance and inclusion PAGEREF _Toc14053 \h 29
+ HYPERLINK \l _Toc11216 8.3 Privacy and security PAGEREF _Toc11216 \h 29
+ HYPERLINK \l _Toc21342 8.4 Sustainability and data extraction PAGEREF _Toc21342 \h 29
+ HYPERLINK \l _Toc3830 9. Documentation and Handover PAGEREF _Toc3830 \h 31
+ HYPERLINK \l _Toc13784 9.1 Deliverables PAGEREF _Toc13784 \h 31
+ HYPERLINK \l _Toc8927 9.2 Maintainability PAGEREF _Toc8927 \h 31
+ HYPERLINK \l _Toc10933 9.3 Handover PAGEREF _Toc10933 \h 31
+ HYPERLINK \l _Toc2722 10. Conclusion PAGEREF _Toc2722 \h 32
+ HYPERLINK \l _Toc6143 References PAGEREF _Toc6143 \h 33
+
+
+1. Part A — Introduction and Context
+Digital LEAP is Limkokwing University’s internship process: placing students with host organisations, supervising weekly logbooks, assessing performance and publishing results. Assignment 2 modelled it as seven processes (1.0–7.0), twenty-two use cases (UC1–UC22) and nine data stores (D1–D9). Most coordination still relies on spreadsheets, email attachments and paper, so data is duplicated, traceability is weak and evidence cannot be reconstructed when a result is challenged.
+This report documents the conversion of that model into a working database and a secure, offline-first web application for students, supervisors, mentors, the LEAP coordinator, management and the administrator. The system stores the placement lifecycle in MariaDB, enforces business rules in PHP and generates placement letters, grade sheets, management reports and CSV extracts.
+1.1 Aim and objectives
+The aim is a normalised database and architecture that make the process auditable, secure and usable on laboratory hardware. Five objectives follow:
+map D1–D9 to a normalised schema with enforced integrity;
+implement processes 1.0–7.0 and UC1–UC22 behind role-based access control;
+protect personal data through authentication, validation and audit;
+replace manual consolidation with printable and exportable outputs;
+demonstrate the system with Sierra Leone seed data and a repeatable test pass.
+Success is more than screens. A coordinator must trace a published mark to the logbook weeks, both evaluations and the assessed report; a student must see only their own record; and a supervisor must not reach another company’s students. These constraints shaped the schema and the architecture.
+1.2 Scope and stakeholders
+The scope covers preference submission, allocation, logbook review, site visits, evaluations, report assessment, moderation and publication. Payroll, general human-resource management and social features are excluded. Table 1 summarises the stakeholders whose needs drove the requirements.
+Table 1: Stakeholders and their primary needs
+Stakeholder
+Role in the process
+Primary needs
+Student
+Applies for host organisations, submits weekly logbooks and the internship report, reads results
+Clear deadlines, visible feedback, one place for evidence, assurance that marks are private
+Host supervisor
+Approves weekly entries and completes the workplace evaluation
+A short queue, mobile-friendly review, criteria that match the assessment form
+Academic mentor
+Reviews logbooks after workplace approval, conducts site visits, assesses the report
+A consolidated student list, visit scheduling, report annotation
+LEAP coordinator
+Validates applications, allocates placements, computes and publishes marks
+Capacity control, exception reports, reliable mark calculation, printable documents
+Management and AQA
+Monitors completion, grade distribution and compliance
+Aggregate indicators, exportable evidence, no access to unnecessary personal detail
+System administrator
+Manages accounts, roles, settings, audit and mail
+Safe account lifecycle, configuration control, traceable administrative actions
+Email service
+Delivers invitations, reminders and result notifications
+Queued, retryable messages that do not block the user interface
+
+1.3 Continuity with Assignment 2
+Assignment 2 numbering is preserved so the design can be audited against it. Table 2 maps each process group to its realisation, which prevents drift into unjustified features and lets a marker move from requirement to route and table.
+Table 2: Traceability from the Assignment 2 processes to the implementation
+Processes
+Use cases
+Realisation in the system
+1.0–2.0 Eligibility, application and ranking
+UC1–UC6
+student/preferences, application table, organisation capacity
+3.0 Placement allocation and approval
+UC7–UC9
+coordinator/placements, placement status, placement letter
+4.0 Logbook cycle
+UC10–UC14
+student/logbook, supervisor/queue, mentor/logbook, logbook_comment
+5.0 Visits and evaluation
+UC15–UC17
+mentor/visits, supervisor/evaluation, mentor/evaluation, criterion
+6.0 Report assessment and marking
+UC18–UC20
+student/report, mentor/reports, coordinator/grades, mark
+7.0 Publication, notification and reporting
+UC21–UC22
+results, notification, email_queue, management/kpis, CSV export
+
+1.4 Report structure
+Part B covers database design; Part C architecture and request handling; Part D security; Part E role workflows, placement messaging, the assistant and marking; Part F evaluation. Testing reports executed cases, Digital Public Goods analysis assesses the artefact, and Documentation maps the handover.
+
+2. Part B — Database Design
+The database tolerates ambiguity least. A logbook entry, an evaluation score and a published mark are records for the student; if they can be silently overwritten or orphaned, the application has failed however good it looks. Design therefore began with the data model.
+2.1 From data stores to relations
+Each data store becomes one or more tables: D1 identity and tokens; D2 student and application; D3 organisation and placement; D4 logbook_entry and logbook_comment; D5 site_visit; D6 document and internship_report; D7 criterion, evaluation, evaluation_score, mark and grade_scale; D8 notification and email_queue; D9 setting, audit_log and feedback. The mapping produced twenty-four tables (Table 3, Figure 2). A later module for placement messaging adds four conversation tables, so the final schema has twenty-eight, all catalogued in Table 5.
+Table 3: Data stores mapped to physical tables
+Store
+Tables
+Purpose
+D1
+roles, permissions, role_permissions, users, access_token
+Identity, role-based permissions and single-use tokens
+D2
+student, application
+Student profile and ranked organisation preferences
+D3
+organisation, placement
+Host organisations, capacity and the placement record
+D4
+logbook_entry, logbook_comment
+Weekly evidence and the review conversation
+D5
+site_visit
+Scheduled and completed mentor visits
+D6
+document, internship_report
+Files stored outside the document root and report assessment
+D7
+criterion, evaluation, evaluation_score, mark, grade_scale
+Rubrics, component totals, weighted marks and grades
+D8
+notification, email_queue
+In-app alerts and retryable outbound mail
+D9
+setting, audit_log, feedback
+Runtime configuration, the append-only audit trail and captured user feedback
+
+
+Figure 2: Core entity–relationship diagram (eleven principal entities)
+The ERD shows the eleven business entities; the other seventeen are operational and are catalogued in Table 5.
+2.2 Normalisation
+The schema is in third normal form. Keys are single-column surrogates except role_permissions, keyed by (role_id, permission_id). One logbook entry stores one week and scores are rows, not repeated columns. A criterion’s weight is stored once, and an organisation’s name is stored in organisation and referenced by placement. Table 4 records the checks.
+Table 4: Normalisation checks with examples
+Form
+Test applied
+Example and outcome
+1NF
+No repeating groups or multi-valued columns
+Logbook weeks became one row per week in logbook_entry; attachments became document rows
+2NF
+No non-key attribute depends on part of a composite key
+evaluation_score stores only the score and comment for one (evaluation, criterion) pair
+3NF
+No non-key attribute depends on another non-key attribute
+Grade letters live in grade_scale; mark stores grade_id and the weighted total only
+
+Two denormalisations are deliberate. mark caches component percentages and the weighted total, frozen at computation time so a rubric change cannot alter a published result. audit_log stores before and after JSON because audit records are historical facts and must not be normalised into a schema that may change.
+2.3 Integrity, transactions and indexes
+InnoDB foreign keys restrict deletion where history matters. Unique keys prevent duplicate accounts, preferences for one organisation and placements for a student in a year. Enumerated statuses and check constraints cover scores, weights and capacity; PHP validation repeats them at the boundary.
+Placement creation inserts the row, writes the audit event and queues notifications in one transaction. Mark computation reads the logbook average, both evaluations and the report score, then writes the mark and its audit snapshot together. The preference swap uses a temporary rank of zero because uq_app_rank forbids shared ranks.
+Indexes follow real queries: foreign-key columns for joins, and composites on placement (student_id, academic_year), logbook_entry (placement_id, week_no), evaluation (placement_id, evaluation_type), notification (user_id, read_at) and audit_log (action, created_at).
+2.4 Data dictionary and seed data
+Table 5 catalogues every table and its principal relationships. The seed creates twelve accounts across six roles, two organisations, five placements, twelve logbook weeks, four evaluations, three visits, three documents, two reports, four feedback entries and a published result of 77.10 (B+), using Sierra Leonean names, districts and organisations such as Bright Future Mining Ltd and Sierra Telecoms.
+Table 5: Complete table catalogue
+Table
+Purpose
+Principal relationships
+roles
+Role definitions and stable role keys
+Referenced by users, role_permissions
+permissions
+The 38 permission keys used by guards and navigation
+Referenced by role_permissions
+role_permissions
+Many-to-many role to permission mapping
+role_id, permission_id
+organisation
+Host organisations, capacity and MOU status
+Referenced by users, application, placement
+users
+Accounts, password hashes, status and lockout state
+role_id, organisation_id
+access_token
+Single-use, hashed invitation and reset tokens
+user_id, created_by
+student
+Student number, programme, year of study and semester
+user_id (one to one)
+application
+Ranked preferences per academic year
+student_id, org_id
+placement
+Allocation, mentor, supervisor, dates and status
+student_id, org_id, mentor_id, supervisor_id, coordinator_id
+logbook_entry
+One week of evidence with hours and status
+placement_id, reviewed_by
+logbook_comment
+Threaded supervisor, mentor and student comments
+entry_id, user_id, parent_id
+criterion
+Rubric rows for supervisor, mentor and report assessments
+Referenced by evaluation_score
+evaluation
+Supervisor or mentor evaluation with cached total
+placement_id, evaluator_id
+evaluation_score
+Score and comment for one criterion
+evaluation_id, criterion_id
+site_visit
+Scheduled or completed mentor visit
+placement_id, mentor_id
+document
+Uploaded file metadata and storage name
+student_id, placement_id, entry_id, visit_id, uploaded_by
+internship_report
+Report submission and mentor assessment
+placement_id, document_id, assessed_by
+grade_scale
+Grade boundaries, points and classification
+Referenced by mark
+mark
+Component percentages, weighted total and status
+placement_id (one to one), grade_id
+notification
+In-app message and read state
+user_id
+email_queue
+Outbound mail with status, attempts and error
+user_id, notification_id
+feedback
+Rating, thoughts, suggestions and page context
+user_id
+audit_log
+Append-only event log with before and after JSON
+user_id
+setting
+Typed runtime configuration
+updated_by
+conversation
+Placement thread with subject, topic and last activity
+placement_id, created_by
+conversation_member
+Who may read and post, with their last read message
+conversation_id, user_id
+message
+Text, system note or file message with parent and tombstone
+conversation_id, sender_id, parent_message_id, document_id
+message_reaction
+One emoji per user per message
+message_id, user_id
+
+
+3. Part C — Technical Architecture
+The application must run offline in a computer laboratory on modest laptops and be handed over to another cohort. That rules out a distributed single-page application and a cloud database, and favours server-rendered pages with a minimal dependency footprint.
+3.1 Architectural drivers
+Five drivers shaped the architecture: offline operation; low bandwidth, favouring server-rendered HTML; security, requiring one entry point for sessions, CSRF and authorisation; maintainability, requiring a layout a student can learn in a week; and auditability, requiring all state changes to pass through one layer.
+3.2 Three-tier structure
+Figure 1 shows the three tiers. The presentation tier is HTML5 and CSS rendered by PHP, with one small JavaScript file handling confirmations through data attributes; no inline script or style is allowed, which keeps the content security policy strict. The application tier holds the front controller, router, controllers, services and views. The data tier is MariaDB with twenty-eight InnoDB tables. Security is cross-cutting.
+
+Figure 1: Three-tier architecture with cross-cutting security
+Controllers read input, call services and select a view. Services own rules that must not be duplicated: Guard decides access, Csrf verifies tokens, Upload validates files, Notify writes notifications and mail together, Mailer delivers queued messages, Settings supplies configuration and Audit records changes. Views escape every value through e().
+3.3 Request lifecycle
+Every request enters index.php, which loads bootstrap: base paths, autoloader, configuration, storage directories, security headers and a hardened session. Bootstrap checks timeouts, rejects POST requests without a valid CSRF token with HTTP 419 sent as an explicit status line, enforces the forced password change gate and dispatches the route. The router resolves “METHOD route” to a controller, method and permission, and Guard checks session and permission before construction, so unauthorised requests never reach application code.
+This ordering makes the safe path the default: one forgotten controller check cannot become a vulnerability, and CSRF is verified once rather than in twenty forms.
+3.4 Technology choices
+PHP 8.0 ships with XAMPP on the laboratory machines, is well documented and typed strongly enough for this project. MariaDB 10.4 provides InnoDB keys, transactions and the aggregation marking needs. No framework or Composer package is used: a framework would add installation risk and hide the mechanics the assignment assesses, while the custom router and guard are small enough to audit completely.
+The front end uses semantic HTML and one stylesheet with print rules, keeping the system usable on low-end devices and producing letters and grade sheets without a PDF library. router.php blocks direct access to application, configuration and storage folders under the built-in server; .htaccess does the same under Apache.
+3.5 Deployment and operations
+Figure 3 shows deployment. The client is a laboratory browser. The application host runs Apache or the built-in server, with uploads and logs in a storage directory that is never served, and MariaDB on the same host over localhost. Mail is written to a log file offline, with an SMTP adapter available. send_mail_queue.php delivers due messages and remind_logbooks.php creates weekly reminders; both can be scheduled with Task Scheduler.
+
+Figure 3: Deployment view for the offline laboratory
+Configuration stays out of source control. The repository ships config.sample.php; config.php is created on first run. Credentials, base URL, debug mode and absolute session lifetime are read from it. Values a coordinator may change — mark weights, due day, lockout thresholds and mail mode — live in the setting table and are edited through a validated screen, so a weight change needs no deployment.
+3.6 Trade-offs and extensibility
+Server-rendered pages reload more often than a single-page application, but on low bandwidth each page is small, cacheable and works without JavaScript. The custom core costs more code than a framework but removes supply-chain risk and makes security visible. A new capability is a permission row plus a route permission; a new report is a controller method plus a view. Because evidence, assessment and publication are separate, a second instrument needs criterion rows, not a redesign.
+
+4. Part D — Security and Access Control
+The system holds student records, workplace assessments and grades. A breach would expose personal data and could invalidate results, so the model assumes an untrusted network, users who probe URLs belonging to others, and administrators who make mistakes. Controls are layered so no single failure grants access.
+4.1 Threat model
+Assets are credentials, personal data, evidence, scores and marks. Actors are the six roles, an anonymous visitor and a careless or malicious insider. Threats include credential theft, session hijacking, privilege escalation, insecure direct object references, CSRF, XSS, SQL injection, malicious uploads, error leakage and repudiation. Each maps to a control in Table 7.
+4.2 Authentication and sessions
+Passwords are hashed with password_hash (bcrypt) and verified with password_verify. Registration, reset, invitation and administrator-created accounts all pass one policy helper: at least eight characters with an uppercase letter, a lowercase letter and a number, with symbols optional and encouraged by a live strength meter. Login errors are generic, revealing neither whether an email exists nor whether an account is suspended. Five failures lock the account for fifteen minutes; the counter and timestamp live in users and the event is audited, and an administrator can unlock it. New accounts receive must_change_password and are redirected to the profile until they choose a new password.
+Cookies are HttpOnly, SameSite=Lax and Secure under HTTPS. Strict mode rejects uninitialised identifiers, and the identifier is regenerated on login to prevent fixation. Idle timeout is twenty minutes and absolute lifetime eight hours. Logout destroys session and cookie, and every dynamic response carries Cache-Control: no-store with Pragma: no-cache while logout also sends Clear-Site-Data: cache, so the Back button cannot redisplay a dashboard from the browser cache. Reset and invitation tokens are random 256-bit values stored only as SHA-256 hashes, single-use, expiring after one hour and seven days.
+4.3 Authorisation
+Authorisation has two levels. Each route declares a permission that Guard checks before the controller runs; thirty-eight permissions span six roles, and the role screen shows the matrix. Object-level checks scope queries to the user’s own record: a student’s logbook joins student on user_id, a supervisor’s queue joins placement on supervisor_id, a mentor’s reports join on mentor_id. Opening another user’s document, letter or entry returns HTTP 403 and writes a security.access_denied event. Table 6 summarises capabilities.
+Table 6: Role capability matrix (selected capabilities)
+Capability
+Student
+Supervisor
+Mentor
+Coordinator
+Management
+Admin
+Submit logbook
+Yes
+No
+No
+No
+No
+No
+Approve or return entry
+No
+Yes
+No
+No
+No
+No
+Comment on entry
+Yes
+Yes
+Yes
+No
+No
+No
+Send interface feedback
+Yes
+Yes
+Yes
+Yes
+Yes
+Yes
+Read the feedback list
+No
+No
+No
+No
+No
+Yes
+Schedule and complete visit
+No
+No
+Yes
+No
+No
+No
+Submit evaluation
+No
+Yes
+Yes
+No
+No
+No
+Allocate placement
+No
+No
+No
+Yes
+No
+No
+Compute, moderate, publish
+No
+No
+No
+Yes
+No
+No
+View KPIs and export
+No
+No
+No
+Yes
+Yes
+No
+Manage users, roles, settings
+No
+No
+No
+No
+No
+Yes
+Read audit log
+No
+No
+No
+No
+No
+Yes
+Send placement message
+Yes
+No
+Yes
+Yes
+No
+No
+Ask DIVA
+Yes
+Yes
+Yes
+Yes
+Yes
+Yes
+
+4.4 Input, output and upload security
+All SQL uses PDO prepared statements. Output is escaped through e(), and the content security policy forbids inline script, so injected markup cannot execute. Every POST carries a per-session CSRF token, verified globally and rotated at login. Forms validate length, format, ranges and enumeration membership, and rules such as “end date after start date” and “weights total 100” sit in the service layer.
+Uploads allow PDF, DOC and DOCX for reports and PDF or images for attachments. Extension, detected MIME type and a five-megabyte limit are checked, the stored name is random and the file lives outside the document root. Downloads are served by a controller that re-checks the requester’s relationship to the document, with Content-Disposition: attachment.
+4.5 Auditability and privacy
+audit_log is append-only in application code. It records logins, failures, lockouts, denials, user, placement and setting changes, logbook decisions and replies, uploads, evaluations, mark computation, moderation, publication, interface feedback and exports, with actor, entity, IP address, user agent and before/after JSON. The audit viewer renders a field-by-field diff, answering who changed a mark and what it looked like before. The same table supplies the placement timeline. When a supervisor, mentor, coordinator or administrator opens an uploaded document, the document row is stamped with reviewed_by and reviewed_at and a document.reviewed event is written; every list then shows “Reviewed by …” with the reviewer and time, or “Not yet opened”, so the uploader can see whether their evidence has been inspected.
+Management sees aggregates and programme lists, not logbook narratives; supervisors see only their organisation’s students; mentors only their placements. Error pages are generic while detail goes to the PHP error log. Uploads and configuration are blocked from HTTP access, and the offline default sends no personal data externally.
+Table 7: Security requirements and implementation evidence
+Requirement
+Implementation
+Evidence
+Password confidentiality
+bcrypt hashing, no plaintext storage
+users.password_hash; demo passwords documented only in INSTALL.txt
+Password strength
+One policy for all account creation: eight characters, upper and lower case, a digit; symbols optional
+TC-06, TC-45
+Brute-force resistance
+Five attempts, fifteen-minute lockout, audit
+TC-03, TC-04
+Session protection
+HttpOnly, SameSite, strict mode, regeneration, idle and absolute timeouts
+bootstrap.php and Auth::establish; configuration reviewed
+Post-logout cache control
+no-store on dynamic responses, Clear-Site-Data on logout, pageshow reload
+TC-49; response headers
+Document review provenance
+reviewed_by and reviewed_at stamped on first reviewer download
+TC-48; document table
+Functional access control
+38 permissions, route-level Guard
+TC-10 to TC-15
+Object-level access control
+SQL scoping by student, mentor, supervisor or coordinator
+TC-17, TC-18
+CSRF resistance
+Per-session token, global POST verification, rotation
+TC-02
+SQL injection resistance
+PDO prepared statements throughout
+Code review; no string concatenation of input
+Cross-site scripting resistance
+Output escaping plus CSP with no inline script
+TC-19
+Upload safety
+Extension, MIME and size checks; random name; storage outside docroot
+TC-20, TC-37
+Direct file exposure
+router.php and .htaccess deny app, config, storage and database paths
+TC-21
+Credential lifecycle
+Single-use hashed tokens for reset and invitation
+TC-08, TC-09
+Administrative accountability
+Append-only audit with before and after values
+Audit diff page; TC-40
+Secure defaults
+Generic errors, debug off, secrets excluded from the zip
+config.sample.php shipped; config.php created locally
+Privacy by design
+Role-scoped views and aggregate management reporting
+Role walkthrough; management pages
+Traceable marking
+Cached component scores, moderation reason, published state
+TC-30 to TC-32
+Message scope
+Placement-scoped service; a student reaches only the assigned mentor and coordinator
+TC-88; message.denied
+Assistant containment
+No DIVA route writes; answers are scoped by role; the optional model is loopback-only
+TC-72 to TC-80
+Assistant data minimisation
+diva.query stores the intent, tier, cited pages and a question hash only
+TC-80
+
+Residual risks remain. A shared laboratory computer can leave a session open if the user walks away, and the idle timeout only limits that. An administrator with database access can bypass application controls, which is why administrative actions are audited. Mail in log mode is not confidential. VERIFY.md states these limits.
+
+5. Part E — Implementation and Role Workflows
+Implementation follows process order. A student cannot submit a logbook until a placement is active, a supervisor cannot evaluate before the placement exists, and a coordinator cannot publish until every component is complete. Screens centre on the next action, not on tables.
+5.1 Student workflow
+The student dashboard shows the placement, current week, approved entries and unread notifications. Preferences are a ranked list with move controls that reject duplicates and invalid years. An active placement shows the organisation, supervisor, dates and a printable letter generated from the record, so its reference and dates cannot diverge from the database. The logbook lists each week with status; the form captures dates, hours, activity and learning, and attachments add evidence. The report screen accepts one PDF or Word file, and results appear only after publication.
+5.2 Supervisor and mentor workflow
+The supervisor queue lists submitted entries for the supervisor’s own placements, oldest first. An entry shows the student’s text and attachments; the supervisor approves or returns it, and a return requires a comment that joins the thread and notifies the student. The supervisor then completes a six-criterion evaluation weighted 15, 25, 20, 15, 10 and 15 per cent out of five. Incomplete forms are refused; a completed form stores the weighted total and status submitted.
+The mentor sees assigned students and a queue of entries that passed supervisor review, comments, and marks an entry mentor-reviewed, which releases it to the logbook average. The mentor schedules site visits with notes and completes a three-criterion evaluation weighted 40, 35 and 25 per cent out of ten, then assesses the report against four criteria weighted 25, 35, 25 and 15 per cent. Each action writes a notification and an audit event.
+5.3 Coordinator, management and administrator workflow
+The coordinator console is the operational centre. Applications are reviewed with ranked preferences and CV status. Allocation checks that the student has no placement for the year, that the organisation is active with capacity, and that the supervisor belongs to it. A placement moves through proposed, approved, active, completed or cancelled, each transition audited, and the letter appears once approved. The grades screen shows four components, the weighted total and suggested grade; compute, moderate with a reason and publish, after which recomputation is refused.
+Management sees active placements, completion rate, students without supervisors, overdue logbooks, marks awaiting publication and grade distribution, with a printable report and CSV exports but no logbook narratives. The administrator manages accounts, invitations, suspensions, unlocks and resets, edits the role matrix, maintains settings, monitors the mail queue and reads the audit trail, resending failed messages or processing the queue.
+5.4 Logbook state machine
+The logbook is a state machine. A draft is editable. Submitting moves it to submitted and notifies the supervisor and mentor. The supervisor returns it with a comment, making it editable again, or approves it; the mentor then comments and moves it to mentor_reviewed. Only mentor_reviewed entries count towards the average. The coordinator and administrator see history but cannot silently change a student’s text. Status answers where it is; the thread answers how it got there.
+5.5 Assessment and publication
+Figure 4 shows the marking pipeline. The logbook component is the average of mentor-reviewed weekly scores as a percentage; supervisor and mentor components are their evaluation totals; the report component is the assessed report score. Weights come from the setting table, so a change applies to the next computation but never to a published mark. The total is rounded to two decimals, mapped to the grade scale and cached with component percentages. Moderation records a reason and moderator; publication sets status and timestamp and reveals the result.
+
+Figure 4: Mark computation and publication pipeline
+The seed demonstrates the arithmetic: logbook 75.00, supervisor 79.00, mentor 76.50 and report 76.00, weighted 20, 40, 20 and 20 per cent, gives 77.10, grade B+, “Very good”. The results page, grade sheet and management export read the same cached values.
+5.6 Notifications, mail and usability
+Notifications are written in the same transaction as the business event and paired with an email_queue row. In log mode Mailer appends to storage/logs/mail.log and marks the row sent; failures retain the error and can be retried, so the system works without a mail server. The layout is responsive, tables collapse into labelled rows, destructive actions confirm through data attributes, forms preserve input, and printable documents have a dedicated stylesheet.
+5.7 Interface, guidance and mobile layout
+The interface was revised after the role walkthroughs under two constraints: the content security policy forbids inline script and style, so every behaviour lives in one external file and every width is set through the CSS object model; and the system must stay usable on the laboratory’s smallest phones. A headless Chrome audit at 427×952, 390×844, 360×800 and 320×700 compared document.scrollWidth with the viewport on every screen of every role and found no horizontal page overflow. The fifth pass repeated the audit at 279 px in the application’s embedded browser. Seven-column tables — evaluations, grade breakdown, results, report files, ranked applications and audit changes — no longer clip their last columns: each cell stacks under a data-label caption and a summary row replaces the footer. Charts inside those cells keep a flexible basis with a minimum, so a bar never collapses, while print sheets keep their own A4 layout.
+Navigation now gives immediate feedback. A top progress bar starts on any same-origin link click and on form submission, the pressed button gains a spinner and aria-busy, and a pageshow handler clears the state when the Back button restores a page. Because the notification dropdown stops click propagation, the listener runs in the capture phase; without that, dropdown links started no bar. The student dashboard also carries a progress tracker: one card derives six steps — placement, logbook, evaluations, visit, report and publication — from the records already loaded and shows them as done, in progress or upcoming with a percentage, so a student can see what remains without opening each module.
+Three guidance features complete the interface. Signing in uses a single password control with an eye button and no separate show-password checkbox, beside a live strength meter and one-click demo credentials. A floating Send feedback control opens a dialog that records a rating from one to five, free-text thoughts and suggestions, and the current page; it submits as JSON with a toast and thank-you panel, falls back to an ordinary POST without JavaScript, rejects a rating outside the range with HTTP 422 and lists every entry on the administrator’s feedback screen. Finally, logbook comments form a three-way thread: student, host supervisor and academic mentor can each reply, a reply stores parent_id and returns to a #comment anchor, the other two parties are notified, and a reply banner names the parent author with a Cancel control. A first-time student is offered a five-step tour that can be restarted from the layout at any time.
+5.8 Placement messaging
+A supervision question asked by email is lost to the placement record, so messaging is attached to the placement rather than to a private inbox. Four tables — conversation, conversation_member, message and message_reaction — carry the thread, its members and their read positions. Membership is decided by the service, not by the form: a student can reach only the assigned mentor and the coordinator, a mentor reaches the students they supervise and the coordinator, and a crafted start request naming another student returns HTTP 403 and writes a message.denied event.
+The thread behaves like a familiar messenger without becoming a social network. A reply stores parent_message_id and renders the quoted parent above the new text; reactions are limited to five emoji; unread counts derive from conversation_member.last_read_message_id and appear in the navigation. A sender may edit a text message for fifteen minutes, after which the control disappears and the server refuses the change; deletion writes deleted_at and leaves a tombstone so replies keep their anchor. A client_token makes a retried send idempotent, attachments pass through Upload::store against the placement, and the open thread polls every eight seconds while the tab is visible. Every messaging table is utf8mb4, so emoji survive the round trip.
+Messaging never bypasses the record: message.sent, message.edited, message.deleted and message.denied join the audit trail. The host supervisor keeps the three-way logbook discussion in logbook_comment and has no messaging permission, so the placement conversation stays between the student, the mentor and the coordinator.
+5.9 DIVA assistant
+Students and staff need a policy answer while they are filling a form, which is when leaving the system is most disruptive. DIVA, the Digital Internship Virtual Assistant, answers from two sources only: the records the signed-in account may already read, and an offline text extract of the internship guidebook in storage/knowledge/guidebook.txt. It makes no cloud call, carries no key and sends no question to an outside service. An optional third tier calls a model on 127.0.0.1 or localhost, is disabled by default and is abandoned after 400 ms, so an unavailable model cannot delay an answer; every reply names the tier that produced it.
+Intent rules run first: a deadline, a weighting, a queue or a progress question is answered with a number read from the database, scoped by role, and linked to the page that acts on it. If no rule applies, a ranked search over the 25-page extract returns the strongest passages with page citations, and a source page opens inside the application without losing the question. The report checker reads a .docx with ZipArchive or pasted text, judges the eight Form E criteria against the text, quotes the student’s own line as evidence and runs presentation checks. It never prints a mark and never rewrites a sentence; PDFs are refused with an explanation because the build has no PDF parser. Questions are capped at 500 characters, and each query writes one diva.query audit row with the intent, tier, page numbers and a hash of the question — never its text.
+The assistant is read-only by construction: no DIVA route writes, approves, publishes or sends. The twenty-question evaluation set in bin/diva-eval.php exercises all six roles and reports the intent, the answering tier and the cited pages; the recorded run matched both the expected intent and tier twenty times, with eighteen answers from rules and two from guidebook retrieval, while the local tier reported itself disabled on a machine without a model.
+
+6. Part F — Evaluation
+The evaluation asks whether the artefact meets its five objectives and where it would fail in production, using the test pass, security review and role walkthrough.
+6.1 Against the objectives
+The schema objective is met: nine data stores, twenty-eight normalised tables, keys, constraints and transactions. The process objective is met for the core cycle, with every use case from application to publication routed and Assignment 2 numbering preserved. Security is implemented at the application layer and tested. Outputs — letters, grade sheets, reports and CSV — derive from the same data. Realistic seed data and ninety-one executed cases demonstrate the system end to end.
+6.2 Defects found and corrected
+The test pass was not a formality; defects were found in every pass and each was fixed before the next run; docs/test-log.md numbers them D1 to D26. A printable letter used a javascript: link blocked by the content security policy and now receives a real back URL. A route pointed at a missing controller method and was rewired. Source, configuration and storage folders were downloadable under the built-in server and router.php now blocks them. Two notification paths read unselected names and the joins were corrected. The preference swap collided with uq_app_rank and now uses a temporary rank inside a transaction. The forced password change flag was stored but never enforced and a bootstrap gate now enforces it. Mentors could open the supervisor queue and the coordinator’s all-visits page; explicit role gates now return 403 and audit the attempt. The asset helper omitted the assets segment of the public path, so an Apache subfolder install served every page unstyled until the helper was corrected. The sign-in feedback alert stretched down the whole column as a tall pale panel and now keeps its natural height. Finally, a browser Back button could redisplay the cached dashboard after sign-out; no-store headers, Clear-Site-Data and a pageshow reload close that gap.
+A second pass, driven by the mobile and interface revision, found nine more (D12–D20). At phone widths seven-column tables clipped their last columns and forced the page sideways; they now stack with data-label captions and a summary row. Bar charts inside those stacked cells collapsed to zero width until the track received a flexible basis with a minimum. The host supervisor could read a student thread but had no reply form, so the three-way discussion was missing one party; a supervisor comment route, the shared reply banner and notifications complete it. The seeded CV and both report rows pointed at files that were never shipped, so every sample Download link returned 404 on a fresh import; three valid sample PDFs now ship and their recorded sizes match. Links inside the notification dropdown started no loading bar because the panel stops propagation; the listener moved to the capture phase. And under Apache the CSRF rejection page returned 500 rather than 419 because the non-standard code is rewritten; the gate now sends an explicit status line that both Apache and the built-in server preserve. The profile, log book and ranked-list work added three more: the photo preview now runs from a blob URL the image policy allows, asset URLs carry a file version so a change is fetched at once, and the ranked preferences row became a card that keeps its controls with the row.
+The final pass, which added the assistant and placement messaging, found six more (D21–D26): an early return in the local tier that made every answer claim a model, an intent order that answered count questions from the wrong rule, a missing logbook-weighting intent, guidebook pages attached to answers that cited none, a citation pattern that lost the second page of a range, and report evidence quoted from the Introduction for every criterion. All six were fixed and re-tested.
+6.3 Limitations
+It is a strong single-institution prototype, not a national service. There is no multi-tenancy, so a second university needs a separate database or a tenant column. Mail ran in log mode, not live SMTP. Timeouts were reviewed in configuration, not observed for twenty minutes. Reports are uploaded and assessed manually, without plagiarism detection. Keyboard access and semantic markup are present, but WCAG 2.2 was not audited by a specialist. The floating feedback control can overlap the lower-right of long content while scrolling, and printing is optimised for A4 rather than arbitrary paper. Two limits belong to the newest modules. DIVA cannot read PDF text offline, so a report supplied only as PDF must be re-sent as .docx or pasted, and the optional local model was bounded and disabled but never exercised against a running model. Messaging is a placement channel rather than a general inbox: there is no search, no delivery receipt and no thread with anyone outside the placement.
+6.4 Recommendations
+Four improvements matter most: a read-only auditor role; bulk import of students and placements; an offline logbook draft that synchronises when a connection returns; and automated regression tests around mark calculation and the permission matrix. None requires a redesign.
+
+7. Testing
+Testing combined functional walkthroughs, negative tests and security probes, each role in a separate browser session against the seeded database. The full evidence is in docs/test-log.md.
+7.1 Strategy and environment
+The strategy had four layers: functional paths from application to publication; negative tests with missing input, incomplete evaluations and invalid allocations; security probes of unauthenticated access, CSRF, role and object boundaries, uploads, escaping and direct file access; and structural checks resolving every route and every POST form’s CSRF field. The environment was Windows 11, PHP 8.0.30, MariaDB 10.4.32 and the built-in server, with Apache used for the subfolder installation and CSRF status checks; interface checks ran in headless Chrome at 427×952, 390×844, 360×800, 320×700, 768×1024, 1024×768, 1280×800 and 1440×900.
+7.2 Results
+Ninety-one cases were executed and all passed after the fixes (Table 8), a 100 per cent rate for the executed set. The idle timeout, SMTP delivery and the optional local model were not executed live and are stated as such in the test log, not counted as passes.
+Table 8: Executed test cases by area
+Area
+Cases
+Passed
+Representative evidence
+Authentication and session
+9
+9
+Lockout, unlock, forced password change, reset and invitation tokens, password policy, back-button cache
+Authorisation and input
+13
+13
+403 on six cross-role routes, IDOR letter and document, XSS escaping, CSRF 419 on both servers
+Logbook workflow
+6
+6
+Submit, return with and without comment, resubmit, mentor review
+Marking, publication and allocation
+8
+8
+Incomplete compute blocked, 77.10 B+, publish, recompute refused, duplicate year, supervisor mismatch, capacity, rank swap
+Documents, settings and exports
+6
+6
+PDF upload and download, review labels, weight validation, audit diff, mail queue, CSV
+Packaged build and presentation
+1
+1
+Apache subfolder install served with full styling
+Account migration, onboarding and interface revision
+7
+7
+Member accounts, password policy, alert height, review labels, back button, new registration
+Interface revision: mobile, feedback, tracking and guidance
+11
+11
+Four mobile widths, stacked tables, chart bars, three-way replies, loading bar, tracker, feedback, sample downloads, route crawl
+Programme list, log book, profile and charts
+6
+6
+Official programme list, 16-page log book template, photo preview and removal, ranked cards, chart labels, asset cache
+Career Fair 2026 and guide book styling
+4
+4
+Student upload and late flag, template delivery, styled log book, lint and routes
+DIVA assistant and placement messaging
+20
+20
+Three tiers, source pages, report critique and refusal, audit, evaluation set, message scope, replies, edit window, tombstones, idempotent token, polling
+
+7.3 Reproducibility
+The log records environment, accounts, observed state and fixes. A marker can reproduce the pass by importing database/digital_leap.sql, copying config.sample.php to config.php, starting the server and following the VERIFY.md walkthrough. The mobile check repeats by opening the browser device toolbar at 427×952, 390×844, 360×800 and 320×700; no page should scroll sideways. The fifth pass repeated the check at 279 px and also ran the twenty-question DIVA evaluation set with bin/diva-eval.php. Re-importing the seed discards a failed experiment.
+
+8. Digital Public Good Analysis
+A digital public good is open, inclusive, privacy-respecting and sustainable enough to be reused beyond its project. The Digital Public Goods Alliance assesses nine indicators: SDG relevance, open licence, clear ownership, platform independence, documentation, data extraction, privacy, security and do-no-harm. This section evaluates the system against them.
+8.1 Openness and ownership
+Code is MIT licensed and the report CC BY 4.0. The schema is plain SQL, there is no proprietary dependency and the front end is standard HTML and CSS. Ownership is stated on the cover and in the licence; the university may reuse the work for teaching with attribution. Without a framework or Composer, the artefact is easy to inspect, fork and adapt.
+8.2 Relevance and inclusion
+The system supports SDG 4 and SDG 8 by making internships accountable. Offline, low-bandwidth design is an inclusion decision: students need no data plan to submit evidence. The interface uses large touch targets, labelled fields, semantic headings, a responsive layout audited from 320 px upwards, loading and progress feedback, and colour paired with text. English is the university’s working language; Krio and Temne strings could be added without schema changes.
+8.3 Privacy and security
+Only the personal data needed for placement and assessment is stored; management sees aggregates, and object-level scoping keeps evidence private. Security is tested rather than assumed, and the audit trail supports accountability. The assistant answers only from local records and the offline guidebook, and its audit rows record that it was asked without storing the question. The do-no-harm assessment identifies misclassification or unauthorised disclosure of a result as the main risk, so publication is deliberate and audited.
+8.4 Sustainability and data extraction
+Technical sustainability comes from the small dependency footprint and documented installation; institutional sustainability from local ownership, since the university can run the system on existing XAMPP machines and export placements, grades and audit evidence to CSV without vendor permission. Data extraction is a first-class feature, not an afterthought. Table 9 summarises the assessment and remaining gaps.
+Table 9: Digital Public Good indicator assessment
+Indicator
+Assessment
+Evidence or gap
+SDG relevance
+Strong
+Supports accountable internships under SDG 4 and SDG 8
+Open licence
+Met
+MIT for code, CC BY 4.0 for the report
+Clear ownership
+Met
+Group G ownership stated on the cover and in LICENSE
+Platform independence
+Met
+PHP and MariaDB only; no proprietary service
+Documentation
+Met
+INSTALL.txt, README.md, VERIFY.md and test log
+Data extraction
+Met
+SQL dump and CSV exports for placements and grades
+Privacy
+Partial
+Scoping and minimisation implemented; no formal data-protection impact assessment
+Security
+Partial
+Controls tested; no independent penetration test
+Do no harm
+Met
+Publication gate, audit trail and documented residual risks
+
+
+9. Documentation and Handover
+A system the next cohort cannot install is not finished, so documentation is organised by task and included in the zip.
+9.1 Deliverables
+INSTALL.txt gives the five-minute setup, demo accounts and both launch methods. README.md explains structure, routes and conventions. VERIFY.md is the marker’s guide: accounts, a role-by-role walkthrough with expected results, security checks and limitations. docs/test-log.md contains the ninety-one cases and fixes.
+Table 10: Documentation map
+Document
+Audience
+Contents
+INSTALL.txt
+Marker, new developer
+Setup, database import, launch, demo credentials
+README.md
+Developer
+Structure, routes, conventions, scripts
+VERIFY.md
+Marker, coordinator
+Role walkthrough, security checks, limitations
+docs/test-log.md
+Marker, QA
+61 cases, evidence, defects, reproduction steps
+database/digital_leap.sql
+Developer, DBA
+Schema, constraints, seed data
+This report
+Lecturer, group
+Design rationale, architecture, security, evaluation
+
+9.2 Maintainability
+Routes are declared in one table, controllers are grouped by role, services are single-purpose and views contain no business logic. A new route needs a controller method, a route entry and a navigation link; a new permission needs a permissions row, a mapping and a permission string. The audit trail and test log explain why a rule exists.
+9.3 Handover
+Handover should be one session: demonstrate the coordinator and supervisor workflows, restore the database, explain the boundary between config.php and the setting table, and walk the audit trail. The new team should run VERIFY.md on a clean machine before changing code. The zip excludes config.php and uploads, so handover must include a database export and an institutional decision on migrating existing evidence.
+
+10. Conclusion
+Digital LEAP now has a database and application matching the Assignment 2 analysis. Twenty-eight tables preserve the evidence behind every mark, the three-tier architecture keeps rules in one place, the security model assumes users probe boundaries, and the test pass shows the main workflows working. The artefact is deliberately small and offline-first. A three-tier assistant and placement messaging extend the same record instead of opening a second product. Its weaknesses — no multi-tenancy, no live SMTP test, no independent penetration test — are the right next tasks.
+The most important outcome is traceability. A student can see why an entry was returned; a supervisor sees only their own students; a coordinator can show how 77.10 became a B+; an auditor can reconstruct who changed what. That is what a database-backed internship system is for.
+
+References
+Connolly, T. and Begg, C. (2015) Database Systems: A Practical Approach to Design, Implementation, and Management. 6th edn. Harlow: Pearson.
+Digital Public Goods Alliance (2023) Digital Public Goods Standard. Available at: https://digitalpublicgoods.net/standard/ (Accessed: 13 November 2026).
+Elmasri, R. and Navathe, S.B. (2016) Fundamentals of Database Systems. 7th edn. Boston: Pearson.
+Laudon, K.C. and Laudon, J.P. (2020) Management Information Systems: Managing the Digital Firm. 16th edn. Harlow: Pearson.
+Limkokwing University of Creative Technology (2026) COMP217 Advanced Database Systems: Assignment 3 Brief. Freetown: Limkokwing University.
+MariaDB Foundation (2024) MariaDB Documentation. Available at: https://mariadb.com/kb/en/documentation/ (Accessed: 13 November 2026).
+NIST (2017) Special Publication 800-63B: Digital Identity Guidelines. Gaithersburg: National Institute of Standards and Technology.
+OWASP Foundation (2021) OWASP Top 10:2021. Available at: https://owasp.org/Top10/ (Accessed: 13 November 2026).
+OWASP Foundation (2023) Cross-Site Request Forgery Prevention Cheat Sheet. Available at: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html (Accessed: 13 November 2026).
+PHP Group (2024) PHP Manual: PDO and Password Hashing. Available at: https://www.php.net/manual/en/ (Accessed: 13 November 2026).
+Pressman, R.S. and Maxim, B.R. (2020) Software Engineering: A Practitioner’s Approach. 9th edn. New York: McGraw-Hill.
+Sommerville, I. (2016) Software Engineering. 10th edn. Harlow: Pearson.
+W3C (2023) Web Content Accessibility Guidelines (WCAG) 2.2. Available at: https://www.w3.org/TR/WCAG22/ (Accessed: 13 November 2026).

@@ -1,0 +1,64 @@
+[14-Nov-2026 11:12:49 Africa/Freetown] [2026-11-14T11:12:49+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 11:12:53 Africa/Freetown] [2026-11-14T11:12:53+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 11:12:56 Africa/Freetown] [2026-11-14T11:12:56+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 11:12:59 Africa/Freetown] [2026-11-14T11:12:59+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 11:13:02 Africa/Freetown] [2026-11-14T11:13:02+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 11:13:05 Africa/Freetown] [2026-11-14T11:13:05+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 11:13:25 Africa/Freetown] [2026-11-14T11:13:25+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[14-Nov-2026 14:56:06 Africa/Freetown] [2026-11-14T14:56:06+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[15-Nov-2026 00:37:43 Africa/Freetown] [2026-11-15T00:37:43+00:00] array_map(): Argument #2 ($array) must be of type array, PDOStatement given in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\bin\diva-eval.php:85
+[16-Nov-2026 10:30:11 Africa/Freetown] [2026-11-16T10:30:11+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[16-Nov-2026 10:47:03 Africa/Freetown] [2026-11-16T10:47:03+00:00] Class "capital" not found in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\.tmp-report\diva-probe.php:35
+[16-Nov-2026 10:49:50 Africa/Freetown] [2026-11-16T10:49:50+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[16-Nov-2026 11:30:56 Africa/Freetown] [2026-11-16T11:30:56+00:00] SQLSTATE[HY000] [2006] MySQL server has gone away in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[16-Nov-2026 11:30:56 Africa/Freetown] [2026-11-16T11:30:56+00:00] SQLSTATE[HY000] [2006] MySQL server has gone away in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Warning:  Uncaught PDOException: PDO::__construct(): Error while reading greeting packet. PID=41368 in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+Stack trace:
+#0 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php(31): PDO->__construct('mysql:host=127....', 'root', '', Array)
+#1 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php(42): Leap\Core\Database::pdo()
+#2 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php(49): Leap\Core\Database::q('SELECT * FROM s...', Array)
+#3 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Settings.php(14): Leap\Core\Database::all('SELECT * FROM s...')
+#4 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Settings.php(23): Leap\Core\Settings::all()
+#5 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php(108): Leap\Core\Settings::get('session_idle_mi...', 20)
+#6 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\index.php(9): require('C:\\xampp\\htdocs...')
+#7 {main}
+
+Next PDOException: SQLSTATE[HY000] [2006] MySQL server has gone away in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+Stack trace:
+#0 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php(31): PDO->__construct('mysql:host=127....', 'root', '', Array)
+#1 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php(42): Leap\Core\Database::pdo()
+#2 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php(49): Leap\Core\Database::q('SELECT * FROM s...', Array)
+#3 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Settings.php(14): Leap\Core\Database::all('SELECT * FROM s...')
+#4 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Settings.php(23): Leap\Core\Settings::all()
+#5 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php(108): Leap\Core\Settings::get('session_idle_mi...', 20)
+#6 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\index.php(9): require('C:\\xampp\\htdocs...')
+#7 {main}
+  thrown in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php on line 31
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php on line 42
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php on line 86
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php on line 86
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php on line 86
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php on line 86
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php on line 86
+[16-Nov-2026 11:30:56 Africa/Freetown] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\bootstrap.php on line 86
+[16-Nov-2026 11:55:10 Africa/Freetown] PHP Warning:  Undefined variable $result in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Views\diva\index.php on line 64
+[16-Nov-2026 12:15:06 Africa/Freetown] PHP Fatal error:  Uncaught ReflectionException: Cannot access non-public property Leap\Services\Diva::$corpus in Command line code:1
+Stack trace:
+#0 Command line code(1): ReflectionProperty->setValue(NULL, Array)
+#1 {main}
+  thrown in Command line code on line 1
+[16-Nov-2026 12:23:16 Africa/Freetown] PHP Fatal error:  Uncaught ReflectionException: Cannot access non-public property Leap\Services\Diva::$corpus in Command line code:1
+Stack trace:
+#0 Command line code(1): ReflectionProperty->setValue(NULL, Array)
+#1 {main}
+  thrown in Command line code on line 1
+[17-Nov-2026 09:13:47 Africa/Freetown] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\bin\diva-eval.php:32
+Stack trace:
+#0 C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\bin\diva-eval.php(32): PDO->rollBack()
+#1 [internal function]: {closure}()
+#2 {main}
+  thrown in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\bin\diva-eval.php on line 32
+[17-Nov-2026 12:05:14 Africa/Freetown] [2026-11-17T12:05:14+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[17-Nov-2026 12:05:18 Africa/Freetown] [2026-11-17T12:05:18+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[17-Nov-2026 12:05:22 Africa/Freetown] [2026-11-17T12:05:22+00:00] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:31
+[17-Nov-2026 13:47:15 Africa/Freetown] [2026-11-17T13:47:15+00:00] SQLSTATE[HY000]: General error: 2006 MySQL server has gone away in C:\xampp\htdocs\Digital_LEAP_Assignment3_Group_G\digital-leap\app\Core\Database.php:43

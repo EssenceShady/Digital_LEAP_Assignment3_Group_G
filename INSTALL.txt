@@ -1,0 +1,268 @@
+DIGITAL LEAP INTERNSHIP MANAGEMENT SYSTEM
+COMP217 Advanced Database Systems - Assignment 3
+Group G, BSEM 2102, Semester 5, Year 3
+Limkokwing University of Creative Technology, Sierra Leone
+
+===============================================================
+1. WHAT IS IN THIS PACKAGE
+===============================================================
+
+digital-leap/            The PHP 8 application (no Composer dependencies)
+database/
+  digital_leap.sql       Schema (30 tables) and Sierra Leone seed data
+docs/
+  VERIFY.md              Marker's walkthrough and security checklist
+  test-log.md            102 executed test cases, evidence and defects
+  diva-eval-results.txt  DIVA expanded evaluation output
+REPORT/
+  Digital_LEAP_Assignment3_Report.docx
+  Digital_LEAP_Assignment3_Report.pdf
+  figures/               The four report figures as PNG
+INSTALL.txt              This file
+README.md                Developer documentation
+LICENSE                  MIT (code) and CC BY 4.0 (report)
+
+The package does NOT contain config/config.php; it is created locally
+so no credentials ship. Only the four sample PDFs referenced by the
+seed are included under storage/uploads, plus the official log book
+and Career Fair templates under storage/templates. Personal uploads
+never ship.
+
+===============================================================
+2. REQUIREMENTS
+===============================================================
+
+- Windows 10/11 (tested), macOS or Linux
+- XAMPP with PHP 8.0 or later and MariaDB 10.4 or later
+  (tested with PHP 8.0.30 and MariaDB 10.4.32)
+- A browser (Chrome, Edge or Firefox)
+- No internet connection is required at run time
+
+===============================================================
+3. INSTALL IN FIVE MINUTES (APACHE)
+===============================================================
+
+1. Copy the folder "digital-leap" into the XAMPP web root, for example:
+      C:\xampp\htdocs\digital-leap
+
+2. Start Apache and MySQL from the XAMPP Control Panel.
+
+3. Create the database. Either:
+
+   a) Open http://localhost/phpmyadmin, click Import, choose
+      database/digital_leap.sql and press Go.
+
+   b) Or use a command prompt:
+      C:\xampp\mysql\bin\mysql.exe -u root < "C:\path\to\database\digital_leap.sql"
+
+   The script creates the database "digital_leap", all 30 tables,
+   constraints, indexes and the seed data. It is safe to re-import;
+   it drops and recreates the tables.
+
+4. Create the configuration file:
+      copy config\config.sample.php config\config.php
+
+   The defaults match a standard XAMPP installation
+   (host 127.0.0.1, port 3306, user root, empty password).
+   Edit only if your MySQL credentials differ.
+
+5. Open:
+      http://localhost/digital-leap/
+
+   The login page should appear.
+
+===============================================================
+4. ALTERNATIVE: PHP BUILT-IN SERVER
+===============================================================
+
+From the digital-leap folder:
+
+   C:\xampp\php\php.exe -S 127.0.0.1:8080 router.php
+
+Then open http://127.0.0.1:8080/
+
+router.php blocks direct access to /app, /bin, /config, /storage and
+/database, so the application behaves like the Apache deployment.
+
+===============================================================
+5. DEMO ACCOUNTS
+===============================================================
+
+All accounts are seeded and active. Passwords are case-sensitive.
+
+  Role                      Name                          Email                            Password
+  ------------------------  ----------------------------  -------------------------------  -------------
+  System administrator      Shadrach S. S. Sesay          sesayshadrachsaidu@gmail.com     Shadrach@2026
+  LEAP coordinator          Musa Bayoh                    bayohmusa001@gmail.com           Musa@2026
+  Management / AQA          Fatmata BF Conteh             fatmatabfc@gmail.com             Fatmata@2026
+  Academic mentor           Deborah Juliet Moiforay       deborahjulietmoiforay@gmail.com  Mentor@1234
+  Second mentor             Samuel Kposowa                mentor2@leap.edu.sl              Mentor@1234
+  Host supervisor           Joseph Kargbo                 supervisor@brightfuture.sl       Super@1234
+  Second supervisor         Hawa Sesay                    supervisor@sierratelecom.sl      Super@1234
+  Student                   Mohamed Alie Kamara           mohamedalie247@gmail.com         Student@1234
+  Other students            Aisha Koroma                  aisha.koroma@leap.edu.sl         Student@1234
+                            Ibrahim Sesay                 ibrahim.sesay@leap.edu.sl        Student@1234
+                            Maria Kamara                  maria.kamara@leap.edu.sl         Student@1234
+                            Mariama Turay                 mariama.turay@leap.edu.sl        Student@1234
+
+The seeded 2025/2026 placement for maria.kamara@leap.edu.sl already
+has logbook entries, evaluations, an assessed report, a career fair
+score and a published final mark of 72.98 (grade B), so the full
+workflow can be demonstrated without data entry. The final mark is out
+of 200: Practical Internship 100 (logbook 50, Form D 40, student self
+evaluation 10) + Internship Report 75 + Career Fair 25. The
+current-year placements have no mark until the coordinator computes
+one from the completed components; mohamedalie247@gmail.com has a
+submitted self evaluation and forms part of that demo.
+
+===============================================================
+6. FIRST STEPS
+===============================================================
+
+- Sign in as the coordinator to see the operational dashboard.
+- Sign in as the supervisor to review submitted logbook weeks.
+- Sign in as the mentor to review entries and assess the report.
+- Sign in as the student to see the published result and open the
+  official 16-page log book template from the Logbook page. The
+  Career Fair 2026 page opens the participation report template and
+  accepts the completed report for the assessment portfolio.
+- Sign in as the administrator to inspect users, settings and the
+  audit trail. The programme list on the account form is grouped by
+  the five Limkokwing faculties.
+
+Every signed-in role also sees "Ask DIVA" in the navigation. DIVA
+answers from the placement records the account may read and from an
+offline text extract of the internship guidebook, citing page numbers.
+Open Ask DIVA and try "How is my progress calculated?", then use
+"Check my report draft" with a .docx or pasted text. DIVA saves questions
+and answers to your account but never modifies internship records or gives
+a mark. Use New conversation for a separate topic and the history sidebar
+to reopen or find an earlier conversation. Archive hides a conversation;
+it does not delete stored data. Saved answers reflect the time they were
+asked. For live information, ask again.
+
+Students, mentors and coordinators see "Messages". Sign in as the
+student: the start list offers only the assigned mentor and the
+coordinator. A reply quotes the parent message, an unread count shows
+in the navigation, and polling refreshes the thread every eight
+seconds. Host supervisors use the logbook entry discussion instead.
+
+The log book template is also linked from the supervisor queue, the
+mentor logbook and the coordinator placements page, so every role
+that handles logbooks can open or download it. Uploaded Career Fair
+reports appear for the mentor under Reports and for the coordinator
+in the placement's Documents list.
+
+The complete role-by-role script, with expected results, is in
+docs/VERIFY.md.
+
+===============================================================
+7. MAINTENANCE COMMANDS
+===============================================================
+
+From the digital-leap folder:
+
+  C:\xampp\php\php.exe bin\send_mail_queue.php
+      Processes due messages in email_queue. In the default log
+      mode, messages are appended to storage\logs\mail.log.
+
+  C:\xampp\php\php.exe bin\remind_logbooks.php
+      Creates weekly reminders for placements with overdue logbooks.
+
+  C:\xampp\php\php.exe bin\diva-eval.php
+      Runs the expanded DIVA evaluation set and prints the intent,
+      the answering tier, the cited pages and the tier totals. Add
+      --answers to print each answer, or --user=<id> to fix the
+      signed-in account. It changes no data.
+
+  C:\xampp\php\php.exe bin\build-diva-corpus.php "guidebook.pdf"
+      Regenerates storage\knowledge\guidebook.txt from the PDF. Only
+      needed if the guidebook is replaced; requires pdftotext on the
+      development machine. The shipped application never parses the
+      PDF at runtime.
+
+Both scheduled jobs can be scheduled with Windows Task Scheduler. The
+administrator can also process the queue from the mail screen.
+
+===============================================================
+8. RESETTING THE DEMO
+===============================================================
+
+Re-import database/digital_leap.sql. This restores every table,
+account and the published 72.98 result. The four sample PDFs that
+the seed links to ship in digital-leap/storage/uploads, and the log
+book and Career Fair templates ship in storage/templates, so every
+download link works on a fresh import. Files uploaded during a demo
+stay in storage/uploads and do not affect the seed.
+
+===============================================================
+9. TROUBLESHOOTING
+===============================================================
+
+"Database connection failed"
+  MySQL is not running, or config/config.php has the wrong
+  credentials. Start MySQL and check host, port, user and password.
+
+404 on every page under Apache
+  mod_rewrite is disabled, or the folder is not under htdocs.
+  Enable mod_rewrite in httpd.conf and confirm the URL.
+
+Styles or scripts do not load
+  The application must be opened through the site root
+  (http://localhost/digital-leap/), not by double-clicking index.php.
+
+"419" when submitting a form
+  The session expired or the page was left open too long. Reload the
+  form and submit again; CSRF tokens rotate with the session.
+
+Account temporarily locked
+  Five failed sign-ins lock an account for 15 minutes. The
+  administrator can unlock it from Users.
+
+===============================================================
+10. SECURITY NOTES FOR THE MARKER
+===============================================================
+
+- config/config.php is excluded from the zip and must be created
+  locally. No real credentials are shipped.
+- Uploaded files live in storage/uploads, outside the document root,
+  and are served only through DownloadController after an ownership
+  check.
+- The default mail mode is "log"; no email leaves the machine.
+- The sign-in and registration forms enforce one password policy: at
+  least eight characters with an uppercase letter, a lowercase letter
+  and a number. Symbols are optional and shown in a strength meter.
+- Dynamic pages are sent with Cache-Control: no-store and logout sends
+  Clear-Site-Data, so the browser Back button cannot reopen a signed-out
+  dashboard.
+- The internship log book template is served only to signed-in users
+  through DownloadController; it can be viewed inline or downloaded.
+  The Career Fair 2026 template is served the same way from
+  storage/templates/career_fair_2026_report_template.pdf.
+- Profile photos are limited to JPG, PNG or WebP at 8 MB, stored
+  outside the document root and served only through ?r=avatar. The CSP
+  allows blob: only so the chosen photo can be previewed locally before
+  it is saved; no external image source is permitted.
+- DIVA cannot approve work, publish grades or send messages, and answers
+  from records the signed-in account may read. Chat history stores the
+  question, answer, source references and answer basis in the local DB.
+  Other application accounts cannot open it, but DB administrators can;
+  do not enter passwords or other secrets. Archive retains the rows.
+  Network calls occur only if the optional loopback local model is enabled.
+  Audit metadata holds intent, tier, cited pages and a question hash,
+  not raw question/report text.
+- Messages are scoped by the placement: a student can message only the
+  assigned mentor, the host supervisor or the coordinator, never another
+  student. Edits are limited to the sender's own text messages inside 15
+  minutes, deletion leaves a tombstone, and a repeated POST with the same
+  client token stores one message. All message tables use utf8mb4 so
+  emoji survive.
+- Demo passwords are for assessment only and must be changed before
+  any real use.
+
+Group G
+Mohamed Alie Kamara 905005581
+Shadrach Saidu Saccoh Sesay 905005695
+Musa Bayoh 905005050
+Fatmata BF Conteh 905005463
+Deborah Juliet Moiforay 905005455

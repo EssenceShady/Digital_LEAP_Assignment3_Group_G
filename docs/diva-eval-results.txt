@@ -1,0 +1,87 @@
+DIVA evaluation set — 2026-11-17 13:38
+========================================================================================================
+#   Role        Question                                 Intent            Tier       Pages   Conf   Match
+----------------------------------------------------------------------------------------------------------------
+1   student     When is my next logbook entry due?       deadline.logbook  rules      -       high   PASS
+2   student     What does Form E mark for the intern..   weighting         rules      24,25   high   PASS
+3   student     How far through my placement am I?       progress          rules      -       high   PASS
+4   student     Can I see my results?                    results           rules      -       high   PASS
+5   student     Where is my placement?                   placement         rules      -       high   PASS
+6   student     What is Form D?                          evaluation        rules      25,9,10,24 high   PASS
+7   student     How many weeks does the internship r..   internship.duration rules      12,20,13,25 high   PASS
+8   student     What are the objectives of LEAP?         none              retrieval  4,2,1   high   PASS
+9   student     How do I apply for an internship?        apply             rules      -       high   PASS
+10  student     Who chooses the host organisation?       allocation        rules      -       high   PASS
+11  student     What are the two internship types?       internship.type   rules      3,4,10,11 high   PASS
+12  supervisor  What is waiting for me to review?        queue             rules      -       high   PASS
+13  supervisor  How is the logbook weighted?             weighting.logbook rules      24      high   PASS
+14  supervisor  What should I check before approving..   logbook.status    retrieval  19,9,12 low    PASS
+15  supervisor  What is the report assessment weight?    weighting         rules      24,25   high   PASS
+16  mentor      What is waiting for me to review?        queue             rules      -       high   PASS
+17  mentor      What are the report criteria?            weighting         rules      24,25   high   PASS
+18  mentor      How do I record a site visit?            none              retrieval  7,20,8  medium PASS
+19  coordinator How many placements are active?          overview          rules      -       high   PASS
+20  coordinator What is pending for me?                  queue             rules      -       high   PASS
+21  coordinator What are the assessment weights?         weighting         rules      24,25   high   PASS
+22  coordinator Show me the placement overview           overview          rules      -       high   PASS
+23  management  How many placements are active?          overview          rules      -       high   PASS
+24  management  How many marks are published?            overview          rules      -       high   PASS
+25  admin       How many accounts are there?             accounts          rules      -       high   PASS
+26  admin       What can you do?                         capabilities      rules      -       high   PASS
+27  student     Hello!                                   greeting          rules      -       high   PASS
+28  student     What is the capital of France?           none              rules      -       high   PASS
+29  student     ↳ And the report?                      deadline.report   rules      -       high   PASS
+30  student     ↳ Tell me more                         followup.more     retrieval  4,2,1,5 high   PASS
+31  supervisor  ↳ Why?                                 followup.why      rules      24      high   PASS
+32  student     Hi, when is my logbook due?              deadline.logbook  rules      -       high   PASS
+33  student     Hello! When is my report due?            deadline.report   rules      -       high   PASS
+34  student     Thanks, when is my logbook due?          deadline.logbook  rules      -       high   PASS
+35  student     Hey — what are the assessment weights? weighting         rules      24,25   high   PASS
+36  student     Thanks!                                  gratitude         rules      -       high   PASS
+37  student     Why?                                     clarify           rules      -       high   PASS
+38  student     Tell me more                             clarify           rules      -       high   PASS
+39  student     ↳ And France?                          none              rules      -       high   PASS
+40  student     ↳ And France?                          none              rules      -       high   PASS
+41  student     ↳ And the report?                      deadline.report   rules      -       high   PASS
+42  student     ↳ What about the logbook?              deadline.logbook  rules      -       high   PASS
+43  student     ↳ And the career fair?                 deadline.career_fair rules      -       high   PASS
+44  supervisor  ↳ What about the report?               weighting         rules      24,25   high   PASS
+45  supervisor  ↳ And the logbook?                     weighting.logbook rules      24      high   PASS
+46  supervisor  ↳ And the career fair?                 weighting         rules      24,25   high   PASS
+47  student     ↳ When is it due?                      deadline.logbook  rules      -       high   PASS
+48  student     ↳ When is it due?                      deadline.report   rules      -       high   PASS
+49  student     ↳ When is it due?                      deadline.career_fair rules      -       high   PASS
+50  student     ↳ When is it due?                      deadline.report   rules      -       high   PASS
+51  student     When is it due?                          clarify           rules      -       high   PASS
+52  student     And?                                     clarify           rules      -       high   PASS
+53  student     ↳ What about it?                       clarify           rules      -       high   PASS
+54  student     ↳ And the report?                      clarify           rules      -       high   PASS
+55  student     ↳ When is it due?                      clarify           rules      -       high   PASS
+56  student     ↳ Tell me more                         clarify           rules      -       high   PASS
+57  student     ↳ Why?                                 followup.why      rules      -       high   PASS
+58  student     ↳ Why?                                 followup.why      rules      -       high   PASS
+59  student     ↳ Why?                                 followup.why      rules      -       high   PASS
+60  student     ↳ Tell me more                         followup.more     retrieval  4,2,1,5 high   PASS
+61  student     ↳ And the report?                      deadline.report   rules      -       high   PASS
+62  student     What are your limitations?               capabilities      rules      -       high   PASS
+63  student     What can you not do?                     capabilities      rules      -       high   PASS
+64  student     ↳ When is it due?                      clarify           rules      -       high   PASS
+65  student      Hello, when is my logbook due?          deadline.logbook  rules      -       high   PASS
+66  student     ↳ And the logbook?                     weighting.logbook rules      24      high   PASS
+67  student     ↳ Why?                                 followup.why      rules      4,2,1   high   PASS
+68  student     ↳ And the report?                      clarify           rules      -       high   PASS
+69  student     ↳ When is it due?                      clarify           rules      -       high   PASS
+70  student     What is DIVA?                            capabilities      rules      -       high   PASS
+71  student     Who are you?                             capabilities      rules      -       high   PASS
+72  admin       What can DIVA do?                        capabilities      rules      -       high   PASS
+73  student     Tell me about yourself                   capabilities      rules      -       high   PASS
+74  student     How can I get a job?                     none              rules      -       high   PASS
+----------------------------------------------------------------------------------------------------------------
+Tiers: rules=69, retrieval=5
+Intent matched: 74/74
+Tier matched: 74/74
+Identity matched: 74/74
+Content/carried matched: 74/74
+Cases passed: 74/74
+Local model: disabled
+Contexts: student -> user 6 (Mohamed Alie Kamara); supervisor -> user 5 (Joseph Kargbo); mentor -> user 3 (Deborah Moiforay); coordinator -> user 2 (Musa Bayoh); management -> user 4 (Fatmata Conteh); admin -> user 1 (Shadrach Sesay)
