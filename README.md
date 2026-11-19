@@ -45,14 +45,23 @@ logbooks can open or download the 16-page internship log book template.
 Students also have a Career Fair 2026 page that ships the official two-day
 participation report template and records the uploaded report with its
 deadline, late status and mentor review. Every signed-in role can ask DIVA,
-an offline assistant that answers from the account's own records and from the
-internship guidebook and can comment on a report draft without giving a mark.
+an offline assistant that answers from the account's own records, quotes the
+internship guidebook passage first with its page number, and can comment on a
+report draft without giving a mark.
 Students, mentors and coordinators also have placement messaging with quoted
 replies, reactions, unread counts and an edit window.
+Queues and record lists carry GET-based filters — status, week, student,
+organisation, date range, rating, page or review state — with an **Apply
+filters** button and a **Reset** link; a filter never changes a record and a
+filtered view can be bookmarked. A short user guide for all six roles is in
+`docs/Digital_LEAP_User_Guide.md`.
 The layout was checked at 320 px, 360 px, 390 px, 427 px, 768 px, 1024 px,
 1280 px and 1440 px without horizontal page overflow; wide tables stack
 into labelled rows on phones, and dashboard charts label every bar with a
-count and a percentage.
+count and a percentage. That sweep predates the DIVA revision: the screens
+changed since then were re-measured at the 283 px automation viewport
+(`docs/test-log.md`, TC-128), and desktop/tablet capture of those screens is
+still outstanding.
 
 ---
 
@@ -98,7 +107,10 @@ digital-leap/
   public/
     assets/                 CSS and the single JavaScript file
   storage/
-    uploads/                Evidence files and profile photos, outside the document root
+    uploads/                Evidence files and profile photos, denied to direct HTTP
+                            requests by storage/.htaccess (and by router.php on the
+                            built-in server); files are served only through the
+                            permission-checked download and avatar routes
     templates/              internship_log_book.pdf, the official 16-page template
     knowledge/              guidebook.txt, the dated text extract DIVA searches
     logs/                   mail.log, php-error.log, server.log
@@ -156,8 +168,12 @@ The exact table is `app/routes.php`.
 **DIVA** answers in three tiers and always reports which one answered:
 fixed rules over the signed-in user's own records, ranked search over the
 25-page guidebook extract, and an optional local model on `127.0.0.1:11434`
-that is disabled by default and falls back silently after 400 ms. It cannot
-approve work, publish grades or send messages. Questions and answers are saved
+that is disabled by default and falls back silently after 400 ms. A guidebook
+answer opens with the passage itself — “Quoted from the internship guidebook,
+page N:” — before any explanation, and a question that matches nothing in the
+corpus is refused rather than answered from a weak page. DIVA also describes
+itself and its limits when asked what it is. It cannot approve work, publish
+grades or send messages. Questions and answers are saved
 in account-scoped `diva_chat` and `diva_turn` tables. The chat layout offers a
 transparent compact logo, conversation search, New conversation, archive,
 source disclosures and an answer-basis summary. Follow-ups use at most six

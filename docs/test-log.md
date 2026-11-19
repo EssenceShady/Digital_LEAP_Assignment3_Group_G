@@ -213,6 +213,29 @@ These checks apply to the redesigned interface and persistent conversations. The
 
 Browser console inspection found the expected 403/419 negative-test resource errors, not JavaScript exceptions. The final follow-up engine changes were evaluated by CLI; they still need a complete browser conversation pass.
 
+## DIVA self-knowledge, filters, guide and narrow-width review (19 November 2026)
+
+Run on the working Apache deployment against the live demo database. Sign-ins used the one-click demo buttons in the browser (student, mentor, coordinator, administrator and management). The supervisor demo role was **not** retried, because sign-in for that role remains blocked by the browser permission guard from the earlier pass; no alternative route or workaround was attempted. No records were created or deleted by this addendum except the DIVA questions named below, which are saved to the student's own chat history by design.
+
+| ID | Scenario | Observed evidence | Result |
+|---|---|---|---|
+| TC-118 | Ask DIVA what it is | Question “What is DIVA?” in chat 16 answered with its own role, the three answer sources and its limits (it cannot approve work, publish a mark or send messages), and explained that chats are saved per account. Badge named the rules tier; the turn survived a reload | Pass |
+| TC-119 | Ask an off-topic question | “How can I get a job?” returned the insufficient-support refusal and quoted no unrelated guidebook page, where the earlier build attached page 21 to any weak match | Pass |
+| TC-120 | Ask a guidebook question | “What are the objectives of LEAP?” opened with “Quoted from the internship guidebook, page 4:” and the objectives passage, with a second quotation from page 2. The quotation comes before the explanation | Pass |
+| TC-121 | Re-run the expanded DIVA evaluation set | `php bin/diva-eval.php` passed intent, tier, identity and content checks 74/74 each (`rules=69`, `retrieval=5`), local model disabled, output reviewed and copied to `docs/diva-eval-results.txt` | Pass |
+| TC-122 | Mentor student filters | Search “Mohamed” with status `active` returned one placement; a nonexistent name returned no matches; `org_id=999` returned no matches; `q=' OR 1=1 --` returned no matches (prepared statement); all responses HTTP 200 | Pass |
+| TC-123 | Mentor and coordinator site-visit filters | Status `completed` plus search “Mohamed” returned one visit in both roles; the whole list returned 3 (mentor) and 4 (coordinator); a 2099 date range returned none; an invalid date was ignored and the unfiltered list rendered with no error | Pass |
+| TC-124 | Mentor document list filters | The internship-report and Career Fair lists each returned 2 records unfiltered; `q=Mohamed` with `review=reviewed` returned 2; `NoSuchFile` with `review=unreviewed` returned none in both lists. The page states that opening a file is not an assessment | Pass |
+| TC-125 | Coordinator application filters | Seven active students unfiltered; search “Mohamed” with CV `uploaded` returned one; a nonexistent name with CV `missing` returned none | Pass |
+| TC-126 | Administrator audit filters | Action `login.success`, actor 6 and a 17 November date range returned 5 rows, all matching; an impossible action/user combination returned the empty-state row instead of an error | Pass |
+| TC-127 | Administrator feedback filters | All six responses shown unfiltered; rating 5 returned 4 responses, every one displayed as 5/5; rating 1 with an unknown page returned none. The distribution chart above the list is labelled as covering all feedback | Pass |
+| TC-128 | Filter markup at the narrowest available viewport | At 283 CSS px (below the 320 px target) the mentor, coordinator and administrator filter pages reported `documentElement.scrollWidth` 268 against `innerWidth` 283 with no overflowing leaf elements; each filter field measured 175 px and stacked vertically under its label. Student logbook and management KPIs were checked the same way | Partial — one width only; 768 px and 1440 px were not captured |
+| TC-129 | Supervisor queue filters | Not executed: supervisor sign-in is blocked by the standing permission guard and was not retried. The query, status allow-list, week filter and GET form are lint-clean and reviewed but have no browser evidence | Not run |
+| TC-130 | Lint every file changed by the filter and icon work | `php -l` reported no syntax error in the four controllers and ten views changed for filters, the queue filter view and `app/Views/layout.php` (the DIVA sidebar icon) | Pass |
+| TC-131 | Check the user guide against its brief | `docs/Digital_LEAP_User_Guide.md` is 1,371 words in three sections (sign-in and roles, student/supervisor cycle, assessment and oversight), links only the screenshot that exists in `docs/screenshots/`, and marks the missing screenshots instead of inventing them | Pass |
+
+The narrow-width pass used the automation viewport that was actually available (283 px). Desktop and tablet rendering of the new filter bars is supported by the shared `.filter-bar` rules (wrapping flex row with a 160 px field minimum, full-width fields below 560 px), but it was not captured at 768 px or 1440 px in this pass.
+
 ## Defects found and fixed during the run
 
 | ID | Defect | Fix |
@@ -261,6 +284,8 @@ Browser console inspection found the expected 403/419 negative-test resource err
 | Messaging with the mentor and coordinator signed in | Changing the signed-in account would have abandoned the student session used by the other cases | Scope, unread counters and the coordinator’s unread total were verified through the database and the `message.denied` audit path (TC-83, TC-88); the service-level checks in `Messenger` are shared by all three roles |
 | Polling over several intervals | The 8-second poll was exercised as a single request, not left running | `?r=messages/poll` returned the expected JSON for messages after a given id (TC-89); the JavaScript reuses that response shape |
 | Submitting the student self evaluation through the form | The seeded self evaluation for the working student is already `submitted`, so the form renders read-only; resetting it to `draft` would have altered live demo data that is not backed by a re-import during the run | The read-only view was rendered and checked (TC-100); the save method mirrors the tested supervisor evaluation form and shares its validation, transaction and audit path. A fresh import leaves the form editable for placements whose evaluation is still a draft |
+| Supervisor queue filters in the browser | Supervisor sign-in is blocked by the browser permission guard and was not retried (TC-129) | The controller query, status allow-list, week filter and the GET form were reviewed and linted (TC-130); the pattern is the same one exercised in the mentor, coordinator and administrator queues (TC-122 to TC-127) |
+| Responsive capture at 768 px and 1440 px | The available automation viewport is 283 px wide and the wider rendering could not be captured in this pass (TC-128) | The new filter bars use the shared wrapping `.filter-bar` rules already used by the Users screen, with full-width fields below 560 px; the stacked-table behaviour at phone widths was exercised on the live pages |
 
 ## Reproducing the run
 

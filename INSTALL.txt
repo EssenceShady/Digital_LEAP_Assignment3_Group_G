@@ -12,8 +12,10 @@ database/
   digital_leap.sql       Schema (30 tables) and Sierra Leone seed data
 docs/
   VERIFY.md              Marker's walkthrough and security checklist
-  test-log.md            102 executed test cases, evidence and defects
-  diva-eval-results.txt  DIVA expanded evaluation output
+  test-log.md            Historical 102-case baseline plus later addenda,
+                         evidence and defects
+  Digital_LEAP_User_Guide.md   Three-page guide for the six roles
+  diva-eval-results.txt  DIVA expanded evaluation output (74 cases)
 REPORT/
   Digital_LEAP_Assignment3_Report.docx
   Digital_LEAP_Assignment3_Report.pdf
@@ -56,8 +58,10 @@ never ship.
       C:\xampp\mysql\bin\mysql.exe -u root < "C:\path\to\database\digital_leap.sql"
 
    The script creates the database "digital_leap", all 30 tables,
-   constraints, indexes and the seed data. It is safe to re-import;
-   it drops and recreates the tables.
+   constraints, indexes and the seed data. It DROPS and recreates every
+   application table, so it is only safe on a disposable clean
+   installation: never run it over a database that holds real student
+   work, and never use it to upgrade a live system.
 
 4. Create the configuration file:
       copy config\config.sample.php config\config.php
@@ -225,9 +229,12 @@ Account temporarily locked
 
 - config/config.php is excluded from the zip and must be created
   locally. No real credentials are shipped.
-- Uploaded files live in storage/uploads, outside the document root,
-  and are served only through DownloadController after an ownership
-  check.
+- Uploaded files live in storage/uploads inside the application folder but
+  are not reachable over HTTP: storage/.htaccess returns 403 to any direct
+  request under Apache, router.php returns 404 for the same paths on the
+  built-in server, and the files themselves are served only through
+  DownloadController after an ownership check. This is an access-control
+  boundary, not a physical move outside the web root.
 - The default mail mode is "log"; no email leaves the machine.
 - The sign-in and registration forms enforce one password policy: at
   least eight characters with an uppercase letter, a lowercase letter
@@ -239,8 +246,10 @@ Account temporarily locked
   through DownloadController; it can be viewed inline or downloaded.
   The Career Fair 2026 template is served the same way from
   storage/templates/career_fair_2026_report_template.pdf.
-- Profile photos are limited to JPG, PNG or WebP at 8 MB, stored
-  outside the document root and served only through ?r=avatar. The CSP
+- Profile photos are limited to JPG, PNG or WebP at 8 MB, kept in
+  storage/uploads/avatars under the same deny-all rule as the other
+  uploads, and served only through ?r=avatar, which checks that the viewer
+  may already see that person. The CSP
   allows blob: only so the chosen photo can be previewed locally before
   it is saved; no external image source is permitted.
 - DIVA cannot approve work, publish grades or send messages, and answers
