@@ -11,8 +11,8 @@ foreach ($entries as $entry) {
 ?>
 <div class="page-head">
     <div>
-        <h1>Weekly logbook</h1>
-        <p>One entry per week. Submit by <?= e($dueDay ?: 'Friday') ?> so your supervisor has time to review it.</p>
+        <h1>Weekly log book (Form E &mdash; 50%)</h1>
+        <p>One entry per week, recorded day by day as in the paper log book. The log book is 50% of Practical Internship in Form E. Submit by <?= e($dueDay ?: 'Friday') ?> so your supervisor has time to review it.</p>
     </div>
     <div class="page-actions">
         <?php if ($placement !== null && $placement['status'] === 'active'): ?>
@@ -49,7 +49,7 @@ foreach ($entries as $entry) {
         <div class="card">
             <div class="empty">
                 <strong>No logbook entries yet</strong>
-                Start with week 1. Describe the activities you carried out and the hours you worked.
+                Start with week 1. Record each day's tasks and hours, then close the week with a summary.
                 <div class="form-actions"><a class="btn" href="<?= e(url('student/logbook/new')) ?>">Write week 1</a></div>
             </div>
         </div>
@@ -64,7 +64,7 @@ foreach ($entries as $entry) {
                         <tr>
                             <td data-label="Week"><strong>Week <?= (int) $entry['week_no'] ?></strong></td>
                             <td data-label="Dates"><?= e(fmt_date($entry['date_from'])) ?> – <?= e(fmt_date($entry['date_to'])) ?></td>
-                            <td data-label="Hours"><?= e(rtrim(rtrim(number_format((float) $entry['hours'], 1), '0'), '.')) ?></td>
+                            <td data-label="Hours"><?= e(fmt_hours($entry['hours'])) ?></td>
                             <td data-label="Status"><?= status_badge($entry['status']) ?></td>
                             <td data-label="Submitted"><?= e(fmt_date($entry['submitted_at'])) ?></td>
                             <td data-label="Actions" class="right nowrap">

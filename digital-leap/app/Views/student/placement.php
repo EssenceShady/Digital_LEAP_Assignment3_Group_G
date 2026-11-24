@@ -4,11 +4,12 @@
 /** @var array $timeline */
 /** @var array $docs */
 /** @var array|null $report */
+/** @var array|null $attendance */
 ?>
 <div class="page-head">
     <div>
         <h1>My placement</h1>
-        <p>The placement record, its audit trail and every document issued to you.</p>
+        <p>The placement record, its audit trail and every document issued to you. Form A2 (industrial training agreement), Form A3 (placement agreement) and Form B (industrial training notification) are signed on paper; this page records the placement they establish.</p>
     </div>
     <div class="page-actions">
         <?php if ($placement !== null): ?>
@@ -60,6 +61,77 @@
         </section>
     </div>
 
+    <section class="card" id="attendance">
+        <div class="card-head">
+            <div>
+                <h2>Attendance</h2>
+                <p>Check in and out at the site. Location is read only when you press a button, and only students are tracked at their own placement.</p>
+            </div>
+        </div>
+        <?php
+        $today = $attendance['today'] ?? null;
+        $canCheck = (bool) ($attendance['active'] ?? false);
+        $openIn = $today !== null && $today['type'] === 'check_in';
+        ?>
+        <div class="stat-list">
+            <div class="row">
+                <span>Today</span>
+                <strong>
+                    <?php if (!$canCheck): ?>
+                        Attendance opens when the placement is active.
+                    <?php elseif ($today === null): ?>
+                        No check-in recorded yet.
+                    <?php else: ?>
+                        <?= $openIn ? 'Checked in' : 'Checked out' ?> at <?= e($today['time']) ?>
+                        <?php if ($today['distance_m'] !== null): ?>· <?= e(fmt_distance($today['distance_m'])) ?> from site pin<?php endif; ?>
+                        <?php if ($today['source'] === 'attested'): ?>· location not shared<?php endif; ?>
+                    <?php endif; ?>
+                </strong>
+            </div>
+            <div class="row">
+                <span>Site pin</span>
+                <strong><?= ($attendance['org'] ?? null) !== null ? 'Set' : 'Not set by the coordinator' ?></strong>
+            </div>
+        </div>
+        <?php if ($canCheck): ?>
+            <p class="small muted" data-attendance-status role="status" aria-live="polite">Your browser will ask for location permission the first time.</p>
+            <div class="form-actions">
+                <form method="post" action="<?= e(url('student/attendance/check')) ?>" data-attendance-form data-type="check_in">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="type" value="check_in">
+                    <input type="hidden" name="lat" value="">
+                    <input type="hidden" name="lng" value="">
+                    <input type="hidden" name="accuracy" value="">
+                    <button class="btn" type="submit"<?= $openIn ? ' disabled' : '' ?>>Check in</button>
+                </form>
+                <form method="post" action="<?= e(url('student/attendance/check')) ?>" data-attendance-form data-type="check_out">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="type" value="check_out">
+                    <input type="hidden" name="lat" value="">
+                    <input type="hidden" name="lng" value="">
+                    <input type="hidden" name="accuracy" value="">
+                    <button class="btn btn-outline" type="submit"<?= $openIn ? '' : ' disabled' ?>>Check out</button>
+                </form>
+            </div>
+        <?php endif; ?>
+        <?php if (($attendance['recent'] ?? []) !== []): ?>
+            <ul class="timeline">
+                <?php foreach ($attendance['recent'] as $event): ?>
+                    <li>
+                        <div>
+                            <strong><?= $event['type'] === 'check_in' ? 'Check in' : 'Check out' ?></strong>
+                            <span class="small muted"><?= e(fmt_dt($event['at'])) ?></span>
+                        </div>
+                        <div class="when">
+                            <?php if ($event['distance_m'] !== null): ?><?= e(fmt_distance($event['distance_m'])) ?> from pin<?php else: ?>No distance<?php endif; ?>
+                            · <?= $event['source'] === 'device' ? 'device location' : 'attested' ?>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </section>
+
     <div class="grid grid-2">
         <section class="card">
             <div class="card-head"><div><h2>Status timeline</h2><p>Rebuilt from the append-only audit log.</p></div></div>
@@ -69,7 +141,7 @@
                 <ul class="timeline">
                     <?php foreach ($timeline as $event): ?>
                         <li>
-                            <div><strong><?= e(str_replace(['placement.', '_'], ['', ' '], (string) $event['action'])) ?></strong></div>
+                            <div><strong><?= e(humanise_action((string) $event['action'])) ?></strong></div>
                             <div class="when"><?= e(fmt_dt($event['created_at'])) ?></div>
                         </li>
                     <?php endforeach; ?>
@@ -82,22 +154,21 @@
             <?php if ($docs === []): ?>
                 <div class="empty"><strong>No documents yet</strong>The placement letter is generated from this record and is always available above.</div>
             <?php else: ?>
-                <div class="table-wrap">
-                    <table class="table table--stack">
-                        <thead><tr><th>File</th><th>Type</th><th>Uploaded</th><th>Review</th><th></th></tr></thead>
-                        <tbody>
-                        <?php foreach ($docs as $doc): ?>
-                            <tr>
-                                <td data-label="File"><?= e($doc['original_name']) ?></td>
-                                <td data-label="Type"><?= e(ucwords(str_replace('_', ' ', (string) $doc['doc_type']))) ?></td>
-                                <td data-label="Uploaded"><?= e(fmt_date($doc['uploaded_at'])) ?></td>
-                                <td data-label="Review" class="small"><?= review_label($doc['reviewed_at'] ?? null, $doc['reviewer_first'] ?? null, $doc['reviewer_last'] ?? null) ?></td>
-                                <td class="right"><a class="btn btn-sm btn-quiet" href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>">Download</a></td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
+                <ul class="doc-list">
+                    <?php foreach ($docs as $doc): ?>
+                        <li class="doc-row">
+                            <div class="doc-main">
+                                <a class="doc-name" href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>"><?= e($doc['original_name']) ?></a>
+                                <p class="doc-meta">
+                                    <span><?= e(ucwords(str_replace('_', ' ', (string) $doc['doc_type']))) ?></span>
+                                    <span>Uploaded <?= e(fmt_date($doc['uploaded_at'])) ?></span>
+                                    <span><?= review_label($doc['reviewed_at'] ?? null, $doc['reviewer_first'] ?? null, $doc['reviewer_last'] ?? null) ?></span>
+                                </p>
+                            </div>
+                            <a class="btn btn-sm btn-quiet doc-action" href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>">Download</a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
             <?php endif; ?>
         </section>
     </div>

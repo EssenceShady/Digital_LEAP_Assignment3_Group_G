@@ -1,0 +1,35 @@
+# Local configuration. The application copies config.sample.php on first run.
+# config.php is ignored so a fresh clone never picks up a developer's database
+# password. If it is already tracked in an older commit, the repository owner
+# should remove it once with `git rm --cached digital-leap/config/config.php`.
+digital-leap/config/config.php
+
+# Runtime output. The folders themselves ship with .htaccess guards.
+digital-leap/storage/logs/*.log
+!digital-leap/storage/logs/.gitkeep
+digital-leap/storage/cache/
+digital-leap/storage/tmp/
+digital-leap/storage/backups/
+
+# Build and editorial scratch
+.tmp-*/
+*.bak
+*.orig
+*.rej
+node_modules/
+vendor/
+
+# Deployment secrets, if an operator adds a compose override or a .env file
+deploy/.env
+
+# Editor and operating-system noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Test output produced on a developer machine
+coverage/
+*.log

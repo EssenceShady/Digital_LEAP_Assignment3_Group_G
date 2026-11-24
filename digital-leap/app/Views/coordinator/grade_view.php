@@ -12,7 +12,7 @@ $published = $mark !== null && $mark['status'] === 'published';
 ?>
 <div class="page-head">
     <div>
-        <h1>Grade sheet</h1>
+        <h1>Grade sheet (Form E)</h1>
         <p><?= e($placement['first_name'] . ' ' . $placement['last_name']) ?> · <?= e($placement['reg_no']) ?> · <?= e($placement['org_name']) ?></p>
     </div>
     <div class="page-actions">

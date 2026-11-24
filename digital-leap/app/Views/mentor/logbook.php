@@ -3,8 +3,8 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Logbook review</h1>
-        <p>Read and comment on any week belonging to your assigned students. Commenting on an approved week marks it mentor-reviewed.</p>
+        <h1>Logbook review (Form E &mdash; 50%)</h1>
+        <p>Read and comment on any week of the Form E log book belonging to your assigned students. Commenting on an approved week marks it mentor-reviewed.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-outline" href="<?= e(url('logbook/template')) ?>" target="_blank" rel="noopener">Log book template</a>

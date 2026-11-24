@@ -64,15 +64,34 @@ final class DivaController
         }
 
         $from = $this->fromRoute((string) \post('from', ''));
+        $outcome = $this->answerAndStore($question, $chatId, $from);
+        if (!$outcome['ok']) {
+            if (($outcome['code'] ?? 400) === 403) {
+                http_response_code(403);
+                View::error(403);
+                return;
+            }
+            \flash('error', $outcome['message']);
+            \redirect('diva', $chatId > 0 ? ['c' => $chatId] : []);
+        }
+
+        \redirect('diva', ['c' => $outcome['chat_id']]);
+    }
+
+    /**
+     * One answer path for the form post and the offline shell's API. Returns
+     * the contract, the stored turn and the conversation it belongs to.
+     *
+     * @return array{ok:true,chat_id:int,turn_id:int,result:array,contract:array}|array{ok:false,code:int,message:string}
+     */
+    public function answerAndStore(string $question, int $chatId, string $from): array
+    {
         $chat = $chatId > 0 ? $this->ownedChat($chatId) : null;
         if ($chatId !== 0 && $chat === null) {
-            http_response_code(403);
-            View::error(403);
-            return;
+            return ['ok' => false, 'code' => 403, 'message' => 'That conversation belongs to another account or was archived.'];
         }
         if (mb_strlen($question) > 500) {
-            \flash('error', 'Keep your question within 500 characters.');
-            \redirect('diva', $chatId > 0 ? ['c' => $chatId] : []);
+            return ['ok' => false, 'code' => 422, 'message' => 'Keep your question within 500 characters.'];
         }
 
         $history = [];
@@ -86,8 +105,9 @@ final class DivaController
 
         $result = $this->answer($question, $from, $history);
         $now = date('Y-m-d H:i:s');
+        $turnId = 0;
 
-        $chatId = Database::tx(function () use ($chat, $result, $from, $now): int {
+        $chatId = Database::tx(function () use ($chat, $result, $from, $now, &$turnId): int {
             if ($chat === null) {
                 $id = Database::insert('diva_chat', [
                     'user_id' => (int) Auth::id(),
@@ -108,7 +128,7 @@ final class DivaController
                 }
             }
 
-            Database::insert('diva_turn', [
+            $turnId = Database::insert('diva_turn', [
                 'chat_id' => $id,
                 'question' => $result['question'],
                 'answer' => $result['answer'],
@@ -123,6 +143,9 @@ final class DivaController
                     'keywords' => $result['keywords'],
                     'resolved' => $result['resolved'],
                     'carried' => $result['carried'],
+                    'slots' => $result['slots'] ?? null,
+                    'evidence' => $result['evidence'] ?? [],
+                    'next_action' => $result['next_action'] ?? null,
                     'context' => $result['context'] !== null
                         ? ['route' => $result['context']['route'], 'title' => $result['context']['title']]
                         : null,
@@ -135,10 +158,24 @@ final class DivaController
         });
 
         if ($chatId === 0) {
-            \flash('error', 'This conversation was archived. Start a new conversation to continue.');
-            \redirect('diva');
+            return ['ok' => false, 'code' => 409, 'message' => 'This conversation was archived. Start a new conversation to continue.'];
         }
-        \redirect('diva', ['c' => $chatId]);
+
+        return [
+            'ok' => true,
+            'chat_id' => $chatId,
+            'turn_id' => $turnId,
+            'result' => $result,
+            'contract' => [
+                'mode' => 'online',
+                'intent' => (string) $result['intent'],
+                'slots' => $result['slots'],
+                'evidence' => $result['evidence'],
+                'confidence' => (string) $result['confidence'],
+                'answer' => (string) $result['answer'],
+                'next_action' => $result['next_action'],
+            ],
+        ];
     }
 
     public function archive(): void
@@ -304,6 +341,9 @@ final class DivaController
             'resolved' => (string) ($meta['resolved'] ?? $row['question']),
             'carried' => isset($meta['carried']) ? (string) $meta['carried'] : null,
             'context' => is_array($meta['context'] ?? null) ? $meta['context'] : null,
+            'slots' => is_array($meta['slots'] ?? null) ? $meta['slots'] : null,
+            'evidence' => is_array($meta['evidence'] ?? null) ? $meta['evidence'] : [],
+            'next_action' => is_array($meta['next_action'] ?? null) ? $meta['next_action'] : null,
         ];
     }
 

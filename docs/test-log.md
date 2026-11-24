@@ -4,7 +4,7 @@
 **Group:** BSEM 2102, Semester 5, Year 3 — Group G
 **Build date:** 16 November 2026
 **Environment:** Windows 11, PHP 8.0.30 (XAMPP), MariaDB 10.4.32, Apache, headless Chrome at 427×952, 390×844, 360×800 and 320×700 (phone), plus 768×1024, 1024×768, 1280×800 and 1440×900 (tablet/desktop); the fifth pass also ran in the in-app Chromium at 279×505
-**Database snapshot:** the earlier baseline had 28 tables; the current schema has 30 after adding `diva_chat` and `diva_turn`. The two new tables were applied additively to the live database; existing records were not re-imported or deleted.
+**Database snapshot:** the earlier baseline had 28 tables. The schema now has 33: `diva_chat` and `diva_turn` for assistant history, `sync_op` for offline writes and `user_preference` for per-member settings were added on top of it. Every one of those was applied additively to the live database; existing records were not re-imported or deleted.
 **Accounts used:** `sesayshadrachsaidu@gmail.com` (administrator), `bayohmusa001@gmail.com` (coordinator), `fatmatabfc@gmail.com` (management), `deborahjulietmoiforay@gmail.com` (mentor), `supervisor@brightfuture.sl`, `mohamedalie247@gmail.com` (student), plus the seeded secondary accounts. Passwords are listed in `INSTALL.txt` inside the submission zip.
 
 The historical cases were recorded on 13, 14, 15 and 16 November 2026. Evidence is the observed HTTP status, on-screen message, database query result, or response header. New verification is listed separately below, including checks that could not run. The schema import drops existing tables: only import it into a disposable clean test database, never over live user records.
@@ -236,6 +236,33 @@ Run on the working Apache deployment against the live demo database. Sign-ins us
 
 The narrow-width pass used the automation viewport that was actually available (283 px). Desktop and tablet rendering of the new filter bars is supported by the shared `.filter-bar` rules (wrapping flex row with a 160 px field minimum, full-width fields below 560 px), but it was not captured at 768 px or 1440 px in this pass.
 
+## Form D labelling and daily logbook records (19 November 2026)
+
+The supervisor evaluation now names itself Form D wherever a user meets it, and the logbook follows the paper log book's structure: one row per day with date, tasks and hours, followed by the weekly summary and the technical skills, challenges, meeting and reflection sections. The schema change is additive: a new `logbook_day` table plus four nullable text columns on `logbook_entry`, applied to `database/digital_leap.sql` and to the live database through a migration file. The seed carries 54 day rows across weeks 1–11 whose per-week hour totals reproduce every existing `logbook_entry.hours` value.
+
+| ID | Scenario | Observed evidence | Result |
+|---|---|---|---|
+| TC-132 | Form D naming | `app/helpers.php` menu label, the page `<h1>` and lead paragraph, the supervisor dashboard button and the DIVA guide titles all name Form D; the mentor screen is labelled **Mentor evaluation** to separate it from Form D | Pass |
+| TC-133 | Schema and seed integrity | Live `logbook_entry` has `technical_skills`, `challenges`, `meeting_notes`, `reflection`; `logbook_day` exists with `uq_day_once (entry_id, work_date)` and the hours check; 54 rows match the weekly totals 37.5, 40, 38, 40, 39, 40, 38.5, 40, 32, 39.5 and 40 | Pass |
+| TC-134 | Daily form renders inside the placement | Signed in as Mohamed Alie Kamara, `student/logbook/new&week=12` listed Mon 16 to Fri 20 November 2026 only, because the placement ends on 20 November; the earlier seven-row version marked the Saturday and Sunday inputs invalid and would have blocked submission | Pass — five rows, no invalid controls |
+| TC-135 | Save a draft from the daily grid | Two day rows with 8 hours each and a reflection were saved; `logbook_entry` stored `hours` 16.0, `date_from` 16 November, `date_to` 17 November and the reflection, and `logbook_day` held the two rows with their tasks and hours | Pass |
+| TC-136 | Read the saved week | The student entry page rendered the daily table (Mon/Tue, tasks, 8 and 8), a week total of 16, the summary, the Reflection card, attachments and the discussion; the mentor entry page for the same record rendered the same table, summary and sections | Pass |
+| TC-137 | Lint the changed files | `php -l` reported no syntax error in the three controllers, `app/helpers.php`, the entry form, the shared logbook body and the three entry views | Pass |
+
+The two day rows written in TC-135 remain on week 12 of the working database; the automated destructive-action guard refused the statement that would have restored the seed's empty draft, so the live demo now shows week 12 as a partly filled draft (16 hours) while a fresh import shows it empty. Re-importing `database/digital_leap.sql` restores the seeded state.
+
+## Weekday sync, text wrapping and form naming (19 November 2026)
+
+The Day column now follows the date the student enters, long values wrap inside their cards and table cells, and every screen that represents a guidebook form names that form. The wrap rules are shared (`overflow-wrap: break-word` on `body`, `min-width: 0` plus `overflow-wrap: anywhere` on `.stat-list .row strong`, `overflow-wrap: anywhere` on `.table td`). Superseded on 20 November: that `anywhere` on `.table td` and `.stat-list .row strong` is exactly what let a five-column table shave words down to one character per line — see TC-191.
+
+| ID | Scenario | Observed evidence | Result |
+|---|---|---|---|
+| TC-138 | Day label follows an edited date | On `student/logbook/new&week=12` the first row read **Mon** with 2026-11-16; changing the date input to 2026-11-13 changed the Day cell to **Fri** without a reload. The handler in `public/assets/js/app.js` listens for both `change` and `input` | Pass |
+| TC-139 | Long values wrap in the placement card | At a 279 px viewport, `student/placement` reported no element wider than its container (`main` overflow check returned zero rows); the mentor email `deborahjulietmoiforay@gmail.com` wrapped inside the Supervision card, and the page had no horizontal scroll (document 264 px against a 279 px viewport) | Pass |
+| TC-140 | Overflow sweep across screens | Dashboard, logbook list, messages, results, report, coordinator grade sheet and grade view, mentor log book review and report assessment, admin audit log and settings showed no element wider than its box; the only flagged nodes were `.sr-only` labels and a text input whose value scrolls inside the control. The daily-record table keeps a 620 px minimum inside `.table-wrap` and scrolls inside that wrapper below 760 px | Pass |
+| TC-141 | Every guidebook form is named | Sidebar and headings now read A2/A3/B (student placement and coordinator placements), C (student report, mentor report assessment), D with D1/D2 weeks (supervisor evaluation, queue and dashboard), E (logbook, self evaluation, results, grade sheets, settings weights). Checked in the student, coordinator and mentor sessions | Pass — supervisor pages linted but not opened, because that sign-in stays blocked (TC-129) |
+| TC-142 | Lint the changed files | `php -l` reported no syntax error in `app/helpers.php`, `DashboardController`, the two dashboards, the log book queue/review views, the entry form and the entry views; `node --check` passed on `public/assets/js/app.js` | Pass |
+
 ## Defects found and fixed during the run
 
 | ID | Defect | Fix |
@@ -294,3 +321,371 @@ The narrow-width pass used the automation viewport that was actually available (
 3. Start Apache/XAMPP, or run `php -S 127.0.0.1:8081 router.php` from the `digital-leap` folder.
 4. Sign in with the demo accounts in `INSTALL.txt` and follow the role walkthrough in `docs/VERIFY.md`.
 5. For the mobile check, open the browser device toolbar at 427×952, 390×844, 360×800 and 320×700; no page should scroll sideways and the menu button replaces the sidebar.
+
+---
+
+# Whole-system upgrade — 20 November 2026
+
+Run-to-completion build: design system, installable offline shell, offline logbook drafts with sync, the DIVA brain, and a GitHub-ready repository. Every case added below states what was actually executed.
+
+## Phase 0 — route and view inventory (read-only)
+
+The router is a flat method-plus-route table in `digital-leap/app/routes.php` (91 entries when this inventory was taken; 122 after the later API, PWA and DIVA routes were added) guarded by `Leap\Core\Guard::requirePermission()`, which resolves the permission from `role_permissions` in the seeded matrix (roles 1 admin, 2 coordinator, 3 mentor, 4 supervisor, 5 student, 6 management). Every view was opened and its primary heading recorded. There are 55 page views plus the shared partials (`layout`, `logbook_body`, `comment_stream`, `notifications`, `tracker`) and three printable views (`pdf/letter`, `pdf/grade_sheet`, `management/print_report`).
+
+Role keys used below: **Ad** administrator, **Co** coordinator, **Me** academic mentor, **Su** host supervisor, **St** student, **Mg** management/AQA. "Cached read" means the page is written to the per-user offline store only after that user opens it, and is read-only while offline. "Online only" means the screen cannot be used without the server.
+
+| Route (`?r=`) | View | Permission | Roles | Offline behaviour |
+|---|---|---|---|---|
+| (none) | `auth/landing` | public | guest | Online only; offline fallback page |
+| `login`, `register`, `forgot`, `reset`, `token/supervisor` | `auth/*` | public | guest | Online only |
+| `logout` (POST) | — | auth | all | Online only |
+| `dashboard` | `dashboard/*` (six) | dashboard.view | Ad Co Me Su St Mg | Cached read; shell opens offline |
+| `profile` (GET/POST) | `profile` | profile.view / .edit | all | Cached read; edits online only |
+| `profile/cv`, `profile/avatar`, `profile/avatar/remove` | — | profile.edit | all | Online only |
+| `avatar` | image | profile.view | all | Cached on view |
+| `feedback` (POST) | — | auth | all | Online only |
+| `notifications`, `notifications/read`, `notifications/read-all` | `shared/notifications` | notification.view | all | Cached read; marking read online only |
+| `download` | file stream | auth | all | Cached on open |
+| `logbook/template`, `career-fair/template` | PDF stream | auth | all | Cached on open |
+| `diva`, `diva/source`, `diva/report-check` (GET) | `diva/index`, `diva/source`, `diva/report_check` | diva.use | all six | Cached read; JS engine answers offline |
+| `diva/ask`, `diva/archive`, `diva/report-check` (POST) | — | diva.use | all six | Online only (offline answers are composed on device) |
+| `messages`, `messages/thread`, `messages/poll` | `messages/*` | message.use | St Me Co | Cached read; sending online only |
+| `messages/start`, `send`, `edit`, `delete`, `react` | — | message.use | St Me Co | Online only |
+| `student/apply`, `student/preferences` | `student/apply`, `student/preferences` | preference.view | St | Cached read; changes online only |
+| `student/preferences/add`, `remove`, `move`, `submit` | — | preference.submit | St | Online only |
+| `student/placement` | `student/placement` | placement.view.own | St | Cached read |
+| `student/logbook` | `student/logbook` | logbook.view.own | St | Cached read |
+| `student/logbook/new`, `student/logbook/view` | `student/entry_form`, `student/entry_view` | logbook.submit / view.own | St | Cached read; form editable offline as draft |
+| `student/logbook/save` | — | logbook.submit | St | Offline draft via outbox; submit online only |
+| `student/logbook/submit` | — | logbook.submit | St | Online only |
+| `student/logbook/comment` | — | logbook.comment | St Me Co Su | Online only |
+| `student/logbook/attach` | — | logbook.submit | St | Online only |
+| `student/report`, `student/report/upload` | `student/report` | report.submit | St | Cached read; upload online only |
+| `student/career-fair`, `.../upload` | `student/career_fair` | report.submit | St | Cached read; upload online only |
+| `student/self-evaluation`, `.../save` | `student/self_evaluation` | evaluation.submit.self | St | Cached read; save online only |
+| `student/results` | `student/results` | mark.view.own | St | Cached read |
+| `student/letter` | `pdf/letter` | placement.view.own | St | Cached on open |
+| `supervisor/queue` | `supervisor/queue` | logbook.review | Su | Cached read |
+| `supervisor/entry` | `supervisor/entry` | logbook.review | Su | Cached read |
+| `supervisor/entry/approve`, `.../return`, `.../comment` | — | logbook.review / comment | Su | Online only |
+| `supervisor/evaluation`, `.../save` | `supervisor/evaluation` | evaluation.submit.supervisor | Su | Cached read; save online only |
+| `mentor/students` | `mentor/students` | placement.view.own | Me | Cached read |
+| `mentor/logbook`, `mentor/entry` | `mentor/logbook`, `mentor/entry` | logbook.review | Me | Cached read |
+| `mentor/entry/comment` | — | logbook.comment | Me | Online only |
+| `mentor/visits`, `mentor/visits/form` | `mentor/visits`, `mentor/visit_form` | visit.view / .manage | Me | Cached read |
+| `mentor/visits/save`, `.../complete` | — | visit.manage | Me | Online only |
+| `mentor/evaluation`, `.../save` | `mentor/evaluation` | evaluation.submit.mentor | Me | Cached read; save online only |
+| `mentor/reports`, `.../assess` | `mentor/reports` | report.assess | Me Co | Cached read; assess online only |
+| `coordinator/organisations`, `.../form` | `coordinator/organisations`, `org_form` | org.view / .manage | Co | Cached read |
+| `coordinator/organisations/save` | — | org.manage | Co | Online only |
+| `coordinator/applications`, `.../view` | `coordinator/applications`, `application_view` | placement.view.all | Co | Cached read |
+| `coordinator/placements`, `.../view` | `coordinator/placements`, `placement_view` | placement.view.all | Co | Cached read |
+| `coordinator/placements/allocate`, `.../save`, `.../status`, `.../type`, `.../approve` | `coordinator/allocate_form` | placement.allocate / .approve | Co | Online only |
+| `coordinator/visits` | `coordinator/visits` | visit.view | Co Me | Cached read |
+| `coordinator/grades`, `.../view` | `coordinator/grades`, `grade_view` | mark.compute | Co | Cached read |
+| `coordinator/grades/compute`, `.../career-fair`, `.../moderate`, `.../publish` | — | mark.compute / .moderate / .publish | Co | Online only |
+| `coordinator/grades/print` | `pdf/grade_sheet` | mark.compute | Co | Cached on open |
+| `coordinator/letter` | `pdf/letter` | placement.view.all | Co | Cached on open |
+| `management/kpis` | `management/kpis` | kpi.view | Mg | Cached read |
+| `management/export` | CSV stream | export.data | Mg Co | Online only |
+| `management/print` | `management/print_report` | kpi.view | Mg | Cached on open |
+| `admin/users`, `.../form` | `admin/users`, `user_form` | user.manage | Ad | Cached read (if offline caching allows) |
+| `admin/users/save`, `.../toggle`, `.../unlock`, `.../reset` | — | user.manage | Ad | Online only |
+| `admin/roles` | `admin/roles` | role.view | Ad | Cached read |
+| `admin/settings`, `.../save` | `admin/settings` | setting.manage | Ad | Cached read; save online only |
+| `admin/audit`, `.../view` | `admin/audit`, `audit_view` | audit.view | Ad | Cached read |
+| `admin/feedback` | `admin/feedback` | audit.view | Ad | Cached read |
+| `admin/mail`, `.../resend`, `.../process` | `admin/mail` | mail.manage | Ad | Cached read; actions online only |
+
+Empty states exist in every list view (`queue`, `audit`, `feedback`, `mail`, `visits`, `applications`, `placements`, `organisations`, `reports`, `messages`, `notifications`, `users`); error pages are `View::error(403/404/419/500)` rendered through the shared error view.
+
+Decisions recorded from this inventory: (1) staff screens cache exactly like student screens but obey the administrator's offline-caching setting; (2) every POST that notifies, approves, returns, publishes, messages or evaluates is online only; (3) the three printable documents and both PDF templates are cached only after first open.
+
+## Workstream A — design system verification
+
+| Case | What was executed | Result |
+|---|---|---|
+| TC-135 | Read `public/assets/css/app.css` end to end: one `@layer` statement at line 18 declares the seven layers in order (`tokens, primitives, components, layout, sections, responsive, print`); every rule sits inside one of them; no duplicate selector is declared in two layers | Pass |
+| TC-136 | Grepped every `@media` query. Remaining breakpoints are 1200, 992, 768, 560, 400 (one documented narrow-phone refinement) plus `pointer: coarse`, `prefers-reduced-motion` and `print` | Pass — superseded 1180/1020/900/480/450/350 rules removed |
+| TC-137 | Checked the spacing scale: eight 4 px-based steps (`--space-1` … `--space-8`) and zero raw `margin: 13px`-style values added in this pass | Pass |
+| TC-138 | Checked the type ramp: five fluid steps `--step--1` … `--step-3` built on `clamp()`, `.lead` used for every page intro, `font-variant-numeric: tabular-nums` on KPI values, tables and money | Pass |
+| TC-139 | Checked surfaces: `--surface-page` ivory, `--surface-card` white, `--surface-inset` tint; every list, form and detail screen has one deliberate lead element (page header with eyebrow, title and action) | Pass |
+| TC-140 | Checked tables: no `min-width` on any table, `.table--dense` and `.table--comfortable` modes, stacked rows on narrow widths repeat the column name through `data-label` | Pass |
+| TC-141 | Checked accessibility rules in the file: `:focus-visible` ring on every interactive selector, 4.5:1 text pairs, 44 px coarse-pointer targets, reduced-motion block, status chips carry text as well as colour, every input has a visible `label` | Pass |
+| TC-142 | Confirmed printable views render as documents: `@page { size: A4; margin: 14mm }`, letterhead, signature block, footer; screen chrome (top bar, sidebar, net pill, sync strip, install prompt) hidden in print | Pass |
+| TC-143 | Found and fixed: the A4 sheets (`coordinator/grades/print`, `management/print`) were fixed at 210 mm / 297 mm, so they scrolled the whole page at 360 px (439 px) and 768 px (31 px). Added a `@media screen and (max-width: 992px)` rule making the sheet `calc(100vw - 24px)` wide with its own `overflow-x` container; printing is unaffected | Pass after fix |
+| TC-144 | Ran the four-width route sweep (below) with the service worker blocked so measurements read server HTML | Pass — 0 overflow, 0 navigation failures across 62 routes × 4 widths |
+
+### Route sweep — horizontal page scroll at 360 / 768 / 1024 / 1440 px
+
+Every figure is `document.documentElement.scrollWidth − clientWidth` after the page settled. `0` means no page-level horizontal scroll. Tool: `sweep2.mjs` driving headless Chrome over CDP at 127.0.0.1:8081; each role signed in with its demo account in a fresh cookie jar, service worker blocked so the HTML is live.
+
+| Role | Route | 360 | 768 | 1024 | 1440 |
+|---|---|---|---|---|---|
+| student | `dashboard` | 0 | 0 | 0 | 0 |
+| student | `profile` | 0 | 0 | 0 | 0 |
+| student | `notifications` | 0 | 0 | 0 | 0 |
+| student | `student/apply` | 0 | 0 | 0 | 0 |
+| student | `student/placement` | 0 | 0 | 0 | 0 |
+| student | `student/preferences` | 0 | 0 | 0 | 0 |
+| student | `student/logbook` | 0 | 0 | 0 | 0 |
+| student | `student/logbook/new` | 0 | 0 | 0 | 0 |
+| student | `student/report` | 0 | 0 | 0 | 0 |
+| student | `student/career-fair` | 0 | 0 | 0 | 0 |
+| student | `student/self-evaluation` | 0 | 0 | 0 | 0 |
+| student | `student/results` | 0 | 0 | 0 | 0 |
+| student | `diva` | 0 | 0 | 0 | 0 |
+| student | `diva/report-check` | 0 | 0 | 0 | 0 |
+| student | `messages` | 0 | 0 | 0 | 0 |
+| supervisor | `dashboard` | 0 | 0 | 0 | 0 |
+| supervisor | `profile` | 0 | 0 | 0 | 0 |
+| supervisor | `supervisor/queue` | 0 | 0 | 0 | 0 |
+| supervisor | `supervisor/evaluation` | 0 | 0 | 0 | 0 |
+| supervisor | `diva` | 0 | 0 | 0 | 0 |
+| supervisor | `messages` | 0 | 0 | 0 | 0 |
+| supervisor | `notifications` | 0 | 0 | 0 | 0 |
+| mentor | `dashboard` | 0 | 0 | 0 | 0 |
+| mentor | `profile` | 0 | 0 | 0 | 0 |
+| mentor | `mentor/students` | 0 | 0 | 0 | 0 |
+| mentor | `mentor/logbook` | 0 | 0 | 0 | 0 |
+| mentor | `mentor/visits` | 0 | 0 | 0 | 0 |
+| mentor | `mentor/visits/form` | 0 | 0 | 0 | 0 |
+| mentor | `mentor/evaluation` | 0 | 0 | 0 | 0 |
+| mentor | `mentor/reports` | 0 | 0 | 0 | 0 |
+| mentor | `diva` | 0 | 0 | 0 | 0 |
+| mentor | `messages` | 0 | 0 | 0 | 0 |
+| mentor | `notifications` | 0 | 0 | 0 | 0 |
+| coordinator | `dashboard` | 0 | 0 | 0 | 0 |
+| coordinator | `profile` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/applications` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/placements` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/placements/allocate` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/organisations` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/visits` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/grades` | 0 | 0 | 0 | 0 |
+| coordinator | `coordinator/grades/print` | 0 | 0 | 0 | 0 |
+| coordinator | `diva` | 0 | 0 | 0 | 0 |
+| coordinator | `messages` | 0 | 0 | 0 | 0 |
+| coordinator | `notifications` | 0 | 0 | 0 | 0 |
+| admin | `dashboard` | 0 | 0 | 0 | 0 |
+| admin | `profile` | 0 | 0 | 0 | 0 |
+| admin | `admin/users` | 0 | 0 | 0 | 0 |
+| admin | `admin/users/form` | 0 | 0 | 0 | 0 |
+| admin | `admin/roles` | 0 | 0 | 0 | 0 |
+| admin | `admin/settings` | 0 | 0 | 0 | 0 |
+| admin | `admin/audit` | 0 | 0 | 0 | 0 |
+| admin | `admin/feedback` | 0 | 0 | 0 | 0 |
+| admin | `admin/mail` | 0 | 0 | 0 | 0 |
+| admin | `diva` | 0 | 0 | 0 | 0 |
+| admin | `notifications` | 0 | 0 | 0 | 0 |
+| management | `dashboard` | 0 | 0 | 0 | 0 |
+| management | `profile` | 0 | 0 | 0 | 0 |
+| management | `management/kpis` | 0 | 0 | 0 | 0 |
+| management | `management/print` | 0 | 0 | 0 | 0 |
+| management | `diva` | 0 | 0 | 0 | 0 |
+| management | `notifications` | 0 | 0 | 0 | 0 |
+
+248 measurements across 62 routes. The detector ignores elements that sit off-screen by design (the skip link at `left: -999px`, the closed drawer) and elements inside a scroll container (`.table-wrap`, `.table--scroll`, `.logbook-day-table`, the print sheet below 992 px), because those scroll inside their own box rather than moving the page.
+
+Screens at 360 px additionally have visually-verified screenshots in `docs/screenshots/` for the log book, apply form, DIVA and the grade sheet.
+
+## Workstream B — installable offline shell
+
+Two probes, both driving headless Chrome over CDP with a fresh profile per run. `pwa-test.mjs` runs against the normal dev server and covers install, caching, the indicator and sign-out. `pwa-offline-test.mjs` starts its own PHP server on port 8082, kills it mid-run so the network path is genuinely dead, then restarts it; that is the only way to test offline honestly, because Chrome's network emulation does not block requests that the service worker itself makes.
+
+| Case | What was executed | Result |
+|---|---|---|
+| TC-145 | `link[rel=manifest]` fetched and parsed: `application/manifest+json`, `short_name` "Digital LEAP", 3 icons, scope `../` | Pass |
+| TC-146 | `navigator.serviceWorker.ready` resolves: scope `http://127.0.0.1:8081/`, active state `activated`, `isSecureContext` true. Registration happens in `app.js` only and is skipped when the context is insecure | Pass |
+| TC-147 | After sign-in and two page visits, the page is worker-controlled with `leap-shell-v1` holding 9 entries and `leap-runtime-v1` holding the visited pages | Pass |
+| TC-148 | PHP server killed; an unvisited route (`student/results`) opens the offline document: title "Offline · Digital LEAP", heading "You are offline, and this page has not been opened on this device yet." Screenshot `docs/screenshots/pwa/offline-fallback-real-420.png` | Pass |
+| TC-149 | PHP server still dead; a visited route (`student/logbook`) replays from the runtime cache with its real title and heading, and the top-bar pill reads "Offline". Screenshot `docs/screenshots/pwa/offline-cached-real-420.png` | Pass |
+| TC-150 | With the server dead, `app.css` is answered from the shell cache: 121 539 bytes, `text/css` | Pass |
+| TC-151 | Server restarted: dashboard loads live, pill returns to "Online", the page remains worker-controlled | Pass |
+| TC-152 | Signing out deletes `leap-runtime-v1`. What remains is only the sign-in page, `offline.js`, the manifest and one landing image, all re-cached by the unauthenticated load; no student page survives | Pass |
+| TC-153 | Bug found and fixed: the offline document's `assets/css/offline.css` resolved against the failing route (`/assets/…`), which was never cached, so the fallback rendered unstyled. `offline.css` is now in the shell precache and the worker answers any `*/assets/css/offline.css` request from it; the "Go to dashboard" link is now relative to the app root | Pass after fix |
+| TC-154 | Bug found and fixed: the indicator read `navigator.onLine` only, so it claimed "Online" while the server was down. It now also probes the current URL with a `HEAD` request (6 s timeout) on load, on `online`, and when the tab becomes visible, and paints offline when either check fails | Pass after fix |
+| TC-155 | Emulated offline (`Network.emulateNetworkConditions`): pill switches to "Offline" and back to "Online" on restore; recorded as a UI check only, since emulation does not stop worker fetches | Informational |
+
+One operational note: the login POST returned HTTP 500 during this run because the local MariaDB service had stopped, not because of application code. Starting `mysqld` restored sign-in with no code change; the failure and recovery are recorded here so the log matches what was seen.
+
+## Workstream C — offline drafts and sync
+
+One end-to-end probe, `sync-test.mjs`. It starts its own PHP server on 8084, signs in as the seeded student, works on the week 12 draft, kills the server so the network is genuinely unavailable, queues changes, restarts the server, and checks both the browser and the database afterwards. Every write in the test went through the application: the form itself or `api/sync`. The demo entry was restored to its seeded text at the end through `api/sync`.
+
+| Case | What was executed | Result |
+|---|---|---|
+| TC-156 | Typed into `activities` and dispatched `input`; after the 600 ms debounce, IndexedDB draft `logbook.12` held the new text and all five day rows | Pass |
+| TC-157 | Reloaded the form with the server up: "Unsaved draft found … Restore it, or keep what the page shows" bar appeared with **Restore draft** and **Discard**; Restore put the typed text back into the textarea | Pass |
+| TC-158 | Bug found and fixed: `initLogbookDraft` looked for `form[action*="logbook/save"]`, but `url()` encodes the route (`student%2Flogbook%2Fsave`), so the selector never matched and no draft or queue ever initialised in the real app. The view now marks the form with `data-draft-form` and the script matches that | Pass after fix |
+| TC-159 | Server killed while `navigator.onLine` stayed true. The cached form opened, the reachability probe set `LeapServerReachable` false, and pressing **Save draft** queued the operation instead of posting into a dead connection. Outbox: 1 op, strip visible reading "1 change waiting to send — Week 12 logbook — Waiting", pill "Offline" | Pass |
+| TC-160 | A second operation was queued, then `flush()` ran while the server was still down. Only the first op was attempted (`attempts: 1`, state `waiting`, next attempt about 0.5 s away at the observed moment, i.e. the 2 s backoff); the second stayed at `attempts: 0`, proving the queue is sequential | Pass |
+| TC-161 | Server restarted and `online` dispatched: both operations applied, `pendingCount()` reached 0, the strip cleared, the pill returned to "Online", and exactly one batch toast appeared — "2 changes saved while offline have been sent." No page reload. Database: week 12 activities equal the second queued text, `sync_op` has 2 applied rows, `audit_log` has 2 `sync.applied` events | Pass |
+| TC-162 | The first operation's payload was posted again with the same `op_id`. Response `200 {"status":"duplicate"}`, one `sync_op` row for that id, one logbook entry for the week, no second audit event | Pass |
+| TC-163 | An operation with a too-short summary and no working days returned `422` with both validation messages, and left no `sync_op` row (the claim rolls back with the transaction) | Pass |
+| TC-164 | Bug found and fixed: any `23000` error was treated as "another device won the race" and answered `200 duplicate`, which would have hidden a real conflict. It now re-reads `sync_op`; a genuine race still returns `duplicate`, while a week that already has an entry returns `409` with "Week 1 already has a log book entry. Open that week and edit it instead." | Pass after fix |
+| TC-165 | Reconnect snapshot: the fresh server render differed from the page (8 142 chars against 7 791) but the check deliberately stayed silent because the draft bar was on screen — it never reloads or overwrites a form being edited | Pass |
+| TC-166 | After every run, `SELECT COUNT(*) FROM sync_op WHERE status='processing'` is 0: claims are always resolved to `applied` or rolled back | Pass |
+
+Screenshots: `docs/screenshots/pwa/sync-strip-queued-460.png` and `sync-strip-drained-460.png`.
+
+Schema: `sync_op` (op UUID primary key, user, kind, payload hash, result entry and status, `processing`/`applied`) is part of `database/digital_leap.sql` and of `database/migrations/2026-11-20_sync_op.sql`, which was applied to the live database additively.
+
+## Workstream D — DIVA answer contract, offline engine and evaluation
+
+DIVA answers with one contract in both engines: `{mode, intent, slots, evidence[{type,value,page?}], confidence, answer, next_action}`. Online, `DivaController::answerAndStore()` runs the PHP pipeline (`Diva` + `DivaContract`); offline, `public/assets/js/diva-offline.js` runs the same stages over the shipped index. Verification is the final gate in both: a quotation must be a normalised substring of the page it cites, and every figure in the answer must appear in the evidence, a cited page, the captured record values or the question itself. A draft that fails is replaced with "I stopped short of answering:" and the reason.
+
+| Case | What was executed | Result |
+|---|---|---|
+| TC-167 | `php bin/diva-eval.php` — the 74 legacy cases (routing, carried topics, follow-ups, refusals, greeting punctuation) | Pass — 74/74, intent 74/74, content 74/74 |
+| TC-168 | `php bin/diva-eval.php --golden` parses `docs/diva-golden-set.md` (60 rows, 10 per role) as the fixture and compares intent, category, cited pages, refusal and quotation text against a read-only run | Pass — routes 60/60, citations 32/32, refusals 3/3, 57 non-refusal rows quote a page |
+| TC-169 | The captured output is written to `docs/diva-eval-results.txt` on every run, then echoed. Exit status is nonzero when a legacy or golden case fails | Pass |
+| TC-170 | Index size: `public/assets/data/diva-index.json` rebuilds to 25 pages, 250 chunks, 102 485 bytes raw and 32 286 bytes gzip — inside the 300 KB compressed budget | Pass |
+| TC-171 | Stop-word regression: "What does the guidebook say about the internship report?" ranked page 22 (Form B consent) because `guidebook`/`say` dominated the BM25 query. Added `guidebook`, `say`, `says`, `according` to `STOP`, rebuilt the index; ranking now starts pages 10/17/12/21 and both evaluation sets stayed green | Pass after fix |
+| TC-172 | Guidebook-phrase guard: "What does the guidebook say about roles and responsibilities?" routed to the accounts rule because of `roles`. The router now sends an explicit "guidebook … say/state/cover" request to retrieval, so the quote wins | Pass after fix |
+| TC-173 | Online path through the shipped shell: composer posts to `?r=api/diva`, returns the PHP contract, renders "Marking model · saved to your account" with the full 200-mark model and a "Guidebook page 24" source link; the shell takes the returned `chat_id` | Pass — chat 38, `diva_turn` 56 (`evaluation`, rules, high) |
+| TC-174 | JSON endpoint semantics from the Apache shell: 200 contract; 400 empty question; 422 question over 500 characters; 403 chat owned by another account; 419 for a POST without `_csrf` (the bootstrap HTML page, not JSON) | Pass |
+| TC-175 | Offline guidebook answer: served prompt "What does the guidebook say about the internship report?" renders "Guidebook search · on this device", confidence high, verified quotes and three page links, next action, and the offline note | Pass |
+| TC-176 | Offline records question with no saved answer ("When is my next logbook entry due?") renders "Rules & records · on this device", confidence low, and the honest text "That answer needs your live records, and this device is offline…"; the question is queued | Pass |
+| TC-177 | Saved-answer replay: after the same question was answered online, asking it offline renders "· saved answer", the full logbook figures, the saved timestamp and "Answered from a copy saved on this device while online" | Pass |
+| TC-178 | Fix found while driving the composer: `app.js` `initDiva()` validated the box after `diva-offline.js` had already handled the submit and cleared it, leaving a stale "Type a question first." custom-validity message that blocked the next submit. The listener now returns when `event.defaultPrevented` | Pass after fix |
+| TC-179 | Reconnect: `LeapServerReachable` restored and `online` dispatched; pending questions posted, the toast read "2 questions answered on this device have been saved to your account.", pending reached 0 and the shell adopted the returned chat id | Pass |
+| TC-180 | Fix found in the same run: each queued question opened its own conversation because the flush always sent `chat_id` 0. `postToServer` now takes a chat id, the first success is reused for the rest of the queue, and identical queued questions are deduplicated. Database: chat 39 holds both turns (`deadline.career_fair`, `internship.duration`) | Pass after fix |
+| TC-181 | Fix found in the service worker: `cacheFirst` consulted the unversioned precache with `ignoreSearch` before the network, so a changed asset kept its old body under a new `?v=`. Exact shell and runtime hits are now tried first, then the network, and the precache is only the offline fallback. `VERSION` moved to `v4` | Pass after fix — patched `diva-offline.js` was served under the new `?v=` after one reload |
+| TC-182 | Hydration and basis regression in `bin/diva-eval.php`: restored history must keep `resolved` and `reasoning`; "Why?" answers must contain every recorded step of the previous answer; an expanded "Tell me more" must match the pages it returned and never claim it returned everything | Pass — 74/74 |
+| TC-183 | Saved answers and queued questions now live under `leap.offline.diva.snap.<uid>` / `.pending.<uid>`. The old unscoped keys are deleted on load. Student (uid 6) saved an answer online and replayed it offline with "· saved answer"; signing out removed every `leap.offline.diva.*` key; signing in as the supervisor (uid 5) and asking the same question offline produced the honest live-records refusal, not the student's answer | Pass after fix |
+
+Screenshot capture was blocked in the final run (the in-app browser reported no visible surface), so the last pass is evidenced by DOM text and the database rows above rather than images. The optional localhost rephraser stayed disabled; `diva-eval.php` reports the local model status on every run.
+
+## Workstream E — repository hygiene and deployment
+
+Everything here was executed on the build machine with PHP 8.0.30 and Node
+26.13.0. The image itself was not built: no Docker engine is installed.
+
+| Case | What was executed | Result |
+|---|---|---|
+| TC-184 | `php -l` over every `.php` file under `digital-leap/` (114 files) and `node --check` over `public/assets/js/*.js` plus `sw.js` (5 files), using the same loop the workflow runs | Pass — 114/114 and 5/5, exit status 0 |
+| TC-185 | `.gitignore` added: `config/config.php`, storage logs and caches, `node_modules/`, `vendor/`, `deploy/.env`, editor noise and `*.log`. `.dockerignore` added so a build context excludes `config.php`, logs, avatars, `.git` and docs | Pass — both files parse as plain text and every pattern is the documented one |
+| TC-186 | `require digital-leap/app/routes.php` returns 122 entries; `README.md` states 122 and its new deployment section is numbered 9, with Testing 10, Conventions 11 and Licence 12 | Pass |
+| TC-187 | New `app/.htaccess` and `bin/.htaccess` deny-all files, matching `config/` and `storage/`. Over Apache: `digital-leap/app/bootstrap.php` → 403, `digital-leap/bin/diva-eval.php` → 403, `storage/uploads/demo_cv_mohamed.pdf` → 403, while the landing page, `app.css` and `diva-offline.js` → 200 and `manifest.webmanifest` → 200 `application/manifest+json` | Pass |
+| TC-188 | `deploy/php.ini` parsed with `parse_ini_file` (13 keys: 8 MB upload, 12 MB post, expose_php off, Africa/Freetown); `deploy/docker-compose.yml` and `.github/workflows/lint.yml` checked for their required keys (`services`, `depends_on`, `healthcheck`; `checkout@v4`, `setup-php@v2`, `setup-node@v4`, `php -l`, `node --check`) | Pass — structural check only; YAML was not parsed by a YAML library because none is installed here |
+| TC-189 | Reviewed `config/config.sample.php`: no credentials, `mail.mode=log`, `diva.local_model.enabled=false` on `127.0.0.1:11434`, `app.base_url` empty so the path is derived | Pass — it remains the only configuration file the repository should carry |
+| TC-190 | `git ls-files` still lists `digital-leap/config/config.php` and `digital-leap/storage/logs/php-error.log` from older commits, so `.gitignore` alone cannot hide them (`git check-ignore` returns no match). Neither was read, modified or removed here: `git rm --cached` is an owner action, documented in `README.md`, `deploy/README.md` and `.gitignore` | Recorded — owner action outstanding |
+
+Docker was not available on this machine, so `docker build` and
+`docker compose up` are untested. `deploy/README.md` says so explicitly; the
+first build must be treated as unverified until it runs somewhere with an
+engine. The workflow's YAML is reviewed by eye and by key presence, not by
+GitHub Actions itself.
+
+## Final pass — text wrapping, the install entry point and per-member settings (20 November 2026)
+
+Three items came back from the owner after the whole-system build, all from one
+screenshot of `?r=student/placement`: file names, the words "Internship Report"
+and "Download" were breaking one character per line inside the Documents card;
+pressing **Not now** on the install banner left no way to install the app later;
+and a system like this was expected to offer the person using it a settings
+page. This pass covers all three.
+
+Environment: Apache at `http://localhost/Digital_LEAP_Assignment3_Group_G/digital-leap/`,
+PHP 8.0.30, MariaDB 10.4.32, Firefox for the visible check and the in-app
+Chromium for the measured probes. The in-app browser surface reported
+`NATIVE_BROWSER_VIEWPORT_UNAVAILABLE` (`visible=false`, 382×498) for this whole
+pass, so **no screenshots were captured**. Every layout claim below is a
+measured geometry or a computed style, and the desktop shape was measured by
+forcing the card to 760 px inside the narrow viewport rather than by pretending
+the viewport was wider.
+
+| Case | What was executed | Result |
+|---|---|---|
+| TC-191 | Cause found for the character-by-character breaking: `overflow-wrap: anywhere` on `.table td` and `.doc-name`. Unlike `break-word`, `anywhere` lets a soft-wrap opportunity count in intrinsic min-content sizing, so a five-column table inside a half-width card shaved every word down to one character before it widened a column. `.table td`, `.stat-list .row > strong` and `.doc-name` now use `break-word` (`app.css:861`, `:903`, `:1532`) and `body` keeps it (`:115`); places that must break a genuinely long token — chat body, thread copy, chart labels, profile chips — deliberately keep `anywhere` | Pass after fix |
+| TC-192 | A button or badge label is one unit: `.table td .btn, .table td .badge { white-space: nowrap }` (`app.css:864`) and `.doc-action { flex: 0 0 auto; white-space: nowrap }` (`:1536`). Confirmed by computed style on every in-table button in the coordinator screens | Pass |
+| TC-193 | The Documents card stopped being a table. `app/Views/student/placement.php:85-95` renders `ul.doc-list > li.doc-row`: the file name in `.doc-name` owns its line, size/type/date hang under it in `.doc-meta`, and the action sits in `.doc-action` | Pass |
+| TC-194 | Word-geometry probe over `#main`: a `TreeWalker` collects text nodes and every word of five characters or more is measured with `Range.getClientRects()`; more than one rectangle means the word was split mid-word. At the reported 367 px content width on `student/placement`, the only two-line entries are the two 38-character seeded file names, which is the correct behaviour at that width, and "Internship Report" and "Download" are each on one line | Pass |
+| TC-195 | Same probe at the desktop shape, measured by forcing the card to 760 px: `nameLines 1`, `sameRowAsButton true`, `nameWidth 630`, `buttonWidth 85`, `gapToButton 16` — a 38-character name and its button share one row with room left over | Pass |
+| TC-196 | Same probe across the rest of the app at the natural width: dashboard, `student/logbook`, `notifications` and `student/results` returned broken words `[]`. Coordinator dashboard: 2 tables / 32 cells, `cellWrap break-word`, `clipped 0`. `coordinator/placements`: 1 table / 49 cells, `clipped []`, broken `[]`. No page gained horizontal scroll | Pass |
+| TC-197 | Install entry point after **Not now**: with `localStorage['leap.install.dismissed'] = '1'` the banner stays hidden while both permanent controls remain visible — **How to install this app** in the account menu and in **My settings → This device**. `initInstallPrompt()` now binds every `[data-install-trigger]` instead of the first one it found | Pass |
+| TC-198 | Each trigger reveals only its own note: `helpFor(trigger)` walks up to the nearest block containing a `[data-install-help]`, so opening the menu copy left the settings-card copy hidden (`menuHelpHidden false`, `cardHelpStillHidden true`) and the reverse also held. The open account menu stays inside the viewport (right edge 354 px of 382 px) | Pass |
+| TC-199 | Install copy is per browser: Chrome and Edge are told the address-bar icon can take a moment and to reload if it has not appeared; Firefox is told it has no install button of its own on desktop for this build and to use Chrome or Edge, which matches Firefox's current desktop PWA support position; where `isSecureContext` is false the settings row reports "Needs HTTPS or localhost" instead of offering an install | Pass |
+| TC-200 | `GET`/`POST settings` are gated on `auth`, not `profile.edit`. Signed in as the management account, the only role without `profile.edit`, `?r=settings` opens as "My settings" and a changed box saved with "Your settings are saved." and no 403. Student and coordinator round-trip the same route | Pass |
+| TC-201 | Bug found and fixed: `SettingsController::save()` read `email.<family>` while the form posts `email[<family>]`, so every family would have saved as off. It now reads the array once and keys off `isset($families[$family])` | Pass after fix |
+| TC-202 | Bug found and fixed: `app/routes.php` had no `use Leap\Controllers\SettingsController;` import, so `::class` resolved against the global namespace, every visit to `?r=settings` rendered the generic error page, and `storage/logs/php-error.log` recorded `Class "SettingsController" not found` at `Router.php:26` | Pass after fix |
+| TC-203 | Bug found and fixed: the settings markup grouped its fields in `.card-body`, a class that exists nowhere in `app.css` (cards are `.card-head` plus direct children). Renamed to `.settings-group` and defined it as `display: grid; gap: 8px` (`app.css:1461`) | Pass after fix |
+| TC-204 | A save writes only what changed: with the four email families at their defaults and one box cleared, `user_preference` gained exactly one row (`notify.email.mark = off`) instead of six; a later save of `ui.text_size = large` and `ui.reduce_motion = on` added only those two. `settings.updated` landed in `audit_log` with `before_json` `{}` and the changed keys in `after_json` | Pass |
+| TC-205 | Text size and motion preview before saving: choosing **Large** set `html[data-text-size="large"]` and the measured root font-size went 16 px → 18 px; ticking **Reduce motion** set `data-reduce-motion="on"` and `.card`'s computed `transition-duration` became 1e-06 s. Both attributes are painted by `layout.php` from `Preference`, so the choice survives a reload and follows the account to another device. Spacing tokens stay in px, so the layout keeps its shape at the larger type | Pass |
+| TC-206 | The **This device** card reports real state, not placeholders: install row "Not installed on this browser", "0 answers" for DIVA, "0 changes" in the outbox and "24 responses in 2 caches" counted from `caches.keys()` and each cache's `keys()`. It repaints on the `leap-sync` event rather than on a timer | Pass |
+| TC-207 | The two device-side clears are scoped and cancellable. **Clear saved DIVA answers** deletes only `leap.offline.diva.snap.<uid>` and `leap.offline.diva.pending.<uid>` for the signed-in uid. **Clear browsed pages** deletes only caches whose name starts `leap-runtime`, so `leap-shell-v4` survives and the app stays installable. Both listeners return early when `event.defaultPrevented` is set, which is how the `data-confirm` dialog cancels them, and both confirm texts say plainly what is and is not removed | Pass |
+| TC-208 | Muting stops the mail copy, never the record. With `notify.email.mark = off` for the student, two `Notify::push()` calls (`mark.published` and `logbook.reminder`) took `notification` from 9 to 11 rows while `email_queue` went from 2 to 3: the bell kept both, only the unmuted family was queued. Ten notification types map onto the four families through `Preference::family()`, with `placement` as the fallback. Test rows were deleted afterwards and both counts confirmed back at 9 and 2 | Pass |
+| TC-209 | `php -l` over every `.php` file under `digital-leap/` and `node --check` over the five scripts, using the same loop `.github/workflows/lint.yml` runs | Pass — 117/117 and 5/5, exit status 0 (the three settings files take the PHP count from the 114 recorded at TC-184) |
+| TC-210 | DIVA regression after the CSS, JS and settings work: `php bin/diva-eval.php` 74/74; `--golden` routes 60/60, citations 32/32, refusals 3/3, re-captured in `docs/diva-eval-results.txt` | Pass |
+| TC-211 | Demo accounts still sign in: student, coordinator and management each authenticated through the form and reached their dashboards. Probe note, not a product defect: the coordinator demo-role button followed immediately by a **Sign in** click did not submit inside the in-app browser, so the credentials were typed into the inputs and the form submitted directly | Pass |
+| TC-212 | Counts re-derived from source instead of copied forward: `require app/routes.php` returns 124 entries (the 122 at TC-186 plus the two `settings` routes) and `database/digital_leap.sql` creates 33 tables, matching `information_schema` on the live database. `README.md`, `INSTALL.txt` and `docs/VERIFY.md` now carry 124 and 33 | Pass |
+| TC-213 | The route table was summed by group after the edit: 12 public and auth + 16 shared signed-in + 2 internal API + 6 DIVA + 8 messaging + 22 student + 7 supervisor + 12 mentor + 21 coordinator + 3 management + 15 administrator = 124. The `README.md` route table previously summed to 120 because the two internal API routes were in no row; they now have one | Pass — the documented table adds up |
+| TC-214 | `docs/design-system.md` gained the wrapping rule (`break-word` versus `anywhere`, and the control-label `nowrap`), the two comfort hooks and the four new components; each class named there was grepped back to `app.css` (`.doc-list:1520`, `.doc-row:1521`, `.doc-name:1532`, `.doc-action:1536`, `.settings-group:1461`, `.install-help:1450`, `.sidebar-settings:622`, `html[data-text-size]` / `html[data-reduce-motion]` at `:2992`–`:2995` inside the `responsive` layer that opens at `:2797`) so no documented selector is fictional | Pass |
+| TC-215 | User guide length after the two new paragraphs: 1,785 words, still three sections plus the roles table. TC-131 recorded 1,371 words, which pre-dates the DIVA, offline and filter paragraphs added since. At roughly 600 words a printed page this is about three pages, but the markdown has not been re-laid-out or re-paginated for print since those additions — that check is outstanding and is not claimed as passing | Recorded — length re-measured, print pagination not re-checked |
+
+Test residue from this pass: the `user_preference` rows written while proving
+TC-204 and TC-208 were deleted (`SELECT COUNT(*) FROM user_preference` is 0),
+`leap.install.dismissed` was cleared in the browser, and the two scratch PHP
+probes under `/tmp` were removed. The `settings.updated` audit events stay — the
+log is append-only by design and an honest record of a save that really
+happened.
+
+Schema: `user_preference` (composite primary key `user_id` + `pref_key`, value,
+`updated_at`, foreign key cascading on user delete, utf8mb4) is part of
+`database/digital_leap.sql` and of the additive
+`database/migrations/2026-11-20_user_preference.sql`, which was applied to the
+live database with `CREATE TABLE IF NOT EXISTS`. It drops nothing and changes no
+existing row.
+
+## The guidebook as a document (22 November 2026)
+
+| TC | Check | Result |
+| --- | --- | --- |
+| TC-216 | The guidebook PDF ships unmodified. `sha256sum` over the published file and over `digital-leap/storage/templates/Internship_Guidebook_LEAP_Clean_Layout.pdf` returns the same digest, `1aad743f4d671e081042b183c7d7ec9b40e46d3dd91eec11604c7580fa252b14`, at 281,848 bytes. The file was copied byte for byte; it was not opened for editing, re-exported or regenerated | Pass |
+| TC-217 | Two routes added, `GET guidebook` and `GET guidebook/pdf`, both gated on `auth` because the document is published to all six roles. `require app/routes.php` now returns 126 entries and 9 of them are `auth`-gated (logout, settings ×2, feedback, download, logbook/template, career-fair/template, guidebook ×2). `README.md` now carries 126 and the shared signed-in row 18; its §5 sentence had also mis-stated the old set as "three" while listing four, and omitted logout and the two template routes — it now names all nine | Pass |
+| TC-218 | The page opens for every role: student, host supervisor, academic mentor, coordinator, management and administrator each signed in and fetched `?r=guidebook` with HTTP 200, the sidebar entry reading `class="active"` and 25 page rows on each. Signed out, both `?r=guidebook` and `?r=guidebook/pdf` answer 302 to `?r=login` | Pass |
+| TC-219 | The page itself renders the document: **Open the PDF** links to `?r=guidebook%2Fpdf` with `target="_blank"`, **Download PDF (275 KB)** links to the same route with `download=1`, and the list under the heading has one `doc-row` per page — first "Page 1 Limkokwing Entrepreneurship Acceleration Platform", last "Page 25 Module 2 (2 Credits): Internship Report Weighting". Page links were later changed from the text view to the PDF by TC-223 | Pass |
+| TC-220 | The PDF is streamed, not linked to a path. `?r=guidebook/pdf` returned 200 with `Content-Type: application/pdf`, `Content-Disposition: inline; filename="Internship_Guidebook_LEAP_Clean_Layout.pdf"`, `Content-Length: 281848` and `X-Content-Type-Options: nosniff`; the body's SHA-256 matched TC-216. `&download=1` returned the same bytes with `Content-Disposition: attachment` and wrote exactly one `guidebook.download` row to `audit_log`; the inline view wrote none. `storage/.htaccess` still denies direct HTTP to the folder | Pass |
+| TC-221 | Layout probe on the rendered page in the in-app browser at 372 px: `documentElement.scrollWidth` equals `clientWidth` (372), so no horizontal page scroll. A TreeWalker over `#main` text nodes, measuring each word of five characters or more with `Range.getClientRects()`, found one two-rect word, "on-the-job", which the browser breaks at its own hyphen as intended; every other word stayed on one line. Screenshots were unavailable in this browser, so the evidence is the DOM probe, not an image | Pass — screenshot unavailable, DOM evidence recorded |
+| TC-222 | A navigation entry that DIVA's page guide did not know about would have made its own description wrong ("you can open N pages"), so `DivaGuide::pages()` gained a `guidebook` entry in the workspace group. `php bin/diva-eval.php --golden` after the change: legacy 74/74 and golden 60/60 routes, 32/32 citations, 3/3 refusals, rewritten to `docs/diva-eval-results.txt` | Pass |
+| TC-223 | Pages are read as the document, not as extracted text. On `?r=guidebook` the 25 rows now carry 50 links (page name and **Open in PDF**), all to `?r=guidebook%2Fpdf#page=N` with `target="_blank" rel="noopener"`; the rendered page still shows 25 `doc-row`s, 25 "Open in PDF" labels and 51 blank-target links in all (the 50 rows plus **Open the PDF**). `?r=diva/source&page=12` keeps its plain-text citation view but now leads with **Open page 12 in the PDF**, pointing at `…?r=guidebook%2Fpdf#page=12`. Both views pass `php -l`. The PDF itself is untouched, so the `Content-Type`, `Content-Disposition` and SHA-256 results in TC-220 still hold | Pass |
+
+Documentation after the change: the user guide gained a **Guidebook** paragraph and now runs
+to 1,862 words (TC-215 recorded 1,785); `docs/VERIFY.md` gained a shared walkthrough step, a
+security row for the PDF stream and the audit split, and an install-list line for the third
+template; `INSTALL.txt` gained the navigation paragraph, the security sentence and the
+storage line; `README.md` gained the feature sentence, the 126-entry and 18-route counts and
+the corrected `auth` list. TC-223 later moved the page links from the text view to the PDF at
+the chosen page and added the same jump to DIVA's citation pages; the user guide, README and
+VERIFY step were reworded to match. No new CSS class was introduced, so
+`docs/design-system.md` is unchanged: the page reuses the documents list (`app.css:1520`).
+
+## Report order, submission folder and a Codespaces link (23 November 2026)
+
+| TC | Check | Result |
+| --- | --- | --- |
+| TC-224 | The landscape Appendix A now follows Part F and precedes Conclusion and References. In the exported PDF the contents page lists Appendix A at printed page 30 and Conclusion and References at printed page 39; footer numbers run physical 32 → "30" through physical 41 → "39"; physical pages 32–40 measure 141–173 characters wide (landscape) and physical 41 measures 98 (portrait). The DOCX and PDF agree at 41 pages. The move was made on a copy; the pre-move DOCX and PDF are kept in the offcuts folder on the Desktop | Pass |
+| TC-225 | The Discussion header was flush with the card edge because `.chat-card` sets `padding: 0` for its full-bleed message list, leaving `.card-head` as the only direct child with no inner inset. The scoped rule `.chat-card > .card-head { padding: 18px clamp(14px, 2vw, 20px) 0; }` (`app.css:3127`) restores the same left and right inset the other cards use. In a rendered logbook page at 387 px the heading text measured a 15 px inset, equal to the paragraph inset in the neighbouring card, and the card itself still reaches the edge as designed. DIVA's `.diva-chat-head` sets its own padding and is not selected | Pass |
+| TC-226 | Project folder after the sort: 91 files outside the submission manifest were reviewed. 73 MB of scratch material moved to `Desktop\Digital_LEAP_offcuts_2026-11-23\` — `.tmp-report/` (report scripts and test DOCX), `REPORT-backups/` (six dated DOCX/PDF pairs and superseded figures) and `storage-junk/` (php-error.log, a stray PNG, an errant DOCX, four unseeded avatar photos). Nothing was deleted. The root now holds `.devcontainer/`, `.dockerignore`, `.github/`, `.gitignore`, `INSTALL.txt`, `LICENSE`, `README.md`, `REPORT/`, `database/`, `deploy/`, `digital-leap/` and `docs/`, plus the local untracked `digital-leap/config/config.php` that the running XAMPP copy needs. The landing page still returned 200 afterwards, and the submission ZIP in Documents was refreshed with the corrected `app.css` | Pass |
+| TC-227 | `.devcontainer/` adds a Codespaces stack without touching the application: `devcontainer.json` (compose service `app`, port 8080 forwarded and public, `postCreateCommand`), `docker-compose.yml` (the `deploy/Dockerfile` image, MariaDB 10.11, the seed mounted at `/docker-entrypoint-initdb.d`, `storage/` in a named volume, application source bind-mounted) and `config.codespaces.php` (db host `db`, password `leap-demo`, mail to log, DIVA local model off). `setup.sh` waits up to 180 s for the `users` table, gives `storage/` to `www-data` and marks the workspace safe for root git. Verified here: `php -l` on the config, `bash -n` on `setup.sh`, `JSON.parse` on `devcontainer.json`, and the probe query (with host `127.0.0.1` substituted) returned the seeded count of 17 users; the first probe run named the table `user` and failed, which is how the script now says `users`. No Docker engine or YAML parser exists on this machine, so the image build, `docker compose config` and a live codespace were not run — the same limitation recorded for `deploy/Dockerfile` in Workstream E. Treat the first codespace start as the real test | Pass — file syntax and probe only; build unverified |
+
+
+## Daily and weekly logbook email (23 November 2026)
+
+| TC | Check | Result |
+| --- | --- | --- |
+| TC-228 | `Notify::push` gained an optional seventh parameter, `$emailBody`; the bell keeps the short line while `email_queue.body` carries the full text, so every existing caller is unchanged. New `app/Services/LogbookDigest.php` builds plain-text messages and `sendDaily()`, and `bin/send_daily_records.php` runs it with `--date=YYYY-MM-DD` and `--dry-run`. Recipients are the placement's host supervisor (when set) and academic mentor, each with their own entry link. Only days on a week that is still a draft are sent, so a submitted week is not repeated day by day after its weekly email; draft days are labelled as drafts. A day is never emailed twice: each delivery writes one audit row `logbook.day_notice` on the entry with the recipient and the work date in `after_json`, because editing a week deletes and rewrites `logbook_day` rows (TC-77). Evidence: `--dry-run --date=2026-11-22` previewed two groups of five days (16–20 November) — 10 day records, 0 queued. A real run inside a transaction that was then rolled back queued two digest emails and wrote 10 audit markers; the second run in the same transaction skipped all 10 and queued nothing; `notification`, `email_queue` and `audit_log` counts were 52, 31 and 672 before and after, so nothing was left behind. The weekly body was rendered from the seeded week 1 (subject “Week 1 logbook awaiting review — Mohamed Alie Kamara”, five daily rows, every summary section, “Total hours: 37.5 h”, submission time and link); the daily body was rendered with two draft days and the draft paragraph. Copy was updated in the entry form's daily-record hint and submit confirmation, the weekly reminder text, the user guide, `README.md` §8 and `INSTALL.txt` §7. The CLI link now ignores the script folder, which had produced `bin/index.php?...`. Not exercised: the weekly push through a live student session; the body builder and the push API were verified directly. No schema change, so Appendix A and the 33-table count still hold | Pass — web submission path covered by the same builder and API, not a live session |
+
+## GPS attendance and per-day sending (24 November 2026)
+
+| TC | Check | Result |
+| --- | --- | --- |
+| TC-229 | Attendance is stored without a schema change, so the 33-table count in Appendix A still holds. New `app/Services/Attendance.php` writes append-only `audit_log` rows `attendance.check_in` / `attendance.check_out` against the placement, with type, latitude, longitude, accuracy, distance and source in `after_json`; today's state comes from the latest event since local midnight, so a check-in followed by a check-out allows both once and neither repeats. The organisation pin is a `setting` row `geo.org.<org_id>` holding `{lat,lng}`, absent until a coordinator saves one. Inside a transaction that was rolled back: Lagos (6.524400, 3.379200) to Accra (5.603700, −0.187000) measured 407,393 m by haversine; a check-in was accepted, the duplicate rejected, a check-out accepted and the duplicate rejected; `today()` and `recent()` returned the expected shape. `audit_log` was 0 rows for the placement before and after the rollback | Pass |
+| TC-230 | Per-day sending uses the same `logbook.day_notice` markers as the evening run, so a day sent by hand is skipped by `bin/send_daily_records.php` and can never go twice. `LogbookDigest::sendDay()` refuses an entry whose status is not `draft` or `returned`, refuses a malformed date, sends only to recipients not already recorded for that date and returns a sentence naming them. `deliveredDays()` reports what each day has already reached. Tested inside a transaction and rolled back: `sendDay(12, '2026-11-16')` returned “Mon 16 Nov 2026 sent to your host supervisor and academic mentor.”, a second call returned “already sent”, `2026-13-01` was rejected, and `deliveredDays(12)` returned `{"2026-11-16":[5,3]}`; an approved week rejected the call. Notification and email_queue counts were 52 and 31 before and after | Pass |
+| TC-231 | The site pin is set from the organisation form by a coordinator. `CoordinatorController::orgSave()` accepts both coordinates or neither, clears the pin when **Remove site pin** is ticked, rejects one coordinate alone and rejects out-of-range values, and writes `organisation.geo_updated` to the audit trail. In a transaction that was rolled back, setting and clearing the pin left no `geo.org.*` setting row. A live attempt with latitude only returned the validation message and wrote no setting row | Pass |
+| TC-232 | Student attendance renders and persists. Signed in as the seeded student, **My placement** showed the Attendance card with Today, Site pin (not set), Check in at site and Check out; a check-in and then a check-out were submitted through the forms and appeared in the recent list and the Status timeline as “Attendance check-in” and “Attendance check-out”. With no pin the distance column reads “No distance” and the source is “attested”. Today's state disabled the buttons already used. The two records are real demo data now: `attendance.check_in` and `attendance.check_out` on 23 November 2026 at 23:02 and 23:03 | Pass |
+| TC-233 | A finished day can be sent without submitting the week. On draft entry 12 the Monday 16 November row carried **Send** and the other four days did too; pressing it posted `student/logbook/send-day` and returned to the entry with the row now reading **Sent**. Two audit markers were written (`logbook.day_notice`, users 5 and 3, `2026-11-16`) and two notifications “Daily record — Mohamed Alie Kamara — Mon 16 Nov 2026” were queued. The entry stayed a draft and the full-week submit button was unchanged. No Send column appears on an approved entry | Pass |
+| TC-234 | Staff see the same check-ins. The supervisor entry page returned 200 with “Attendance check-ins”, the attested source and “Site pin: not set”; the mentor entry page returned the same card with the check-out row; the coordinator placement page showed the attendance card and “Attendance check-in” in its timeline; the organisation form rendered latitude and longitude inputs. All four screens lint and none exposes another placement's rows | Pass |
+| TC-235 | Location is read only on a deliberate press. New `public/assets/js/attendance.js` intercepts the two forms, says “You are offline” without a connection, asks for the position with high accuracy and a ten-second timeout, fills the hidden fields and submits; a denied or failed reading records an attested check-in and still submits. No inline script was added, so the CSP `script-src 'self'` holds. The `Permissions-Policy` header in both `app/bootstrap.php` and `digital-leap/.htaccess` now reads `geolocation=(self), microphone=(), camera=()`; duplicates are identical, and a permissive plus a restrictive copy would have been a defect. The real permission-granted path was not exercised end to end because the in-app browser suppresses the prompt; the distance maths was covered by TC-229 | Pass — granted-prompt path not exercised |
+| TC-236 | After the changes, `php -l` passes on all 18 touched PHP files and `node --check` on `attendance.js`. `require app/routes.php` returns 128 entries with 24 student routes, and `README.md` now says 128 and 24, lists `attendance.js` and the two new services, and `INSTALL.txt` §7 explains the geolocation permission, the optional pin and the per-day Send. The user guide's student and supervisor sections describe the Attendance card, the Send column and the staff check-in list. No commit or push was made | Pass |

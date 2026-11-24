@@ -9,25 +9,45 @@ Limkokwing University of Creative Technology, Sierra Leone
 
 digital-leap/            The PHP 8 application (no Composer dependencies)
 database/
-  digital_leap.sql       Schema (30 tables) and Sierra Leone seed data
+  digital_leap.sql       Schema (33 tables) and Sierra Leone seed data
+  migrations/            Additive upgrade scripts for an existing database
+deploy/
+  Dockerfile             PHP 8.0 + Apache image
+  docker-compose.yml     Application plus MariaDB for a local stack
+  apache-vhost.conf      Virtual host with the private folders denied
+  php.ini                Upload and session settings for the image
+  README.md              XAMPP, Docker, Codespaces, GitHub and HTTPS notes
+.devcontainer/
+  devcontainer.json      Codespaces: builds the stack, opens port 8080
+  docker-compose.yml     App plus MariaDB; the seed imports on first start
+  config.codespaces.php  Disposable config for that stack only
+  setup.sh               Waits for the seed, gives storage/ to www-data
+.github/workflows/
+  lint.yml               php -l and node --check on every push
 docs/
   VERIFY.md              Marker's walkthrough and security checklist
   test-log.md            Historical 102-case baseline plus later addenda,
-                         evidence and defects
+                         evidence and defects (to TC-228)
+  DEMO.md                Eight-minute six-role demonstration script
+  UAT-SIGNOFF.md         Blank user-acceptance template, signed by real testers
+  SUBMISSION-CHECKLIST.md  What ships, what must not, and the flash-drive plan
+  screenshots/README.md  The 128-file capture set and where each figure comes from
   Digital_LEAP_User_Guide.md   Three-page guide for the six roles
-  diva-eval-results.txt  DIVA expanded evaluation output (74 cases)
+  design-system.md       Tokens, components and interface rules
+  diva-golden-set.md     The 60-question DIVA evaluation set
+  diva-eval-results.txt  Latest DIVA evaluation output (legacy and golden)
 REPORT/
   Digital_LEAP_Assignment3_Report.docx
   Digital_LEAP_Assignment3_Report.pdf
-  figures/               The four report figures as PNG
+  figures/               The four report figures as PNG, SVG and drawio
 INSTALL.txt              This file
 README.md                Developer documentation
 LICENSE                  MIT (code) and CC BY 4.0 (report)
 
-The package does NOT contain config/config.php; it is created locally
+The zip package does NOT contain config/config.php; it is created locally
 so no credentials ship. Only the four sample PDFs referenced by the
-seed are included under storage/uploads, plus the official log book
-and Career Fair templates under storage/templates. Personal uploads
+seed are included under storage/uploads, plus the official log book,
+Career Fair and guidebook PDFs under storage/templates. Personal uploads
 never ship.
 
 ===============================================================
@@ -57,7 +77,7 @@ never ship.
    b) Or use a command prompt:
       C:\xampp\mysql\bin\mysql.exe -u root < "C:\path\to\database\digital_leap.sql"
 
-   The script creates the database "digital_leap", all 30 tables,
+   The script creates the database "digital_leap", all 33 tables,
    constraints, indexes and the seed data. It DROPS and recreates every
    application table, so it is only safe on a disposable clean
    installation: never run it over a database that holds real student
@@ -157,6 +177,34 @@ that handles logbooks can open or download it. Uploaded Career Fair
 reports appear for the mentor under Reports and for the coordinator
 in the placement's Documents list.
 
+Students check in and out at the placement from the Attendance card on
+My placement. The browser asks for location only when Check in or Check
+out is pressed; the time and, once a coordinator has set the site pin on
+the organisation form, the distance from that pin are stored. Declining
+the prompt still records an attested check-in, so nothing depends on the
+permission being granted. The shipped Permissions-Policy header allows
+geolocation for this site only (geolocation=(self)); no map, geocoder or
+other internet service is contacted. A finished day in the log book can
+also be sent to the host supervisor and academic mentor straight away
+with Send on its row; the full week still goes to both on submit.
+
+Every signed-in role has "My settings" in the account menu and at the
+foot of the sidebar. Four boxes choose which notifications are also
+copied to email — the bell always keeps every item — and text size and
+reduced motion preview as soon as they are picked. The choices are
+stored per account in user_preference and follow the person to any
+other device. The same page shows what the current browser is holding
+for offline work, offers the install again if it was declined during
+the first visit, and can clear this device's saved DIVA answers and
+browsed pages without touching any record in the database.
+
+Every signed-in role also has "Guidebook" in the navigation. It opens
+the published 25-page guidebook PDF in the browser, keeps the same file
+as a download with its size on the button, and lists all 25 pages so any
+one can be opened in the PDF viewer at that page. DIVA's citation pages
+remain plain text and each links back to the PDF. Downloading writes a
+guidebook.download audit event; merely opening it does not.
+
 The complete role-by-role script, with expected results, is in
 docs/VERIFY.md.
 
@@ -165,6 +213,16 @@ docs/VERIFY.md.
 ===============================================================
 
 From the digital-leap folder:
+
+  C:\xampp\php\php.exe bin\send_daily_records.php
+      Emails each newly saved logbook day to the placement's host
+      supervisor and academic mentor. Run it once a day before the
+      mail queue. Only days on a week that is still a draft are sent;
+      a submitted week travels once, as a full weekly email. Use
+      --dry-run to preview, or --date=YYYY-MM-DD to run as at
+      another date. A student can also press Send on a finished day
+      row in the log book to queue that day immediately; the same
+      record is never sent twice.
 
   C:\xampp\php\php.exe bin\send_mail_queue.php
       Processes due messages in email_queue. In the default log
@@ -185,7 +243,7 @@ From the digital-leap folder:
       development machine. The shipped application never parses the
       PDF at runtime.
 
-Both scheduled jobs can be scheduled with Windows Task Scheduler. The
+The three scheduled jobs can be run with Windows Task Scheduler. The
 administrator can also process the queue from the mail screen.
 
 ===============================================================
@@ -195,7 +253,7 @@ administrator can also process the queue from the mail screen.
 Re-import database/digital_leap.sql. This restores every table,
 account and the published 72.98 result. The four sample PDFs that
 the seed links to ship in digital-leap/storage/uploads, and the log
-book and Career Fair templates ship in storage/templates, so every
+book, Career Fair and guidebook PDFs ship in storage/templates, so every
 download link works on a fresh import. Files uploaded during a demo
 stay in storage/uploads and do not affect the seed.
 
@@ -245,7 +303,9 @@ Account temporarily locked
 - The internship log book template is served only to signed-in users
   through DownloadController; it can be viewed inline or downloaded.
   The Career Fair 2026 template is served the same way from
-  storage/templates/career_fair_2026_report_template.pdf.
+  storage/templates/career_fair_2026_report_template.pdf, and the
+  guidebook from storage/templates/Internship_Guidebook_LEAP_Clean_Layout.pdf.
+  A download, not an inline view, writes the template's audit event.
 - Profile photos are limited to JPG, PNG or WebP at 8 MB, kept in
   storage/uploads/avatars under the same deny-all rule as the other
   uploads, and served only through ?r=avatar, which checks that the viewer
@@ -268,6 +328,55 @@ Account temporarily locked
   emoji survive.
 - Demo passwords are for assessment only and must be changed before
   any real use.
+
+===============================================================
+11. HTTPS, THE INSTALLABLE APP AND OTHER HOSTS
+===============================================================
+
+The browser registers a service worker, and therefore offers "Install
+app" and serves cached pages offline, only on https:// or
+http://localhost. On plain HTTP over a network address every page
+still works; only the installable, offline part is unavailable.
+
+Declining the install banner hides the banner, not the option: "How to
+install this app" stays in the account menu and on My settings, and the
+browser's own address-bar install icon is unaffected. Desktop Firefox
+does not offer a user-controlled install button for this kind of app,
+so on that browser the note explains it and points to Chrome or Edge
+instead of showing a control that does nothing.
+
+- Terminate TLS at Apache, or at a reverse proxy in front of it, and
+  open the site over https. The application adds HSTS and the Secure
+  cookie flag whenever PHP sees an HTTPS request.
+- A self-signed certificate is rejected for service-worker
+  registration by current browsers; use a trusted certificate or test
+  on localhost.
+- After deploying a change to cached files, bump the version string in
+  sw.js so the browser replaces the old shell.
+
+Full deployment notes are in deploy/README.md. In short:
+
+- Apache: the document root is digital-leap/. The .htaccess files
+  rewrite routes and deny app/, bin/, config/ and storage/;
+  deploy/apache-vhost.conf repeats that for a self-managed server.
+- Docker: copy the sample config, set db.host to "db" and db.pass to
+  the compose password, then run
+  docker compose -f deploy/docker-compose.yml up --build
+  and open http://localhost:8080/. The image has not been built on
+  the packaging machine (no Docker engine); treat the first build as
+  unverified.
+- GitHub Codespaces: open
+  https://codespaces.new/EssenceShady/Digital_LEAP_Assignment3_Group_G
+  and create the codespace. .devcontainer/ builds the image, starts
+  MariaDB, imports the seed and publishes the app on port 8080 with a
+  public forwarded link. Use that link to share the running app; start
+  the codespace again if it has stopped on idle. Nothing reaches the
+  internet from the application itself.
+- GitHub checkout: config/config.php is git-ignored, so create it from
+  the sample after cloning. .github/workflows/lint.yml runs php -l
+  and node --check on every push and needs no secrets.
+- Upgrading a live database: apply database/migrations/*.sql in date
+  order. Never re-import digital_leap.sql over existing work.
 
 Group G
 Mohamed Alie Kamara 905005581

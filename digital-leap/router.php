@@ -28,6 +28,16 @@ if (preg_match('/\.php$/i', $path)) {
     exit('Not found');
 }
 
+// The built-in server does not know the PWA manifest type by default.
+$mimeByExtension = ['webmanifest' => 'application/manifest+json'];
+$extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+if (isset($mimeByExtension[$extension]) && is_file(__DIR__ . $path)) {
+    header('Content-Type: ' . $mimeByExtension[$extension] . '; charset=utf-8');
+    header('Cache-Control: no-cache');
+    readfile(__DIR__ . $path);
+    return true;
+}
+
 if (is_file(__DIR__ . $path)) {
     return false;
 }

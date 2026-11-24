@@ -11,6 +11,8 @@ use Leap\Core\Notify;
 use Leap\Core\Upload;
 use Leap\Core\Validator;
 use Leap\Core\View;
+use Leap\Services\Attendance;
+use Leap\Services\LogbookDigest;
 use RuntimeException;
 
 final class StudentController
@@ -247,6 +249,7 @@ final class StudentController
         $timeline = [];
         $docs = [];
         $report = null;
+        $attendance = null;
 
         if ($placement !== null) {
             $timeline = Database::all(
@@ -263,6 +266,12 @@ final class StudentController
                 'SELECT * FROM internship_report WHERE placement_id = ?',
                 [(int) $placement['placement_id']]
             );
+            $attendance = [
+                'today' => Attendance::today((int) $placement['placement_id'], (int) Auth::id()),
+                'recent' => Attendance::recent((int) $placement['placement_id'], 8, (int) Auth::id()),
+                'org' => Attendance::orgPoint((int) $placement['org_id']),
+                'active' => $placement['status'] === 'active',
+            ];
         }
 
         View::render('student/placement', [
@@ -272,7 +281,58 @@ final class StudentController
             'timeline' => $timeline,
             'docs' => $docs,
             'report' => $report,
+            'attendance' => $attendance,
         ]);
+    }
+
+    public function attendance(): void
+    {
+        $student = $this->student();
+        $placement = $this->placementFor((int) $student['student_id']);
+        if ($placement === null) {
+            \flash('error', 'You do not have a placement yet.');
+            \redirect('student/placement');
+        }
+        if ($placement['status'] !== 'active') {
+            \flash('error', 'Attendance can only be recorded while your placement is active.');
+            \redirect('student/placement', [], 'attendance');
+        }
+
+        $type = (string) \post('type', '');
+        $lat = null;
+        $lng = null;
+        $accuracy = null;
+        if (\post('lat') !== null && \post('lat') !== '') {
+            $lat = (float) \post('lat');
+            $lng = (float) \post('lng');
+            if (\post('accuracy') !== null && \post('accuracy') !== '') {
+                $accuracy = (float) \post('accuracy');
+            }
+        }
+
+        $result = Attendance::record((int) Auth::id(), $placement, $type, $lat, $lng, $accuracy);
+        \flash($result['ok'] ? 'success' : 'error', $result['message']);
+        \redirect('student/placement', [], 'attendance');
+    }
+
+    public function sendDay(): void
+    {
+        $student = $this->student();
+        $id = (int) \post('entry_id', 0);
+        $workDate = trim((string) \post('work_date', ''));
+        $entry = $this->ownEntry((int) $student['student_id'], $id);
+        if ($entry === null) {
+            \flash('error', 'That entry is not yours.');
+            \redirect('student/logbook');
+        }
+        if (!Validator::date($workDate)) {
+            \flash('error', 'Choose a recorded day to send.');
+            \redirect('student/logbook/view', ['id' => $id]);
+        }
+
+        $result = LogbookDigest::sendDay((int) $entry['entry_id'], $workDate);
+        \flash($result['ok'] ? 'success' : 'error', $result['message']);
+        \redirect('student/logbook/view', ['id' => $id], 'days');
     }
 
     public function logbook(): void
@@ -359,38 +419,144 @@ final class StudentController
             }
         }
 
-        $start = date('Y-m-d', strtotime((string) $placement['start_date'] . ' +' . max(0, $week - 1) . ' weeks'));
+        $base = date('Y-m-d', strtotime((string) $placement['start_date'] . ' +' . (max(0, $week - 1) * 7) . ' days'));
+
+        $stored = [];
+        if ($existing !== null) {
+            foreach (Database::all(
+                'SELECT work_date, tasks, hours FROM logbook_day WHERE entry_id = ? ORDER BY work_date',
+                [(int) $existing['entry_id']]
+            ) as $row) {
+                $stored[(string) $row['work_date']] = $row;
+            }
+        }
+
+        $days = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = date('Y-m-d', strtotime($base . ' +' . $i . ' days'));
+            $row = $stored[$date] ?? null;
+            unset($stored[$date]);
+            if ($date < $placement['start_date'] || $date > $placement['end_date']) {
+                continue;
+            }
+            $days[] = [
+                'date' => $date,
+                'tasks' => (string) ($row['tasks'] ?? ''),
+                'hours' => $row['hours'] ?? null,
+            ];
+        }
+        foreach ($stored as $date => $row) {
+            $days[] = ['date' => (string) $date, 'tasks' => (string) $row['tasks'], 'hours' => $row['hours']];
+        }
+
         View::render('student/entry_form', [
             'title' => 'Logbook entry',
             'placement' => $placement,
             'entry' => $existing,
             'week' => $week,
-            'dateFrom' => $start,
-            'dateTo' => date('Y-m-d', strtotime($start . ' +4 days')),
+            'days' => $days,
         ]);
     }
 
     public function entrySave(): void
     {
+        $input = $_POST;
+        $submit = \post('submit') !== null;
+        $result = $this->persistEntry($input, $submit);
+
+        if (!$result['ok']) {
+            foreach ($result['errors'] as $message) {
+                \flash('error', $message);
+            }
+            $id = (int) ($input['entry_id'] ?? 0);
+            $week = (int) ($input['week_no'] ?? 0);
+            \redirect('student/logbook/new' . ($id > 0 ? '&week=' . $week : ''));
+        }
+
+        \flash('success', $submit ? 'Logbook week submitted to your host supervisor.' : 'Draft saved.');
+        \redirect('student/logbook');
+    }
+
+    /**
+     * Validate and write one weekly entry from a field map.
+     * The browser form and the offline sync endpoint both call this, so a
+     * queued offline entry goes through exactly the same rules.
+     *
+     * @return array{ok: bool, errors: string[], entry_id?: int, week?: int, status?: string}
+     */
+    public function persistEntry(array $input, bool $submit): array
+    {
         $student = $this->student();
         $placement = $this->placementFor((int) $student['student_id']);
         if ($placement === null || $placement['status'] !== 'active') {
-            \flash('error', 'Your placement is not active.');
-            \redirect('student/logbook');
+            return ['ok' => false, 'errors' => ['Your placement is not active.']];
         }
 
-        $id = (int) \post('entry_id', 0);
-        $week = (int) \post('week_no', 0);
-        $from = (string) \post('date_from', '');
-        $to = (string) \post('date_to', '');
-        $activities = trim((string) \post('activities', ''));
-        $hours = (float) \post('hours', 0);
-        $submit = \post('submit') !== null;
+        $id = (int) ($input['entry_id'] ?? 0);
+        $week = (int) ($input['week_no'] ?? 0);
+        $weekBase = date('Y-m-d', strtotime((string) $placement['start_date'] . ' +' . (max(0, $week - 1) * 7) . ' days'));
+        $from = $weekBase;
+        $to = date('Y-m-d', strtotime($weekBase . ' +6 days'));
+        $activities = trim((string) ($input['activities'] ?? ''));
+        $skills = trim((string) ($input['technical_skills'] ?? ''));
+        $challenges = trim((string) ($input['challenges'] ?? ''));
+        $meetingNotes = trim((string) ($input['meeting_notes'] ?? ''));
+        $reflection = trim((string) ($input['reflection'] ?? ''));
+
+        $dayDates = (array) ($input['day_date'] ?? []);
+        $dayTasks = (array) ($input['day_tasks'] ?? []);
+        $dayHours = (array) ($input['day_hours'] ?? []);
+        $days = [];
+        $totalHours = 0.0;
+        $hasHours = false;
 
         $errors = [];
         if (!Validator::int($week, 1, (int) $placement['total_weeks'])) {
             $errors[] = 'Week number must be between 1 and ' . (int) $placement['total_weeks'] . '.';
         }
+
+        foreach ($dayDates as $i => $rawDate) {
+            $date = trim((string) $rawDate);
+            $tasks = trim((string) ($dayTasks[$i] ?? ''));
+            $rawHours = trim((string) ($dayHours[$i] ?? ''));
+            if ($tasks === '' && $rawHours === '') {
+                continue;
+            }
+            $label = Validator::date($date) ? fmt_date($date) : 'Row ' . ((int) $i + 1);
+            if (!Validator::date($date)) {
+                $errors[] = 'Give every working day a valid date.';
+                continue;
+            }
+            if ($date < $placement['start_date'] || $date > $placement['end_date']) {
+                $errors[] = $label . ': the date must fall inside your placement period.';
+            }
+            if (!Validator::length($tasks, 3, 1000)) {
+                $errors[] = $label . ': describe the tasks in at least three characters.';
+            }
+            if (isset($days[$date])) {
+                $errors[] = $label . ' appears twice.';
+                continue;
+            }
+            $hours = null;
+            if ($rawHours !== '') {
+                if (!Validator::decimal($rawHours, 0, 24)) {
+                    $errors[] = $label . ': hours must be between 0 and 24.';
+                    continue;
+                }
+                $hours = (float) $rawHours;
+                $totalHours += $hours;
+                $hasHours = true;
+            }
+            $days[$date] = ['date' => $date, 'tasks' => $tasks, 'hours' => $hours];
+        }
+
+        if ($days !== []) {
+            $dates = array_keys($days);
+            sort($dates);
+            $from = (string) $dates[0];
+            $to = (string) $dates[count($dates) - 1];
+        }
+
         if (!Validator::date($from) || !Validator::date($to)) {
             $errors[] = 'Enter valid dates for the week.';
         } elseif ($from < $placement['start_date'] || $to > $placement['end_date']) {
@@ -399,21 +565,31 @@ final class StudentController
             $errors[] = 'The end date cannot be before the start date.';
         }
         if (!Validator::length($activities, 20, 3000)) {
-            $errors[] = 'Describe your activities in at least twenty characters.';
+            $errors[] = 'Write the weekly summary in at least twenty characters.';
         }
-        if (!Validator::decimal($hours, 0.5, 60)) {
-            $errors[] = 'Hours worked must be between 0.5 and 60.';
+        foreach ([[$skills, 'technical skills'], [$challenges, 'challenges'], [$meetingNotes, 'meeting notes'], [$reflection, 'reflection']] as [$text, $name]) {
+            if (mb_strlen($text) > 2000) {
+                $errors[] = 'The ' . $name . ' section is limited to 2000 characters.';
+            }
+        }
+
+        $hours = $hasHours ? round($totalHours, 1) : null;
+        if ($submit && $days === []) {
+            $errors[] = 'Record at least one working day before submitting.';
+        }
+        if ($submit && $hours === null) {
+            $errors[] = 'Enter the hours worked for at least one day.';
+        } elseif ($hours !== null && ($hours < 0.5 || $hours > 60)) {
+            $errors[] = 'Total hours for the week must be between 0.5 and 60.';
         }
 
         if ($errors !== []) {
-            foreach ($errors as $message) {
-                \flash('error', $message);
-            }
-            \redirect('student/logbook/new' . ($id > 0 ? '&week=' . $week : ''));
+            return ['ok' => false, 'errors' => $errors];
         }
 
-        Database::tx(static function () use ($id, $week, $from, $to, $activities, $hours, $submit, $placement, $student): void {
+        $entryId = Database::tx(static function () use ($id, $week, $from, $to, $activities, $skills, $challenges, $meetingNotes, $reflection, $hours, $days, $submit, $placement, $student): int {
             $now = date('Y-m-d H:i:s');
+            $id = (int) $id;
             if ($id > 0) {
                 $row = Database::one(
                     'SELECT * FROM logbook_entry WHERE entry_id = ? AND placement_id = ?',
@@ -431,6 +607,10 @@ final class StudentController
                     'date_from' => $from,
                     'date_to' => $to,
                     'activities' => $activities,
+                    'technical_skills' => $skills !== '' ? $skills : null,
+                    'challenges' => $challenges !== '' ? $challenges : null,
+                    'meeting_notes' => $meetingNotes !== '' ? $meetingNotes : null,
+                    'reflection' => $reflection !== '' ? $reflection : null,
                     'hours' => $hours,
                     'status' => $submit ? 'submitted' : 'draft',
                     'updated_at' => $now,
@@ -447,6 +627,10 @@ final class StudentController
                     'date_from' => $from,
                     'date_to' => $to,
                     'activities' => $activities,
+                    'technical_skills' => $skills !== '' ? $skills : null,
+                    'challenges' => $challenges !== '' ? $challenges : null,
+                    'meeting_notes' => $meetingNotes !== '' ? $meetingNotes : null,
+                    'reflection' => $reflection !== '' ? $reflection : null,
                     'hours' => $hours,
                     'status' => $submit ? 'submitted' : 'draft',
                     'submitted_at' => $submit ? $now : null,
@@ -459,29 +643,68 @@ final class StudentController
                 ]);
             }
 
+            Database::q('DELETE FROM logbook_day WHERE entry_id = ?', [$id]);
+            ksort($days);
+            foreach ($days as $day) {
+                Database::insert('logbook_day', [
+                    'entry_id' => $id,
+                    'work_date' => $day['date'],
+                    'tasks' => $day['tasks'],
+                    'hours' => $day['hours'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+            Audit::log('logbook.days_saved', 'logbook_entry', $id, null, ['days' => count($days)]);
+
             if ($submit) {
+                $entryData = [
+                    'week_no' => $week,
+                    'date_from' => $from,
+                    'date_to' => $to,
+                    'hours' => $hours,
+                    'activities' => $activities,
+                    'technical_skills' => $skills,
+                    'challenges' => $challenges,
+                    'meeting_notes' => $meetingNotes,
+                    'reflection' => $reflection,
+                    'submitted_at' => $now,
+                ];
+                $dayRows = [];
+                foreach ($days as $day) {
+                    $dayRows[] = ['work_date' => $day['date'], 'tasks' => $day['tasks'], 'hours' => $day['hours']];
+                }
+                $studentName = $student['first_name'] . ' ' . $student['last_name'];
+
                 $supervisor = $placement['supervisor_id'];
                 if ($supervisor !== null) {
+                    [$subject, $mail] = LogbookDigest::weeklyMail($entryData, $dayRows, $placement, $student, 'supervisor/entry', ['id' => $id]);
                     Notify::push(
                         (int) $supervisor,
                         'logbook',
-                        'Week ' . $week . ' logbook awaiting review',
-                        $student['first_name'] . ' ' . $student['last_name'] . ' submitted week ' . $week . ' of the logbook for approval.',
-                        'index.php?r=supervisor/entry&id=' . $id
+                        $subject,
+                        $studentName . ' submitted week ' . $week . ' of the logbook for approval.',
+                        'index.php?r=supervisor/entry&id=' . $id,
+                        true,
+                        $mail
                     );
                 }
+                [$subject, $mail] = LogbookDigest::weeklyMail($entryData, $dayRows, $placement, $student, 'mentor/entry', ['id' => $id]);
                 Notify::push(
                     (int) $placement['mentor_id'],
                     'logbook',
-                    'Week ' . $week . ' logbook submitted',
-                    $student['first_name'] . ' ' . $student['last_name'] . ' submitted week ' . $week . '. It is now with the host supervisor.',
-                    'index.php?r=mentor/entry&id=' . $id
+                    $subject,
+                    $studentName . ' submitted week ' . $week . '. It is now with the host supervisor.',
+                    'index.php?r=mentor/entry&id=' . $id,
+                    true,
+                    $mail
                 );
             }
+
+            return $id;
         });
 
-        \flash('success', $submit ? 'Logbook week submitted to your host supervisor.' : 'Draft saved.');
-        \redirect('student/logbook');
+        return ['ok' => true, 'entry_id' => $entryId, 'week' => $week, 'status' => $submit ? 'submitted' : 'draft'];
     }
 
     public function entrySubmit(): void
@@ -489,8 +712,11 @@ final class StudentController
         $student = $this->student();
         $id = (int) \post('entry_id', 0);
         $entry = Database::one(
-            'SELECT e.*, p.supervisor_id, p.mentor_id
-             FROM logbook_entry e JOIN placement p ON p.placement_id = e.placement_id
+            'SELECT e.*, p.supervisor_id, p.mentor_id, p.total_weeks,
+                    o.name AS org_name, o.district AS org_district
+             FROM logbook_entry e
+             JOIN placement p ON p.placement_id = e.placement_id
+             JOIN organisation o ON o.org_id = p.org_id
              WHERE e.entry_id = ? AND p.student_id = ?',
             [$id, (int) $student['student_id']]
         );
@@ -504,8 +730,39 @@ final class StudentController
             \flash('error', 'That entry is not in a state that can be submitted.');
             \redirect('student/logbook');
         }
+        $dayCount = (int) Database::val('SELECT COUNT(*) FROM logbook_day WHERE entry_id = ?', [(int) $entry['entry_id']]);
+        if ($dayCount === 0) {
+            \flash('error', 'Add at least one working day to the week before submitting it.');
+            \redirect('student/logbook/new&week=' . (int) $entry['week_no']);
+        }
 
-        Database::tx(static function () use ($entry, $student): void {
+        $days = Database::all(
+            'SELECT work_date, tasks, hours FROM logbook_day WHERE entry_id = ? ORDER BY work_date',
+            [(int) $entry['entry_id']]
+        );
+        $entryData = [
+            'week_no' => (int) $entry['week_no'],
+            'date_from' => (string) $entry['date_from'],
+            'date_to' => (string) $entry['date_to'],
+            'hours' => $entry['hours'],
+            'activities' => (string) $entry['activities'],
+            'technical_skills' => (string) ($entry['technical_skills'] ?? ''),
+            'challenges' => (string) ($entry['challenges'] ?? ''),
+            'meeting_notes' => (string) ($entry['meeting_notes'] ?? ''),
+            'reflection' => (string) ($entry['reflection'] ?? ''),
+            'submitted_at' => date('Y-m-d H:i:s'),
+        ];
+        $mailPlacement = [
+            'org_name' => (string) $entry['org_name'],
+            'district' => $entry['org_district'],
+            'total_weeks' => (int) $entry['total_weeks'],
+            'supervisor_id' => $entry['supervisor_id'],
+        ];
+        $studentName = $student['first_name'] . ' ' . $student['last_name'];
+        [$supSubject, $supMail] = LogbookDigest::weeklyMail($entryData, $days, $mailPlacement, $student, 'supervisor/entry', ['id' => (int) $entry['entry_id']]);
+        [$menSubject, $menMail] = LogbookDigest::weeklyMail($entryData, $days, $mailPlacement, $student, 'mentor/entry', ['id' => (int) $entry['entry_id']]);
+
+        Database::tx(static function () use ($entry, $student, $studentName, $supSubject, $supMail, $menSubject, $menMail): void {
             Database::update('logbook_entry', [
                 'status' => 'submitted',
                 'submitted_at' => date('Y-m-d H:i:s'),
@@ -516,17 +773,21 @@ final class StudentController
                 Notify::push(
                     (int) $entry['supervisor_id'],
                     'logbook',
-                    'Week ' . $entry['week_no'] . ' logbook awaiting review',
-                    $student['first_name'] . ' ' . $student['last_name'] . ' submitted week ' . $entry['week_no'] . '.',
-                    'index.php?r=supervisor/entry&id=' . (int) $entry['entry_id']
+                    $supSubject,
+                    $studentName . ' submitted week ' . $entry['week_no'] . '.',
+                    'index.php?r=supervisor/entry&id=' . (int) $entry['entry_id'],
+                    true,
+                    $supMail
                 );
             }
             Notify::push(
                 (int) $entry['mentor_id'],
                 'logbook',
-                'Week ' . $entry['week_no'] . ' logbook submitted',
-                $student['first_name'] . ' ' . $student['last_name'] . ' submitted week ' . $entry['week_no'] . '.',
-                'index.php?r=mentor/entry&id=' . (int) $entry['entry_id']
+                $menSubject,
+                $studentName . ' submitted week ' . $entry['week_no'] . '.',
+                'index.php?r=mentor/entry&id=' . (int) $entry['entry_id'],
+                true,
+                $menMail
             );
         });
 
@@ -546,10 +807,29 @@ final class StudentController
             return;
         }
 
+        $days = Database::all(
+            'SELECT work_date, tasks, hours FROM logbook_day WHERE entry_id = ? ORDER BY work_date',
+            [$id]
+        );
+        $sentDays = [];
+        $sendDayRoute = null;
+        if (in_array((string) $entry['status'], ['draft', 'returned'], true)) {
+            $recipients = 1 + (($entry['supervisor_id'] ?? null) !== null ? 1 : 0);
+            foreach (LogbookDigest::deliveredDays($id) as $workDate => $userIds) {
+                if (count(array_unique($userIds)) >= $recipients) {
+                    $sentDays[$workDate] = true;
+                }
+            }
+            $sendDayRoute = 'student/logbook/send-day';
+        }
+
         View::render('student/entry_view', [
             'title' => 'Week ' . $entry['week_no'] . ' entry',
             'entry' => $entry,
+            'days' => $days,
             'comments' => $this->comments($id),
+            'sentDays' => $sentDays,
+            'sendDayRoute' => $sendDayRoute,
             'attachments' => Database::all(
                 'SELECT d.*, rv.first_name AS reviewer_first, rv.last_name AS reviewer_last
                  FROM document d LEFT JOIN users rv ON rv.user_id = d.reviewed_by

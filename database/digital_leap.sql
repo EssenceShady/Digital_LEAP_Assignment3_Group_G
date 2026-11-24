@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS conversation_member;
 DROP TABLE IF EXISTS conversation;
 DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS user_preference;
 DROP TABLE IF EXISTS email_queue;
 DROP TABLE IF EXISTS notification;
 DROP TABLE IF EXISTS mark;
@@ -31,6 +32,7 @@ DROP TABLE IF EXISTS grade_scale;
 DROP TABLE IF EXISTS evaluation_score;
 DROP TABLE IF EXISTS evaluation;
 DROP TABLE IF EXISTS criterion;
+DROP TABLE IF EXISTS logbook_day;
 DROP TABLE IF EXISTS logbook_comment;
 DROP TABLE IF EXISTS logbook_entry;
 DROP TABLE IF EXISTS placement;
@@ -224,6 +226,10 @@ CREATE TABLE logbook_entry (
   date_from    DATE NOT NULL,
   date_to      DATE NOT NULL,
   activities   TEXT NOT NULL,
+  technical_skills TEXT NULL,
+  challenges   TEXT NULL,
+  meeting_notes TEXT NULL,
+  reflection   TEXT NULL,
   hours        DECIMAL(4,1) NULL,
   status       ENUM('draft','submitted','approved','returned','mentor_reviewed') NOT NULL DEFAULT 'draft',
   submitted_at DATETIME NULL,
@@ -237,6 +243,23 @@ CREATE TABLE logbook_entry (
   CONSTRAINT fk_entry_placement FOREIGN KEY (placement_id) REFERENCES placement (placement_id) ON DELETE CASCADE,
   CONSTRAINT fk_entry_reviewer FOREIGN KEY (reviewed_by) REFERENCES users (user_id) ON DELETE SET NULL,
   CONSTRAINT chk_entry_dates CHECK (date_to >= date_from)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- One row per day worked, mirroring the Day / Date / Tasks / Hours grid
+-- in the official log book (guidebook pages 19-20).
+CREATE TABLE logbook_day (
+  day_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  entry_id   INT UNSIGNED NOT NULL,
+  work_date  DATE NOT NULL,
+  tasks      VARCHAR(1000) NOT NULL,
+  hours      DECIMAL(4,1) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (day_id),
+  UNIQUE KEY uq_day_once (entry_id, work_date),
+  KEY idx_day_date (work_date),
+  CONSTRAINT fk_day_entry FOREIGN KEY (entry_id) REFERENCES logbook_entry (entry_id) ON DELETE CASCADE,
+  CONSTRAINT chk_day_hours CHECK (hours IS NULL OR (hours >= 0 AND hours <= 24))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE logbook_comment (
@@ -641,6 +664,42 @@ CREATE TABLE diva_turn (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- ---------------------------------------------------------------------
+-- Offline outbox idempotency
+-- One row per operation the offline shell sent, so a retried request is
+-- applied at most once even when two tabs or devices race.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE sync_op (
+  op_id           CHAR(36) NOT NULL,
+  user_id         INT UNSIGNED NOT NULL,
+  op_kind         VARCHAR(40) NOT NULL,
+  payload_hash    CHAR(64) NOT NULL,
+  result_entry_id INT UNSIGNED NULL,
+  result_status   VARCHAR(20) NULL,
+  status          ENUM('processing','applied') NOT NULL DEFAULT 'processing',
+  created_at      DATETIME NOT NULL,
+  PRIMARY KEY (op_id),
+  KEY idx_sync_op_user (user_id, created_at),
+  CONSTRAINT fk_sync_op_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- Per-account settings
+-- One row per preference key: which notification families still earn an
+-- email copy, and how the interface should read. Absent rows mean the
+-- shipped defaults, so no seed data is required.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE user_preference (
+  user_id    INT UNSIGNED NOT NULL,
+  pref_key   VARCHAR(64)  NOT NULL,
+  pref_value VARCHAR(64)  NOT NULL,
+  updated_at DATETIME     NOT NULL,
+  PRIMARY KEY (user_id, pref_key),
+  CONSTRAINT fk_user_preference_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =====================================================================
 -- Demonstration data
 -- =====================================================================
@@ -782,6 +841,141 @@ INSERT INTO logbook_entry (entry_id, placement_id, week_no, date_from, date_to, 
   (10,1,10,'2026-11-02','2026-11-06','Completed the reporting module draft and began integration testing with sample data.','39.5','returned','2026-11-06 16:55:00',5,'2026-11-09 09:05:00'),
   (11,1,11,'2026-11-09','2026-11-13','Fixed the integration issues, added export to CSV and demonstrated it to the supervisor.','40.0','submitted','2026-11-13 12:20:00',NULL,NULL),
   (12,1,12,'2026-11-16','2026-11-20','Preparing the final handover documentation and closing tasks.',NULL,'draft',NULL,NULL,NULL);
+
+-- Weekly sections from the log book form (guidebook pages 19-20).
+UPDATE logbook_entry SET
+  technical_skills = 'Basic network health checks and how to read a server room checklist.',
+  challenges = 'Understanding the asset register structure without prior exposure to inventory records.',
+  meeting_notes = 'Mon 31 Aug: induction with the IT manager; agreed the workstation and reporting line.',
+  reflection = 'A calm first week. I need to ask more specific questions rather than waiting to be told.'
+WHERE entry_id = 1;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Installing a local PHP and MySQL stack; reading backup logs.',
+  challenges = 'The backup routine differs from the handbook, so I confirmed the real schedule with the administrator.',
+  meeting_notes = 'Fri 11 Sep: short review with the network administrator on what to practise next.',
+  reflection = 'Shadowing showed how much of the role is routine checks rather than repairs.'
+WHERE entry_id = 2;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Reconciling two data sources and spotting duplicate or missing records.',
+  challenges = 'Twelve machines had no serial number and the invoices were filed by supplier rather than by date.',
+  meeting_notes = 'Fri 18 Sep: agreed the correction process with the stores officer.',
+  reflection = 'Accuracy matters more than speed; I slowed down and the errors fell.'
+WHERE entry_id = 3;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Spreadsheet validation lists, lookup formulas and stock movement logic.',
+  challenges = 'Designing a sheet that non-technical staff could use without training.',
+  meeting_notes = 'Thu 24 Sep: walkthrough with the stores officer and feedback on the column names.',
+  reflection = 'A simpler design beat a complete one; I removed two features after the walkthrough.'
+WHERE entry_id = 4;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Helpdesk triage, identity verification before password resets, ticket logging.',
+  challenges = 'Handling several requests at once while keeping the identity checks strict.',
+  meeting_notes = 'Fri 2 Oct: ticket review with the supervisor; printer faults recurred three times.',
+  reflection = 'Most tickets were the same three problems, which points to a training need.'
+WHERE entry_id = 5;
+
+UPDATE logbook_entry SET
+  technical_skills = 'PHP forms, PDO inserts, search pages and basic server configuration.',
+  challenges = 'Moving from a spreadsheet to a database meant deciding what a record actually is.',
+  meeting_notes = 'Thu 8 Oct: presented the prototype to the IT manager and agreed the next requirements.',
+  reflection = 'Presenting early was uncomfortable, but it changed the design for the better.'
+WHERE entry_id = 6;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Server-side validation, input sanitising and writing end-user documentation.',
+  challenges = 'Testing my own work fairly; I kept choosing inputs that I knew would pass.',
+  meeting_notes = 'Fri 16 Oct: handed the user guide draft to the IT manager for review.',
+  reflection = 'Writing the guide exposed gaps in the form that I had not noticed.'
+WHERE entry_id = 7;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Structured usability feedback, prioritising fixes and printable views.',
+  challenges = 'Two users entered dates in different formats and the form accepted both.',
+  meeting_notes = 'Fri 23 Oct: feedback review with the stores team and agreed order of fixes.',
+  reflection = 'Real users find problems that my own testing never would.'
+WHERE entry_id = 8;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Report queries with grouping and reconciliation of totals.',
+  challenges = 'The public holiday cost a day and two planned tasks had to move to the next week.',
+  meeting_notes = 'Fri 30 Oct: the supervisor asked for the dropped tasks to be listed explicitly.',
+  reflection = 'The entry was returned because it did not say what was dropped; I now state that.'
+WHERE entry_id = 9;
+
+UPDATE logbook_entry SET
+  technical_skills = 'Integration testing, reading failure logs and correcting query errors.',
+  challenges = 'Two errors only appeared on records with no movement in the report period.',
+  meeting_notes = 'Fri 6 Nov: testing review with the mentor, who asked for the test cases in the entry.',
+  reflection = 'The mentor wants evidence, not a summary; I will attach the cases next time.'
+WHERE entry_id = 10;
+
+UPDATE logbook_entry SET
+  technical_skills = 'CSV export, edge-case validation and demonstrating to a non-technical audience.',
+  challenges = 'Exporting correct totals when a report period contained no stock movements.',
+  meeting_notes = 'Thu 12 Nov: demonstrated the finished module to the host supervisor.',
+  reflection = 'The work is ready for handover; the documentation still needs tightening.'
+WHERE entry_id = 11;
+
+-- Daily records: one row per working day, matching the paper log book grid.
+INSERT INTO logbook_day (entry_id, work_date, tasks, hours) VALUES
+  (1,'2026-08-31','Induction briefing with HR; issued staff ID and workstation.',7.5),
+  (1,'2026-09-01','Met the IT team; reviewed the internship handbook and site rules.',7.5),
+  (1,'2026-09-02','Observed the morning network and server health checks.',7.5),
+  (1,'2026-09-03','Set up email and shared drive access with the systems administrator.',7.5),
+  (1,'2026-09-04','Read the asset register structure and noted questions for the stores officer.',7.5),
+  (2,'2026-09-07','Installed the development environment (VS Code, XAMPP) on the assigned laptop.',8.0),
+  (2,'2026-09-08','Shadowed the network administrator during the daily backup check.',8.0),
+  (2,'2026-09-09','Practised SQL queries against a test copy of the inventory database.',8.0),
+  (2,'2026-09-10','Attended the weekly IT stand-up and recorded the action points.',8.0),
+  (2,'2026-09-11','Wrote notes on the network layout for my own reference.',8.0),
+  (3,'2026-09-14','Began auditing the asset register against the stores records.',7.5),
+  (3,'2026-09-15','Checked forty machines and logged twelve missing serial numbers.',7.5),
+  (3,'2026-09-16','Cross-checked procurement invoices to recover the missing details.',7.5),
+  (3,'2026-09-17','Prepared a list of discrepancies for the stores officer.',7.5),
+  (3,'2026-09-18','Submitted the discrepancy list and agreed the correction process.',8.0),
+  (4,'2026-09-21','Drafted the inventory tracking sheet with validation lists.',8.0),
+  (4,'2026-09-22','Added formulas for stock movement and remaining quantities.',8.0),
+  (4,'2026-09-23','Tested the sheet with five sample stock movements.',8.0),
+  (4,'2026-09-24','Walked the stores officer through the sheet and took feedback.',8.0),
+  (4,'2026-09-25','Applied the feedback: renamed columns and added a summary tab.',8.0),
+  (5,'2026-09-28','Joined the helpdesk queue under supervision and handled three tickets.',8.0),
+  (5,'2026-09-29','Resolved four password reset requests following the identity check procedure.',8.0),
+  (5,'2026-09-30','Assisted a user with a printer mapping problem.',8.0),
+  (5,'2026-10-01','Logged a hardware fault and escalated it with the serial number recorded.',8.0),
+  (5,'2026-10-02','Reviewed the closed tickets with the supervisor and noted recurring issues.',7.0),
+  (6,'2026-10-05','Recreated the inventory sheet as a small PHP form on the test server.',8.0),
+  (6,'2026-10-06','Connected the form to a MySQL table and tested inserts.',8.0),
+  (6,'2026-10-07','Added a search page for the stores team.',8.0),
+  (6,'2026-10-08','Presented the working prototype to the IT manager.',8.0),
+  (6,'2026-10-09','Documented the remaining requirements from the presentation.',8.0),
+  (7,'2026-10-12','Added server-side validation to every field on the form.',7.5),
+  (7,'2026-10-13','Wrote the first draft of a short user guide for the stores team.',7.5),
+  (7,'2026-10-14','Tested validation with empty and invalid submissions.',8.0),
+  (7,'2026-10-15','Corrected two bugs found in testing with the stores officer.',7.5),
+  (7,'2026-10-16','Handed the user guide draft to the IT manager for review.',8.0),
+  (8,'2026-10-19','Ran the form with three users and recorded their comments.',8.0),
+  (8,'2026-10-20','Grouped the feedback into usability and data-quality issues.',8.0),
+  (8,'2026-10-21','Fixed the date entry problem reported by two users.',8.0),
+  (8,'2026-10-22','Added a printable stock list page.',8.0),
+  (8,'2026-10-23','Presented the revised form and the feedback log.',8.0),
+  (9,'2026-10-26','Started the reporting module: daily stock movement report.',8.0),
+  (9,'2026-10-27','Built the report query and checked the totals against the spreadsheet.',8.0),
+  (9,'2026-10-29','Returned after the public holiday; adjusted the report layout.',8.0),
+  (9,'2026-10-30','Showed the draft to the supervisor; two planned tasks could not be completed.',8.0),
+  (10,'2026-11-02','Completed the reporting module draft with date filters.',8.0),
+  (10,'2026-11-03','Prepared sample data for integration testing.',8.0),
+  (10,'2026-11-04','Ran the first integration tests and logged the failures.',8.0),
+  (10,'2026-11-05','Fixed two query errors found in testing.',8.0),
+  (10,'2026-11-06','Re-ran the tests and recorded the results in the test log.',7.5),
+  (11,'2026-11-09','Fixed the remaining integration issues.',8.0),
+  (11,'2026-11-10','Added export to CSV on both list pages.',8.0),
+  (11,'2026-11-11','Tested the CSV export with the stores officer.',8.0),
+  (11,'2026-11-12','Demonstrated the finished module to the supervisor.',8.0),
+  (11,'2026-11-13','Updated the user guide and closed the open issues.',8.0);
 
 INSERT INTO logbook_comment (comment_id, entry_id, user_id, parent_id, body, created_at) VALUES
   (1,9,5,NULL,'The entry does not explain which planned tasks were dropped. Please add that and resubmit.','2026-11-02 09:20:00'),

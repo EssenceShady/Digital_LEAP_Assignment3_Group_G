@@ -26,6 +26,19 @@ function asset(string $path): string
     return ($GLOBALS['base'] ?? '') . '/public/assets/' . $path . $version;
 }
 
+/** Application root without a trailing slash, e.g. "/digital-leap" or "". */
+function app_root(): string
+{
+    return rtrim((string) ($GLOBALS['base'] ?? ''), '/');
+}
+
+/** A file under public/ that is not versioned, e.g. the manifest or offline page. */
+function public_file(string $path): string
+{
+    return app_root() . '/public/' . ltrim($path, '/');
+}
+
+
 function redirect(string $route = '', array $params = [], string $fragment = ''): void
 {
     header('Location: ' . url($route, $params) . ($fragment !== '' ? '#' . $fragment : ''));
@@ -72,6 +85,26 @@ function fmt_dt(?string $value): string
     return $ts ? date('d M Y, H:i', $ts) : '—';
 }
 
+function fmt_hours($value): string
+{
+    if ($value === null || $value === '') {
+        return '—';
+    }
+    return rtrim(rtrim(number_format((float) $value, 1), '0'), '.');
+}
+
+function fmt_distance($metres): string
+{
+    if ($metres === null || $metres === '') {
+        return '—';
+    }
+    $value = (float) $metres;
+    if ($value < 1000) {
+        return number_format($value, 0) . ' m';
+    }
+    return number_format($value / 1000, 1) . ' km';
+}
+
 function password_policy_error(string $password): ?string
 {
     if (strlen($password) < 8
@@ -96,6 +129,39 @@ function review_label(?string $reviewedAt, ?string $firstName, ?string $lastName
     }
     $who = trim((string) $firstName . ' ' . (string) $lastName);
     return 'Reviewed by ' . e($who !== '' ? $who : 'a reviewer') . ' · ' . e(fmt_dt($reviewedAt));
+}
+
+/** A readable sentence for an audit action such as placement.approve. */
+function humanise_action(string $action): string
+{
+    static $map = [
+        'placement.approve' => 'Placement approved',
+        'placement.approved' => 'Placement approved',
+        'placement.created' => 'Placement created',
+        'placement.career_fair_scored' => 'Career fair score recorded',
+        'placement.type_changed' => 'Internship type changed',
+        'letter.rendered' => 'Placement letter generated',
+        'document.upload' => 'Document uploaded',
+        'document.reviewed' => 'Document reviewed',
+        'logbook.approve' => 'Log book week approved',
+        'logbook.approved' => 'Log book week approved',
+        'logbook.return' => 'Log book week returned',
+        'logbook.returned' => 'Log book week returned',
+        'logbook.comment_added' => 'Comment added to the log book',
+        'logbook.days_saved' => 'Daily records saved',
+        'logbook.day_notice' => 'Daily record emailed to supervisor and mentor',
+        'logbook.updated' => 'Log book updated',
+        'attendance.check_in' => 'Attendance check-in',
+        'attendance.check_out' => 'Attendance check-out',
+        'organisation.geo_updated' => 'Site location set',
+        'mark.computed' => 'Draft mark computed',
+        'mark.publish' => 'Mark published',
+    ];
+    if (isset($map[$action])) {
+        return $map[$action];
+    }
+    $words = str_replace(['.', '_'], ' ', (string) preg_replace('/^(placement|document|logbook|career_fair|mark)\./', '', $action));
+    return ucfirst(trim($words));
 }
 
 function status_badge(?string $status): string
@@ -228,29 +294,29 @@ function nav_items(): array
             ['dashboard', 'Dashboard'],
             ['student/apply', 'Apply for Internship'],
             ['student/placement', 'My Placement'],
-            ['student/logbook', 'Logbook'],
-            ['student/report', 'Internship Report'],
-            ['student/self-evaluation', 'Self Evaluation'],
+            ['student/logbook', 'Logbook (Form E)'],
+            ['student/report', 'Internship Report (Form C)'],
+            ['student/self-evaluation', 'Self Evaluation (Form E)'],
             ['student/career-fair', 'Career Fair 2026'],
-            ['student/results', 'Results'],
+            ['student/results', 'Results (Form E)'],
             ['diva', 'DIVA'],
             ['messages', 'Messages'],
         ],
         'supervisor' => [
             ['dashboard', 'Dashboard'],
             ['diva', 'DIVA'],
-            ['supervisor/queue', 'Logbook Queue'],
-            ['supervisor/evaluation', 'Evaluation'],
+            ['supervisor/queue', 'Logbook Queue (Form E)'],
+            ['supervisor/evaluation', 'Form D evaluation'],
         ],
         'mentor' => [
             ['dashboard', 'Dashboard'],
             ['diva', 'DIVA'],
             ['messages', 'Messages'],
             ['mentor/students', 'My Students'],
-            ['mentor/logbook', 'Logbook Review'],
+            ['mentor/logbook', 'Logbook Review (Form E)'],
             ['mentor/visits', 'Site Visits'],
-            ['mentor/evaluation', 'Evaluation'],
-            ['mentor/reports', 'Report Assessment'],
+            ['mentor/evaluation', 'Mentor evaluation'],
+            ['mentor/reports', 'Report Assessment (Form C)'],
         ],
         'coordinator' => [
             ['dashboard', 'Dashboard'],
@@ -260,7 +326,7 @@ function nav_items(): array
             ['coordinator/placements', 'Placements'],
             ['coordinator/organisations', 'Organisations'],
             ['coordinator/visits', 'Site Visits'],
-            ['coordinator/grades', 'Grades'],
+            ['coordinator/grades', 'Grades (Form E)'],
         ],
         'management' => [
             ['dashboard', 'Dashboard'],
@@ -279,9 +345,13 @@ function nav_items(): array
         ],
     ];
 
-    return $map[$role] ?? [['dashboard', 'Dashboard']];
-}
+    $items = $map[$role] ?? [['dashboard', 'Dashboard']];
+    // The guidebook is published to every role, so it closes the list instead
+    // of being repeated in each role's own array.
+    $items[] = ['guidebook', 'Guidebook'];
 
+    return $items;
+}
 function career_fair_deadline(): string
 {
     return '2026-11-11 12:00:00';

@@ -17,7 +17,7 @@ foreach ($settings as $row) {
 
 <div class="card">
     <div class="card-head">
-        <div><h2>Weights</h2><p>Practical Internship split: <strong><?= e(number_format($sum, 2)) ?>%</strong>. Logbook, Form D and self evaluation must add up to 100. Report and Career Fair are marks out of 100, carried at 75 and 25 of the 200 final marks.</p></div>
+        <div><h2>Weights (Form E)</h2><p>Form E splits Practical Internship as follows: <strong><?= e(number_format($sum, 2)) ?>%</strong>. Logbook (50%), Form D (40%) and self evaluation (10%) must add up to 100. Report and Career Fair are marks out of 100, carried at 75 and 25 of the 200 final marks.</p></div>
     </div>
 </div>
 

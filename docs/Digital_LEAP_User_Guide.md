@@ -37,7 +37,8 @@ a row lock the account for fifteen minutes; an administrator can unlock it.
 **Finding your way around.** The left menu lists the pages your role may open; on a phone
 it collapses into a drawer. The bell shows notifications and an inbox preview, and the
 envelope opens placement messages. A short guided tour runs after registration and can be
-repeated from **Take the tour**. Your name, role and photo sit at the top of the menu.
+repeated from **Take the tour**. Your name, role and photo sit at the top of the menu, and
+**My settings** is in the account menu and at the foot of the sidebar.
 
 ---
 
@@ -54,38 +55,61 @@ renumber immediately. Attach a CV as PDF, Word, JPG or PNG. Once the coordinator
 allocated a placement the preference list becomes read-only.
 
 **Your placement and progress (student).** **My placement** shows the organisation, the
-academic year and semester, your supervisor and mentor. **Placement letter** opens a
+academic year and semester, your supervisor and mentor; the paper forms A2 (industrial
+training agreement), A3 (placement agreement) and B (industrial training notification) are
+signed against this record. **Placement letter** opens a
 printable confirmation letter. The dashboard's **Internship progress** card tracks
 placement, logbook, both evaluations, the site visit, the report and publication.
 
-**Writing a logbook entry (student).** Open **Logbook** and choose the week. Record the
-activities and learning, then **Save draft** while still working or **Submit** when ready.
-A submitted entry cannot be edited; a supervisor may return it with a comment, and a
-returned entry can be corrected and resubmitted. Attach evidence files and download them
-later. Use **Reply** under a comment to answer in a threaded conversation. The official
-16-page log book template opens or downloads from the same page.
+**Attendance (student).** The **Attendance** card on **My placement** has **Check in at
+site** and **Check out** — press one when you arrive or leave, once a day each. Your
+location is read only at that moment and is stored with the record; if you decline it,
+the check-in is saved as attested and you can carry on. Each record shows the time and,
+once the coordinator has set the site pin, how far you were from it. Only students are
+tracked, and only at their own placement.
 
-**Reviewing entries (host supervisor).** **Queue** lists the entries waiting for you, newest
+**Writing a logbook entry (student, Form E — 50%).** Open **Logbook (Form E)** and choose
+the week. The entry
+follows the paper log book: a row per day with the day, date, tasks performed and hours,
+so leave a row empty for weekends or holidays. The week total comes from those rows. Below
+the daily table write the weekly summary and, when they apply, the technical skills,
+challenges, mentor or industry-supervisor meeting and reflection sections. **Save draft**
+while still working or **Submit** when ready; an entry needs at least one day before it
+can be submitted. A submitted entry cannot be edited; a supervisor may return it with a
+comment, and a returned entry can be corrected and resubmitted. Attach evidence files and
+download them later. Use **Reply** under a comment to answer in a threaded conversation.
+Each day you save is emailed to your host supervisor and academic mentor that evening, even
+while the week is a draft; submitting emails the full week to both. Each day row also has
+**Send** so you can push a finished day to both of them straight away — Monday's record can
+go on Monday — and the button then reads **Sent**. Sending a day does not submit the week;
+the full week still goes to them when you submit. The official 16-page log
+book template opens or downloads from the same page.
+
+**Reviewing entries (host supervisor, Form E).** **Logbook queue (Form E)** lists the entries waiting for you, newest
 submission first. Narrow the list with the **Status** and **Week** filters at the top of the
 list and press **Apply filters**; press **Reset** to clear them. Open an entry from the
-queue to read the full week, its attachments and the conversation. **Approve** passes it to
-the mentor; **Return** sends it back to the student and requires a comment saying what must
-change. Comment on an approved entry at any time. The draft entries a student has not
-submitted are never shown in the queue.
+queue to read the daily records, the weekly summary and sections, the attachments and the
+conversation. **Approve** passes it to the mentor; **Return** sends it back to the student
+and requires a comment saying what must change. Comment on an approved entry at any time.
+The queue never shows a draft the student has not submitted. Draft days still reach you one
+at a time by email, named as drafts, so you can follow progress; formal review starts when
+the student submits the week. The entry also shows the student's site check-ins with the
+time of each and the distance from the site pin once the coordinator has set one.
 
-**Form D (host supervisor).** **Evaluation** scores the six workplace criteria with their
-printed weights. The form cannot be saved half-finished, and the weights must total the
-stated maximum. Once saved, the total becomes the Form D component — 40 of the 100
-practical marks.
+**Form D (host supervisor, D1 at week 6 and D2 at week 12).** **Form D evaluation** scores the six workplace criteria with
+their printed weights. The form cannot be saved half-finished, and the weights must total
+the stated maximum. Once saved, the total becomes the Form D component — 40 of the 100
+practical marks. The equivalent **Mentor evaluation** screen uses the mentor's own
+criteria, is advisory and carries no marks.
 
 ---
 
 ## 3. Mentor, coordinator, management and administrator: assessment and oversight
 
-**The rest of the assessment chain.** The academic mentor opens **Logbook** to review
+**The rest of the assessment chain.** The academic mentor opens **Logbook review (Form E)** to review
 entries the supervisor has approved; a comment moves the entry to mentor-reviewed.
 **Visits** records each site visit with its date, mode and outcome, and filters by student,
-status and date range. **Reports** assesses the internship report (75 of the 200 marks) and
+status and date range. **Report assessment (Form C)** assesses the internship report (75 of the 200 marks) and
 lists the Career Fair submissions with their timing; opening a file marks it reviewed. The
 mentor's own evaluation (40/35/25) is recorded for information and carries no marks.
 
@@ -95,7 +119,7 @@ filters by academic year, status and organisation. **Allocate** refuses a studen
 already holds a placement for that year, a supervisor from another organisation, and an
 allocation beyond the organisation's capacity.
 
-**Marks (coordinator).** **Grades** shows each placement's components and running total.
+**Marks (coordinator).** **Grades (Form E)** shows each placement's components and running total.
 The final mark is out of 200: Practical Internship 100 (logbook 50, Form D 40, self
 evaluation 10) plus Internship Report 75 plus Career Fair 25. Enter the Career Fair score,
 then **Compute**, **Moderate** if justified, and **Publish**. A published mark cannot be
@@ -115,10 +139,25 @@ initials are shown. A photo is served only to someone who could already see that
 the product — yourself, staff with directory access, or a participant in the same
 placement, conversation or logbook thread.
 
+**My settings.** Every role has the same page, and it only ever changes your own account.
+Four boxes choose which notifications are also copied to email — logbook, placement,
+messages, marks. Clearing one removes the email copy, never the item in the bell or your
+history. **Text size** and **Reduce motion** take effect the moment you pick them and follow
+your account to any device you sign in from. The **This device** card shows what this browser
+holds for offline work — installed state, saved DIVA answers, log book changes waiting to
+send, cached pages — and can clear the device-side copies, which touches no record in the
+database.
+
 **Messages.** Students, mentors and coordinators have placement conversations with quoted
 replies, reactions, unread counts and a fifteen-minute edit window. A student can message
 their own mentor and coordinator; students cannot message one another, and a deleted
 message leaves a tombstone so replies keep their place.
+
+**Guidebook.** Every role has **Guidebook** at the foot of the menu. **Open the PDF** shows
+the full 25-page internship guidebook in your browser; **Download PDF** saves the same file
+for printing or keeping. The list below names every page; choosing one opens the same PDF
+at that page in your browser's viewer, so you always read the document itself. DIVA's
+citations still offer the page as plain text, and that text page links back to the PDF.
 
 **DIVA.** Every role has the assistant in the left menu. It answers in three ways and names
 which one it used: fixed rules over your own live records, a quoted passage from the
@@ -128,6 +167,8 @@ the eight Form E criteria without giving a mark. It cannot approve work, publish
 send a message, and it says so when asked. Conversations are saved to your own account and
 can be reopened or archived; archiving hides a conversation without deleting it. Answers
 are snapshots, so ask again for current figures.
+
+**Install it and work offline.** In Chrome or Edge, add Digital LEAP to your home screen from the browser's address-bar install control, or from **How to install this app** in the account menu or on **My settings** — saying **Not now** hides the banner only, and those controls are still there tomorrow. Desktop Firefox has no install button for this kind of app; the settings page says so and points to Chrome or Edge, and everything else works the same there. Once installed, pages you have opened stay readable without a connection, log book edits are saved on the device and sent when you reconnect, and DIVA keeps answering guidebook questions from a copy stored on the device. Answers that need live records are refused honestly while offline and your question is queued; reconnect and the queued questions are sent with one notice. Signing out removes saved DIVA answers and cached pages from the device.
 
 ---
 

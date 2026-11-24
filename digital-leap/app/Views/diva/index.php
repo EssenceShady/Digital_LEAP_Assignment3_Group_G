@@ -15,7 +15,13 @@ $prompts = $last !== null ? $last['followups'] : $suggestions;
     </div>
     <a class="btn btn-sm btn-outline" href="<?= e(url('diva/report-check')) ?>">Check a report draft</a>
 </div>
-<div class="diva-shell" data-diva>
+<div class="diva-shell" data-diva data-diva-shell
+     data-api="<?= e(url('api/diva')) ?>"
+     data-index="<?= e(asset('data/diva-index.json')) ?>"
+     data-base="<?= e(app_root()) ?>"
+     data-chat="<?= $chatId ?>"
+     data-user="<?= (int) Auth::id() ?>"
+     data-from="<?= e($from) ?>">
     <aside class="card diva-aside" aria-label="DIVA conversations">
         <a class="btn btn-block" href="<?= e(url('diva', ['from' => $from])) ?>">+ New conversation</a>
         <details class="diva-history" open>
@@ -72,7 +78,13 @@ $prompts = $last !== null ? $last['followups'] : $suggestions;
                     </div>
                 <?php endif; ?>
                 <?php foreach ($turns as $turn): ?>
-                    <article class="chat-msg is-mine" id="diva-turn-<?= (int) $turn['turn_id'] ?>">
+                    <article class="chat-msg is-mine" id="diva-turn-<?= (int) $turn['turn_id'] ?>"
+                             data-diva-turn
+                             data-question="<?= e($turn['question']) ?>"
+                             data-resolved="<?= e($turn['resolved']) ?>"
+                             data-intent="<?= e($turn['intent']) ?>"
+                             data-tier="<?= e($turn['tier']) ?>"
+                             data-sources="<?= e(json_encode($turn['sources'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>">
                         <div class="chat-bubble">
                             <div class="chat-meta"><strong>You</strong><time class="small muted" datetime="<?= e(str_replace(' ', 'T', $turn['asked_at'])) ?>"><?= e(fmt_dt($turn['asked_at'])) ?></time></div>
                             <p class="chat-body diva-message-text"><?= e($turn['question']) ?></p>

@@ -1,0 +1,42 @@
+# Digital LEAP — local Docker stack (application + MariaDB).
+#
+#   1. cp ../digital-leap/config/config.sample.php ../digital-leap/config/config.php
+#      and set db.host to "db", db.user to "root" and db.pass to the value below.
+#   2. docker compose -f deploy/docker-compose.yml up --build
+#   3. Open http://localhost:8080/ and sign in with a demo account.
+#
+# The SQL file is imported only when the database volume is empty. These
+# credentials are for a disposable local stack; change them before any shared
+# deployment.
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ../digital-leap/config/config.php:/var/www/html/digital-leap/config/config.php:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: change-me
+      MARIADB_DATABASE: digital_leap
+    volumes:
+      - leap-db:/var/lib/mysql
+      - ../database/digital_leap.sql:/docker-entrypoint-initdb.d/10-digital-leap.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+    restart: unless-stopped
+
+volumes:
+  leap-db:

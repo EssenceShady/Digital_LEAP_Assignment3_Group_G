@@ -9,8 +9,8 @@ $locked = $evaluation !== null && $evaluation['status'] === 'submitted';
 ?>
 <div class="page-head">
     <div>
-        <h1>Host supervisor evaluation</h1>
-        <p>Independently assess <?= e($placement['first_name'] . ' ' . $placement['last_name']) ?> against the department criteria.</p>
+        <h1>Form D &mdash; host supervisor evaluation</h1>
+        <p>Independently assess <?= e($placement['first_name'] . ' ' . $placement['last_name']) ?> against the department criteria. The guidebook prints this form twice, as D1 at week 6 and D2 at week 12; it carries 40 of the 100 practical marks in Form E.</p>
     </div>
     <div class="page-actions"><a class="btn btn-outline" href="<?= e(url('supervisor/queue')) ?>">Back to queue</a></div>
 </div>

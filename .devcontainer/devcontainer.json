@@ -1,0 +1,21 @@
+{
+    "name": "Digital LEAP (PHP 8 + MariaDB)",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "shutdownAction": "stopCompose",
+    "remoteUser": "root",
+    "forwardPorts": [8080],
+    "portsAttributes": {
+        "8080": {
+            "label": "Digital LEAP",
+            "onAutoForward": "openBrowser",
+            "visibility": "public"
+        }
+    },
+    "postCreateCommand": "bash .devcontainer/setup.sh",
+    "hostRequirements": {
+        "cpus": 2,
+        "memory": "4gb"
+    }
+}

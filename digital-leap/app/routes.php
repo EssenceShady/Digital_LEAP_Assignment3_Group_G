@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use Leap\Controllers\AdminController;
+use Leap\Controllers\ApiController;
 use Leap\Controllers\AuthController;
 use Leap\Controllers\CoordinatorController;
 use Leap\Controllers\DashboardController;
@@ -10,11 +11,13 @@ use Leap\Controllers\DownloadController;
 use Leap\Controllers\ExportController;
 use Leap\Controllers\ExportPdfController;
 use Leap\Controllers\FeedbackController;
+use Leap\Controllers\GuidebookController;
 use Leap\Controllers\ManagementController;
 use Leap\Controllers\MentorController;
 use Leap\Controllers\MessagingController;
 use Leap\Controllers\NotificationController;
 use Leap\Controllers\ProfileController;
+use Leap\Controllers\SettingsController;
 use Leap\Controllers\StudentController;
 use Leap\Controllers\SupervisorController;
 use Leap\Controllers\TokenController;
@@ -42,6 +45,11 @@ return [
     'POST profile/avatar' => [ProfileController::class, 'avatarUpload', 'profile.edit'],
     'POST profile/avatar/remove' => [ProfileController::class, 'avatarRemove', 'profile.edit'],
     'GET avatar' => [ProfileController::class, 'avatar', 'profile.view'],
+    // Own-account settings: any signed-in member, like feedback. Holding them
+    // to profile.edit would lock out the management role, which reads profiles
+    // but is not allowed to change its account details.
+    'GET settings' => [SettingsController::class, 'show', 'auth'],
+    'POST settings' => [SettingsController::class, 'save', 'auth'],
     'POST feedback' => [FeedbackController::class, 'save', 'auth'],
     'GET notifications' => [NotificationController::class, 'index', 'notification.view'],
     'POST notifications/read' => [NotificationController::class, 'read', 'notification.view'],
@@ -49,6 +57,14 @@ return [
     'GET download' => [DownloadController::class, 'file', 'auth'],
     'GET logbook/template' => [DownloadController::class, 'logbookTemplate', 'auth'],
     'GET career-fair/template' => [DownloadController::class, 'careerFairTemplate', 'auth'],
+    // The guidebook is published to every member: reading it needs no record
+    // permission, only a signed-in account.
+    'GET guidebook' => [GuidebookController::class, 'index', 'auth'],
+    'GET guidebook/pdf' => [DownloadController::class, 'guidebookPdf', 'auth'],
+
+    // Internal JSON for the offline shell (same-origin, session, CSRF)
+    'POST api/sync' => [ApiController::class, 'sync', 'logbook.submit'],
+    'POST api/diva' => [ApiController::class, 'diva', 'diva.use'],
 
     // DIVA assistant
     'GET diva' => [DivaController::class, 'index', 'diva.use'],
@@ -76,10 +92,12 @@ return [
     'POST student/preferences/move' => [StudentController::class, 'movePreference', 'preference.submit'],
     'POST student/preferences/submit' => [StudentController::class, 'submitPreferences', 'preference.submit'],
     'GET student/placement' => [StudentController::class, 'placement', 'placement.view.own'],
+    'POST student/attendance/check' => [StudentController::class, 'attendance', 'placement.view.own'],
     'GET student/logbook' => [StudentController::class, 'logbook', 'logbook.view.own'],
     'GET student/logbook/new' => [StudentController::class, 'entryForm', 'logbook.submit'],
     'POST student/logbook/save' => [StudentController::class, 'entrySave', 'logbook.submit'],
     'POST student/logbook/submit' => [StudentController::class, 'entrySubmit', 'logbook.submit'],
+    'POST student/logbook/send-day' => [StudentController::class, 'sendDay', 'logbook.submit'],
     'GET student/logbook/view' => [StudentController::class, 'entryView', 'logbook.view.own'],
     'POST student/logbook/comment' => [StudentController::class, 'comment', 'logbook.comment'],
     'POST student/logbook/attach' => [StudentController::class, 'attach', 'logbook.submit'],

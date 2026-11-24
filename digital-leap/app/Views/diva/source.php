@@ -9,7 +9,9 @@ $number = (int) $page['page'];
         <p>The internship guidebook text that DIVA searches. The original PDF stays the authority.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-outline" href="<?= e(url('diva')) ?>">Back to DIVA</a>
+        <a class="btn" href="<?= e(url('guidebook/pdf') . '#page=' . $number) ?>" target="_blank" rel="noopener">Open page <?= $number ?> in the PDF</a>
+        <a class="btn btn-outline" href="<?= e(url('guidebook')) ?>">All guidebook pages</a>
+        <a class="btn btn-sm btn-quiet" href="<?= e(url('diva')) ?>">Back to DIVA</a>
     </div>
 </div>
 

@@ -5,8 +5,8 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Logbook queue</h1>
-        <p>Entries from your assigned students, newest submission first.</p>
+        <h1>Logbook queue (Form E &mdash; 50%)</h1>
+        <p>The weekly log book is the diary half of Form E. Entries from your assigned students appear here newest submission first.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-outline" href="<?= e(url('logbook/template')) ?>" target="_blank" rel="noopener">Log book template</a>
@@ -59,7 +59,7 @@
                             <td data-label="Student"><strong><?= e($entry['first_name'] . ' ' . $entry['last_name']) ?></strong><div class="small muted"><?= e($entry['reg_no']) ?></div></td>
                             <td data-label="Week">Week <?= (int) $entry['week_no'] ?><div><?= status_badge($entry['status']) ?></div></td>
                             <td data-label="Dates"><?= e(fmt_date($entry['date_from'])) ?> – <?= e(fmt_date($entry['date_to'])) ?></td>
-                            <td data-label="Hours"><?= e(rtrim(rtrim(number_format((float) $entry['hours'], 1), '0'), '.')) ?></td>
+                            <td data-label="Hours"><?= e(fmt_hours($entry['hours'])) ?></td>
                             <td data-label="Submitted"><?= e(fmt_dt($entry['submitted_at'])) ?></td>
                             <td class="right"><a class="btn btn-sm" href="<?= e(url('supervisor/entry', ['id' => (int) $entry['entry_id']])) ?>">Review</a></td>
                         </tr>

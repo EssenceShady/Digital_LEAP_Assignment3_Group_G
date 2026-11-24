@@ -1,0 +1,27 @@
+# Build context for deploy/Dockerfile. The image needs digital-leap/ and the
+# two deploy/ files it copies; everything else stays on the host.
+
+.git
+.gitignore
+.devcontainer
+docs
+REPORT
+*.md
+LICENSE
+INSTALL.txt
+database
+.tmp-*
+node_modules
+vendor
+coverage
+
+# Never bake a developer's credentials or runtime output into an image.
+digital-leap/config/config.php
+digital-leap/storage/logs/*.log
+digital-leap/storage/uploads/avatars/
+
+*.bak
+*.orig
+*.rej
+.DS_Store
+Thumbs.db

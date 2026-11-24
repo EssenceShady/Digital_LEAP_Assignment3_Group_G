@@ -4,8 +4,8 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Results</h1>
-        <p>Your final mark appears here once the coordinator publishes it. Draft and moderated marks stay hidden.</p>
+        <h1>Results (Form E)</h1>
+        <p>Your final mark appears here once the coordinator publishes it, using the Form E assessment. Draft and moderated marks stay hidden.</p>
     </div>
 </div>
 

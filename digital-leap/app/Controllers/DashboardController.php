@@ -127,10 +127,10 @@ final class DashboardController
         } else {
             if ($returned !== []) {
                 $weeks = implode(', ', array_map(static fn (array $e): string => 'week ' . $e['week_no'], $returned));
-                $tasks[] = ['Rework and resubmit ' . $weeks . ' after reading the supervisor comment.', 'student/logbook', 'Open logbook'];
+                $tasks[] = ['Rework and resubmit ' . $weeks . ' of the Form E log book after reading the supervisor comment.', 'student/logbook', 'Open logbook'];
             }
             if ($nextWeek !== null && $dueDate !== null) {
-                $tasks[] = ['Submit week ' . $nextWeek . ' by ' . date('l d M', strtotime($dueDate)) . '.', 'student/logbook/new', 'Write entry'];
+                $tasks[] = ['Submit week ' . $nextWeek . ' of the Form E log book by ' . date('l d M', strtotime($dueDate)) . '.', 'student/logbook/new', 'Write entry'];
             }
             $reportExists = (int) Database::val(
                 'SELECT COUNT(*) FROM internship_report WHERE placement_id = ?',
@@ -138,7 +138,7 @@ final class DashboardController
             );
             $daysLeft = (int) floor((strtotime((string) $placement['end_date']) - time()) / 86400);
             if ($reportExists === 0 && $daysLeft <= 21) {
-                $tasks[] = ['Upload your internship report. The placement ends in ' . max(0, $daysLeft) . ' days.', 'student/report', 'Upload report'];
+                $tasks[] = ['Upload your internship report (Form C). The placement ends in ' . max(0, $daysLeft) . ' days.', 'student/report', 'Upload report'];
             }
         }
         if ($tasks === []) {

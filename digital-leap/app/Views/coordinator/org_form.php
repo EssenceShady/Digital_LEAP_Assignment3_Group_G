@@ -1,5 +1,6 @@
 <?php
 /** @var array|null $org */
+/** @var array{lat: float, lng: float}|null $geo */
 $districts = ['Western Area Urban', 'Western Area Rural', 'Bo', 'Kenema', 'Kono', 'Bombali', 'Port Loko', 'Tonkolili'];
 ?>
 <div class="page-head">
@@ -71,6 +72,22 @@ $districts = ['Western Area Urban', 'Western Area Rural', 'Bo', 'Kenema', 'Kono'
                     <option value="inactive"<?= selected($org['status'] ?? '', 'inactive') ?>>Inactive</option>
                 </select>
             </div>
+            <div class="field">
+                <label for="latitude">Site pin latitude</label>
+                <input id="latitude" name="latitude" type="text" inputmode="decimal" value="<?= e(isset($geo['lat']) ? (string) $geo['lat'] : '') ?>" placeholder="8.484000">
+                <span class="hint">Optional. With the longitude, shows how far a student's check-in is from the site.</span>
+            </div>
+            <div class="field">
+                <label for="longitude">Site pin longitude</label>
+                <input id="longitude" name="longitude" type="text" inputmode="decimal" value="<?= e(isset($geo['lng']) ? (string) $geo['lng'] : '') ?>" placeholder="-13.234000">
+                <span class="hint">Leave both blank to keep the current pin. Clear it below to remove it.</span>
+            </div>
+            <?php if (isset($geo['lat'], $geo['lng'])): ?>
+                <div class="field">
+                    <label for="clear_geo">Remove site pin</label>
+                    <label class="check-row"><input type="checkbox" id="clear_geo" name="clear_geo" value="1"><span>Delete the recorded latitude and longitude</span></label>
+                </div>
+            <?php endif; ?>
         </div>
         <div class="form-actions"><button class="btn" type="submit">Save organisation</button></div>
     </form>

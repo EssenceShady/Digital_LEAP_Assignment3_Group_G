@@ -5,8 +5,8 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Internship report</h1>
-        <p>Upload the final report once your placement is active. Your academic mentor assesses it.</p>
+        <h1>Internship report (Form C)</h1>
+        <p>Form C is the student's report cover. Upload the final report once your placement is active; your academic mentor assesses it under Module Two of Form E.</p>
     </div>
     <div class="page-actions"><a class="btn btn-outline" href="<?= e(url('student/placement')) ?>">Placement</a></div>
 </div>

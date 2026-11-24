@@ -19,6 +19,7 @@ final class Diva
     use DivaFacts;
     use DivaCritique;
     use DivaGuide;
+    use DivaContract;
 
     public const RUBRIC = [
         ['key' => 'introduction', 'label' => 'Introduction', 'weight' => 5, 'page' => 24,
@@ -45,6 +46,19 @@ final class Diva
         ['key' => 'layout', 'label' => 'Layout and presentation', 'weight' => 15, 'page' => 25,
             'pattern' => '/(^|\n)\s*(contents|table of contents|appendix|appendices|references|bibliography)\b/i',
             'guidance' => 'Page numbers, labelling, grammar, organisation, justification, additional materials and visuals.'],
+    ];
+
+    public const CONTRACT_VERSION = 1;
+
+    /** The marking model, in marks out of 200 (guidebook pages 24-25). */
+    public const ASSESSMENT = [
+        'total' => 200,
+        'practical' => 100,
+        'logbook' => 50,
+        'form_d' => 40,
+        'self_evaluation' => 10,
+        'report' => 75,
+        'career_fair' => 25,
     ];
 
     private const INTENTS = [
@@ -112,6 +126,9 @@ final class Diva
         'from', 'as', 'do', 'does', 'did', 'how', 'what', 'when', 'where', 'which', 'who', 'can',
         'could', 'should', 'would', 'will', 'about', 'please', 'tell', 'give', 'show', 'need', 'want',
         'if', 'not', 'no', 'yes', 'am', 'so', 'than', 'then', 'there', 'their', 'has', 'have', 'had',
+        // The corpus is the guidebook: its own name, and the words people use
+        // to ask what it says, carry no retrieval signal.
+        'guidebook', 'say', 'says', 'according',
     ];
 
     private const MAX_UPLOAD = 5242880;
@@ -119,6 +136,8 @@ final class Diva
     private static ?array $corpus = null;
     private static ?array $routeTable = null;
     private static ?string $localOutcome = null;
+    private static ?array $capture = null;
+    private static ?int $captureFor = null;
 
     /**
      * @param list<array{question:string,intent:string,tier:string,answer?:string,reasoning?:list<string>,sources?:list<array>}> $history
@@ -141,6 +160,10 @@ final class Diva
                 'reasoning' => [],
                 'keywords' => [],
                 'carried' => null,
+                'mode' => 'online',
+                'slots' => self::slots('', 'empty', self::context($from)),
+                'evidence' => [['type' => 'rule', 'value' => 'empty question']],
+                'next_action' => ['label' => 'Find a page', 'route' => 'diva', 'params' => []],
             ];
         }
 
@@ -306,12 +329,34 @@ final class Diva
         }
         $steps[] = self::confidenceReason($tier, $confidence, $sources);
 
+        // Contract stages: slots are filled from the routed intent, evidence
+        // names what the answer may be checked against, and verification stops
+        // any quotation or figure that cannot be traced.
+        $finalIntent = $intent ?? 'none';
+        $slots = self::slots($working, $finalIntent, $context, $tier);
+        $evidence = self::evidenceFor($finalIntent, $tier, $answer, $sources);
+        $check = self::verify($answer, $evidence, $sources, $working, $slots);
+        if (!$check['ok']) {
+            $steps[] = 'Verification stopped the draft: ' . $check['reason'] . '.';
+            $answer = self::refusalAnswer($check);
+            $sources = [];
+            $evidence = [['type' => 'rule', 'value' => 'verification.refused']];
+            $confidence = 'low';
+        }
+
         $local = self::localCompletion($question, $answer, $sources);
         if ($local !== null) {
-            $answer = $local;
-            $tier = 'local';
-            $steps[] = 'The local model rephrased the draft. Match confidence is retained; the rephrased answer has not been independently verified.';
+            $localCheck = self::verify($local, $evidence, $sources, $working, $slots);
+            if ($localCheck['ok']) {
+                $answer = $local;
+                $tier = 'local';
+                $steps[] = 'The local model rephrased the draft. Match confidence is retained; the rephrased answer has not been independently verified.';
+            } else {
+                $steps[] = 'The local model changed a figure or quotation, so the verified draft was kept.';
+            }
         }
+
+        $next = $links[0] ?? null;
 
         return [
             'question' => $question,
@@ -327,6 +372,10 @@ final class Diva
             'reasoning' => $steps,
             'keywords' => $keywords,
             'carried' => $carried,
+            'mode' => 'online',
+            'slots' => $slots,
+            'evidence' => $evidence,
+            'next_action' => $next === null ? null : ['label' => $next['label'], 'route' => $next['route'], 'params' => $next['params']],
         ];
     }
 
@@ -452,6 +501,38 @@ final class Diva
         return null;
     }
 
+    /**
+     * The guidebook's pages in order, each with a one-line preview taken from
+     * its own text, for the page-by-page list on the guidebook screen.
+     *
+     * @return list<array{page:int,preview:string}>
+     */
+    public static function contents(): array
+    {
+        $out = [];
+        foreach (self::corpus() as $entry) {
+            $preview = '';
+            foreach (preg_split('/\n+/', $entry['text']) ?: [] as $line) {
+                $line = trim((string) preg_replace('/\s+/', ' ', $line));
+                // A line taken from a two-column table keeps its page number.
+                $line = trim((string) preg_replace('/\s+\d{1,3}$/', '', $line));
+                if (mb_strlen($line) < 30) {
+                    continue;
+                }
+                $preview = self::trimSnippet($line, 90);
+                break;
+            }
+            $out[] = ['page' => $entry['page'], 'preview' => $preview];
+        }
+        return $out;
+    }
+
+    /** @return list<string> */
+    public static function stopwords(): array
+    {
+        return self::STOP;
+    }
+
     public static function localStatus(): string
     {
         return self::$localOutcome ?? 'disabled';
@@ -460,6 +541,12 @@ final class Diva
     private static function intent(string $question): ?string
     {
         if (preg_match('/^page\s+(\d{1,2})\b/i', $question)) {
+            return null;
+        }
+        // "What does the guidebook say about roles?" is a quotation request,
+        // even though "roles" also names the accounts rule. Quoting wins.
+        if (preg_match('/\bguidebook\b/i', $question)
+            && preg_match('/\b(say|says|state|states|require|requires|cover|covers|according to)\b/i', $question)) {
             return null;
         }
         foreach (self::INTENTS as $key => $pattern) {
@@ -530,7 +617,7 @@ final class Diva
         $actions = self::nextActions();
         if ($actions !== []) {
             $intro = " I'm DIVA, the assistant built into Digital LEAP.\n\n"
-                . 'Right now the top of your list is: ' . $actions[0]['title'] . ' — ' . $actions[0]['detail'] . ".\n\n"
+                . 'Right now the top of your list is: ' . $actions[0]['title'] . ' — ' . rtrim((string) $actions[0]['detail'], '.') . ".\n\n"
                 . 'Ask me anything about the internship, or pick one of the suggestions below.';
             array_unshift($links, self::link($actions[0]['cta'], $actions[0]['route'], $actions[0]['params']));
         }
@@ -650,13 +737,16 @@ final class Diva
             }
         }
 
-        $tokens = array_values(array_unique(array_filter(
+        $base = array_values(array_unique(array_filter(
             self::tokens(self::fold($question)),
             static fn (string $token): bool => strlen($token) > 2
         )));
-        if ($tokens === []) {
+        if ($base === []) {
             return [];
         }
+        // Query expansion: a synonym contributes at half weight, so the words
+        // the question actually used still decide the ranking.
+        $tokens = self::expandTokens($base);
 
         $df = [];
         foreach ($pages as $page) {
@@ -694,7 +784,8 @@ final class Diva
                 foreach ($tokens as $token) {
                     $count = substr_count($lower, $token);
                     if ($count > 0) {
-                        $pScore += (1 + log($count)) * $idf[$token];
+                        $weight = in_array($token, $base, true) ? 1.0 : 0.5;
+                        $pScore += (1 + log($count)) * $idf[$token] * $weight;
                     }
                 }
                 if ($pScore > $bestScore) {
@@ -707,16 +798,26 @@ final class Diva
             if ($score > 0) {
                 $pageLower = self::fold($page['text']);
                 $matched = 0;
-                foreach ($tokens as $token) {
+                foreach ($base as $token) {
                     if (str_contains($pageLower, $token)) {
                         $matched++;
                     }
                 }
+                // Quote from the winning paragraph onward in the page's own
+                // text, so the excerpt stays a contiguous passage and the
+                // verifier can find it word for word.
+                $excerpt = $page['text'];
+                if ($best !== '') {
+                    $offset = mb_strpos($page['text'], $best);
+                    if ($offset !== false) {
+                        $excerpt = mb_substr($page['text'], $offset);
+                    }
+                }
                 $ranked[] = [
                     'page' => $page['page'],
-                    'snippet' => self::trimSnippet($best !== '' ? self::contextSnippet($paragraphs, $bestIndex, 700) : $page['text'], 700),
+                    'snippet' => self::trimSnippet($excerpt, 700),
                     'score' => round($score, 3),
-                    'coverage' => round($matched / count($tokens), 3),
+                    'coverage' => round($matched / count($base), 3),
                 ];
             }
         }

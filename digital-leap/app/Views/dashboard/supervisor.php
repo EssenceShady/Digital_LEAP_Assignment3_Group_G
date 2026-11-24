@@ -6,10 +6,10 @@
 <div class="page-head">
     <div>
         <h1>Supervisor dashboard</h1>
-        <p>Review the weekly logbooks of your assigned students and complete their workplace evaluation.</p>
+        <p>Review the Form E weekly log book of your assigned students and complete their Form D evaluation (D1 at week 6, D2 at week 12).</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-outline" href="<?= e(url('supervisor/evaluation')) ?>">Evaluation</a>
+        <a class="btn btn-outline" href="<?= e(url('supervisor/evaluation')) ?>">Form D evaluation</a>
     </div>
 </div>
 

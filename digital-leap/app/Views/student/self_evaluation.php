@@ -8,8 +8,8 @@ $locked = $evaluation !== null && $evaluation['status'] === 'submitted';
 ?>
 <div class="page-head">
     <div>
-        <h1>Student self evaluation</h1>
-        <p>Reflect on your own internship against the department criteria. This counts 10% of Practical Internship.</p>
+        <h1>Student self evaluation (Form E &mdash; 10%)</h1>
+        <p>Reflect on your own internship against the department criteria. Form E weights this evaluation at 10% of Practical Internship.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-outline" href="<?= e(url('student/placement')) ?>">My placement</a>

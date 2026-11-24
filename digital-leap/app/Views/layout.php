@@ -4,6 +4,7 @@
 use Leap\Core\Auth;
 use Leap\Core\Database;
 use Leap\Core\Messenger;
+use Leap\Core\Preference;
 
 $user = Auth::user();
 $route = (string) ($_GET['r'] ?? '');
@@ -21,6 +22,9 @@ if ($user !== null) {
         $msgUnread = Messenger::unreadTotal((int) $user['user_id']);
     }
 }
+$prefUid = $user === null ? 0 : (int) $user['user_id'];
+$textSize = Preference::textSize($prefUid);
+$calmMotion = Preference::reduceMotion($prefUid);
 $nav = $user === null ? [] : nav_items();
 $avatarUrl = $user === null ? null : avatar_url($user);
 $authRoutes = ['login', 'register', 'forgot', 'reset', 'token/supervisor'];
@@ -30,6 +34,7 @@ $navIcons = [
     'dashboard' => '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
     'diva' => '<path d="M10.5 21V3.5C8.5 1.5 5.5 3 5.5 5.5 3 5.5 2 8 3 10 1 12 2 15 4 15.5 3 18 5 21 7.5 20.5M13.5 21V3.5C15.5 1.5 18.5 3 18.5 5.5 21 5.5 22 8 21 10 23 12 22 15 20 15.5 21 18 19 21 16.5 20.5"/><path d="M5.5 5.5V9L8 11v4M3 10l3 2M4 15.5l3 1.5M18.5 5.5V9L16 11v4M21 10l-3 2M20 15.5l-3 1.5"/>',
     'messages' => '<path d="M20 14.5a2.5 2.5 0 0 1-2.5 2.5H9l-4 3.2V7.5A2.5 2.5 0 0 1 7.5 5h10A2.5 2.5 0 0 1 20 7.5Z"/><path d="M8.5 9.5h8"/><path d="M8.5 12.5h5"/>',
+    'guidebook' => '<path d="M12 6.5C10.6 5.4 8.6 5 6.5 5H3v14h3.5c2.1 0 4.1.4 5.5 1.5 1.4-1.1 3.4-1.5 5.5-1.5H21V5h-3.5c-2.1 0-4.1.4-5.5 1.5Z"/><path d="M12 6.5v14"/>',
     'student/placement' => '<path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><path d="M3 20h18"/>',
     'student/logbook' => '<path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v18H7.5A2.5 2.5 0 0 0 5 22V4.5Z"/><path d="M5 18.5A2.5 2.5 0 0 1 7.5 16H19"/>',
     'student/preferences' => '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
@@ -60,11 +65,21 @@ $navIcons = [
 ];
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="en" data-text-size="<?= e($textSize) ?>"<?= $calmMotion ? ' data-reduce-motion="on"' : '' ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($title) ?> · Digital LEAP</title>
+<meta name="theme-color" content="#111315">
+<meta name="application-name" content="Digital LEAP">
+<meta name="leap-base" content="<?= e(app_root()) ?>">
+<?php if ($user !== null): ?>
+<meta name="csrf-token" content="<?= e(\Leap\Core\Csrf::token()) ?>">
+<?php endif; ?>
+<meta name="leap-offline-url" content="<?= e(public_file('offline.html')) ?>">
+<link rel="manifest" href="<?= e(public_file('manifest.webmanifest')) ?>">
+<link rel="icon" type="image/png" sizes="192x192" href="<?= e(asset('img/icon-192.png')) ?>">
+<link rel="apple-touch-icon" href="<?= e(asset('img/icon-192.png')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
 </head>
 <body class="<?= $user !== null ? 'app-shell' : ($isAuthPage ? 'auth-shell' : 'landing-shell') ?>" data-role="<?= e($user !== null ? (string) Auth::role() : 'guest') ?>" data-page="<?= e($route) ?>">
@@ -83,6 +98,9 @@ $navIcons = [
         </a>
     </div>
     <div class="topbar-right">
+        <p class="net-pill" data-net-status data-state="online" role="status" aria-live="polite">
+            <span class="net-dot" aria-hidden="true"></span><span class="net-text">Online</span>
+        </p>
         <button class="icon-btn tour-trigger" type="button" data-tour-start aria-label="Take a guided tour" title="Take a guided tour">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-.9.7-1.5 1.2-1.5 2.5"/><path d="M12 17h.01"/></svg>
         </button>
@@ -156,8 +174,11 @@ $navIcons = [
                     <a href="<?= e(url('messages')) ?>">Messages<?= $msgUnread > 0 ? ' (' . $msgUnread . ')' : '' ?></a>
                 <?php endif; ?>
                 <a href="<?= e(url('notifications')) ?>">Notifications<?= $unread > 0 ? ' (' . $unread . ')' : '' ?></a>
+                <a href="<?= e(url('settings')) ?>" data-tour="settings">My settings</a>
                 <button type="button" data-feedback-open>Send feedback</button>
                 <button type="button" data-tour-start>Take the guided tour</button>
+                <button type="button" data-install-trigger hidden>How to install this app</button>
+                <p class="install-help" data-install-help hidden></p>
                 <form method="post" action="<?= e(url('logout')) ?>" class="user-menu-signout">
                     <?= csrf_field() ?>
                     <button type="submit">Sign out</button>
@@ -191,6 +212,10 @@ $navIcons = [
                 <?= avatar_html(['user_id' => (int) ($user['user_id'] ?? 0), 'first_name' => (string) $user['first_name'], 'last_name' => (string) $user['last_name']], 'sidebar-avatar') ?>
                 <span><?= e($user['first_name'] . ' ' . $user['last_name']) ?><small>Edit profile</small></span>
             </a>
+            <a class="sidebar-settings" href="<?= e(url('settings')) ?>">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M4.5 7.5l2 1.2M17.5 15.3l2 1.2M4.5 16.5l2-1.2M17.5 8.7l2-1.2"/></svg>
+                <span>My settings<small>Notifications, text size, offline data</small></span>
+            </a>
             <button type="button" class="sidebar-feedback" data-feedback-open>Share feedback</button>
             <form method="post" action="<?= e(url('logout')) ?>" class="sidebar-signout">
                 <?= csrf_field() ?>
@@ -221,6 +246,9 @@ $navIcons = [
 </div>
 <?php else: ?>
 <main id="main" class="public-main<?= $isAuthPage ? ' auth-layout' : '' ?>">
+    <p class="net-pill net-pill--float" data-net-status data-state="online" role="status" aria-live="polite">
+        <span class="net-dot" aria-hidden="true"></span><span class="net-text">Online</span>
+    </p>
     <?php if ($isAuthPage): ?>
         <section class="auth-brand" aria-label="About Digital LEAP">
             <div class="auth-brand-top">
@@ -337,7 +365,24 @@ $navIcons = [
 </div>
 <?php endif; ?>
 
+<div class="sync-strip" data-sync-strip hidden role="status" aria-live="polite"></div>
+
+<div class="install-prompt" data-install-prompt hidden>
+    <div class="install-mark" aria-hidden="true">DL</div>
+    <div class="install-copy">
+        <strong>Install Digital LEAP</strong>
+        <span>One tap from the home screen. Logbooks keep working without a connection.</span>
+    </div>
+    <div class="install-actions">
+        <button type="button" class="btn btn-sm" data-install-accept>Install</button>
+        <button type="button" class="btn btn-sm btn-quiet" data-install-dismiss>Not now</button>
+    </div>
+</div>
+
 <div class="toast-stack" data-toasts aria-live="polite" aria-atomic="false"></div>
+<script src="<?= e(asset('js/offline.js')) ?>"></script>
+<script src="<?= e(asset('js/diva-offline.js')) ?>"></script>
 <script src="<?= e(asset('js/app.js')) ?>"></script>
+<script src="<?= e(asset('js/attendance.js')) ?>"></script>
 </body>
 </html>

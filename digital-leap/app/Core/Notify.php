@@ -8,8 +8,12 @@ final class Notify
     /**
      * $email = false keeps fast-moving items such as chat messages out of the
      * mail queue; the in-app notification and its unread badge still appear.
+     * A member who muted that notification family in Settings is treated the
+     * same way: the bell keeps the record, the mail queue does not.
+     * $emailBody lets a full digest travel by mail while the bell keeps a
+     * one-line summary.
      */
-    public static function push(int $userId, string $type, string $title, string $body, string $link, bool $email = true): int
+    public static function push(int $userId, string $type, string $title, string $body, string $link, bool $email = true, ?string $emailBody = null): int
     {
         $id = Database::insert('notification', [
             'user_id' => $userId,
@@ -21,14 +25,15 @@ final class Notify
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        $address = $email ? Database::val('SELECT email FROM users WHERE user_id = ?', [$userId]) : null;
+        $wantsMail = $email && !Preference::emailMuted($userId, $type);
+        $address = $wantsMail ? Database::val('SELECT email FROM users WHERE user_id = ?', [$userId]) : null;
         if ($address !== null) {
             Database::insert('email_queue', [
                 'user_id' => $userId,
                 'notification_id' => $id,
                 'to_email' => (string) $address,
                 'subject' => substr($title, 0, 180),
-                'body' => $body,
+                'body' => $emailBody ?? $body,
                 'status' => 'queued',
                 'attempts' => 0,
                 'scheduled_at' => date('Y-m-d H:i:s'),

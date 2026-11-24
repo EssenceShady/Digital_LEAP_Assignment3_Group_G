@@ -4,8 +4,8 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Grade sheet</h1>
-        <p><?= e($year) ?>. Compute from source records, moderate with a reason, then publish.</p>
+        <h1>Grade sheet (Form E)</h1>
+        <p><?= e($year) ?>. Compute the Form E components from source records, moderate with a reason, then publish.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-outline" href="<?= e(($GLOBALS['base'] ?? '') . '/index.php?r=management/export&type=grades&year=' . urlencode($year)) ?>">Export CSV</a>

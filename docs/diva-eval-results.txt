@@ -1,4 +1,4 @@
-DIVA evaluation set — 2026-11-17 13:38
+DIVA evaluation set — 2026-11-22 15:01
 ========================================================================================================
 #   Role        Question                                 Intent            Tier       Pages   Conf   Match
 ----------------------------------------------------------------------------------------------------------------
@@ -15,11 +15,11 @@ DIVA evaluation set — 2026-11-17 13:38
 11  student     What are the two internship types?       internship.type   rules      3,4,10,11 high   PASS
 12  supervisor  What is waiting for me to review?        queue             rules      -       high   PASS
 13  supervisor  How is the logbook weighted?             weighting.logbook rules      24      high   PASS
-14  supervisor  What should I check before approving..   logbook.status    retrieval  19,9,12 low    PASS
+14  supervisor  What should I check before approving..   logbook.status    retrieval  19,12,9 low    PASS
 15  supervisor  What is the report assessment weight?    weighting         rules      24,25   high   PASS
 16  mentor      What is waiting for me to review?        queue             rules      -       high   PASS
 17  mentor      What are the report criteria?            weighting         rules      24,25   high   PASS
-18  mentor      How do I record a site visit?            none              retrieval  7,20,8  medium PASS
+18  mentor      How do I record a site visit?            none              retrieval  7,20,25 medium PASS
 19  coordinator How many placements are active?          overview          rules      -       high   PASS
 20  coordinator What is pending for me?                  queue             rules      -       high   PASS
 21  coordinator What are the assessment weights?         weighting         rules      24,25   high   PASS
@@ -85,3 +85,74 @@ Content/carried matched: 74/74
 Cases passed: 74/74
 Local model: disabled
 Contexts: student -> user 6 (Mohamed Alie Kamara); supervisor -> user 5 (Joseph Kargbo); mentor -> user 3 (Deborah Moiforay); coordinator -> user 2 (Musa Bayoh); management -> user 4 (Fatmata Conteh); admin -> user 1 (Shadrach Sesay)
+
+========================================================================================================
+Golden set — docs/diva-golden-set.md (60 questions)
+========================================================================================================
+#   Role        Question                                       Intent             Category       Evidence  Match
+----------------------------------------------------------------------------------------------------------------
+1   student     When is my next logbook entry due?             deadline.logbook   records        record    PASS
+2   student     What does Form E mark for the internship r..   weighting          assessment     citation  PASS
+3   student     How far through my placement am I?             progress           records        record    PASS
+4   student     Can I see my results?                          results            records        record    PASS
+5   student     Where is my placement?                         placement          records        record    PASS
+6   student     How do I apply for an internship?              apply              records        record    PASS
+7   student     Who chooses the host organisation?             allocation         records        rule      PASS
+8   student     What are the two internship types?             internship.type    assessment     citation  PASS
+9   student     What are the objectives of LEAP?               none               guidebook      quote     PASS
+10  student     What is the capital of France?                 none               out_of_scope   refused   PASS
+11  supervisor  What is waiting for me to review?              queue              records        record    PASS
+12  supervisor  How is the logbook weighted?                   weighting.logbook  assessment     citation  PASS
+13  supervisor  What should I check before approving a log..   logbook.status     records        quote     PASS
+14  supervisor  What is the report assessment weight?          weighting          assessment     citation  PASS
+15  supervisor  What are the report criteria?                  weighting          assessment     citation  PASS
+16  supervisor  What does Form D cover?                        evaluation         assessment     citation  PASS
+17  supervisor  How long is the internship?                    internship.duration assessment     citation  PASS
+18  supervisor  What is DIVA?                                  capabilities       self           record    PASS
+19  supervisor  What are the assessment weights?               weighting          assessment     citation  PASS
+20  supervisor  What are the two internship types?             internship.type    assessment     citation  PASS
+21  mentor      What is waiting for me to review?              queue              records        record    PASS
+22  mentor      What are the report criteria?                  weighting          assessment     citation  PASS
+23  mentor      How do I record a site visit?                  none               guidebook      quote     PASS
+24  mentor      Who chooses the host organisation?             allocation         records        rule      PASS
+25  mentor      What does Form D cover?                        evaluation         assessment     citation  PASS
+26  mentor      How is the logbook weighted?                   weighting.logbook  assessment     citation  PASS
+27  mentor      What is the internship duration?               internship.duration assessment     citation  PASS
+28  mentor      What are the two internship types?             internship.type    assessment     citation  PASS
+29  mentor      What is Form E?                                weighting          assessment     citation  PASS
+30  mentor      What is my next step?                          next               self           record    PASS
+31  coordinator How many placements are active?                overview           records        record    PASS
+32  coordinator What is pending for me?                        queue              records        record    PASS
+33  coordinator What are the assessment weights?               weighting          assessment     citation  PASS
+34  coordinator Show me the placement overview                 overview           records        record    PASS
+35  coordinator Who chooses the host organisation?             allocation         records        rule      PASS
+36  coordinator How many marks are published?                  overview           records        record    PASS
+37  coordinator What are the two internship types?             internship.type    assessment     citation  PASS
+38  coordinator What does Form E mark?                         weighting          assessment     citation  PASS
+39  coordinator What is the logbook weighting?                 weighting.logbook  assessment     citation  PASS
+40  coordinator What does the guidebook say about report l..   none               guidebook      quote     PASS
+41  management  How many placements are active?                overview           records        record    PASS
+42  management  How many marks are published?                  overview           records        record    PASS
+43  management  What are the assessment weights?               weighting          assessment     citation  PASS
+44  management  What is the internship duration?               internship.duration assessment     citation  PASS
+45  management  What are the two internship types?             internship.type    assessment     citation  PASS
+46  management  How many results are published?                overview           records        record    PASS
+47  management  What does the guidebook say about the obje..   none               guidebook      quote     PASS
+48  management  What is DIVA?                                  capabilities       self           record    PASS
+49  management  What is the logbook weighting?                 weighting.logbook  assessment     citation  PASS
+50  management  Who won the 2018 World Cup?                    none               out_of_scope   refused   PASS
+51  admin       How many accounts are there?                   accounts           records        record    PASS
+52  admin       What can you do?                               capabilities       self           record    PASS
+53  admin       How many users are there?                      accounts           records        record    PASS
+54  admin       Where do I find the audit log?                 accounts           records        record    PASS
+55  admin       How many login attempts failed today?          accounts           records        record    PASS
+56  admin       What are the two internship types?             internship.type    assessment     citation  PASS
+57  admin       How is the logbook weighted?                   weighting.logbook  assessment     citation  PASS
+58  admin       What are the assessment weights?               weighting          assessment     citation  PASS
+59  admin       What does the guidebook say about the inte..   none               guidebook      quote     PASS
+60  admin       What is the weather in Freetown?               none               out_of_scope   refused   PASS
+----------------------------------------------------------------------------------------------------------------
+Route accuracy: 60/60
+Citation accuracy: 32/32
+Refusal accuracy: 3/3 expected refusals, 57 other rows must not refuse
+Golden cases passed: 60/60

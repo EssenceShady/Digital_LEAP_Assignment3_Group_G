@@ -86,6 +86,15 @@ final class DownloadController
         );
     }
 
+    public function guidebookPdf(): void
+    {
+        $this->sendTemplate(
+            STORAGE_PATH . GuidebookController::PDF_FILE,
+            'Internship_Guidebook_LEAP_Clean_Layout.pdf',
+            'guidebook.download'
+        );
+    }
+
     private function sendTemplate(string $path, string $filename, string $auditAction): void
     {
         if (!is_file($path)) {

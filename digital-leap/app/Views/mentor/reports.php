@@ -5,8 +5,8 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Report assessment</h1>
-        <p>The internship report contributes 75 of the 200 available marks (37.5%).</p>
+        <h1>Report assessment (Form C &mdash; Form E Module Two)</h1>
+        <p>The internship report (Form C) contributes 75 of the 200 available marks (37.5%), scored against the Module Two criteria printed in Form E.</p>
     </div>
 </div>
 

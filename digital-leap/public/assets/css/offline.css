@@ -1,0 +1,50 @@
+/* Offline fallback page only. Kept apart from app.css so the fallback can be
+   served with one small request and never depends on the full design system. */
+
+html, body { margin: 0; height: 100%; }
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background: #f6f3ec;
+    color: #17181a;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    -webkit-font-smoothing: antialiased;
+}
+.offline-card {
+    max-width: 30rem;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e7e1d5;
+    border-radius: 20px;
+    box-shadow: 0 1px 2px rgba(24, 20, 12, .04), 0 12px 34px rgba(24, 20, 12, .06);
+    padding: 32px;
+}
+.offline-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.offline-brand img { width: 44px; height: 44px; border-radius: 10px; }
+.offline-brand span { font-weight: 600; letter-spacing: .02em; }
+.offline-mark {
+    width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+    background: #111315; color: #d8b75c; font-family: Georgia, serif; font-weight: 700; font-size: 22px;
+}
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 8px; font-family: Georgia, serif; }
+p { line-height: 1.6; color: #3b3b3e; margin: 0 0 12px; }
+.badge {
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    background: #fcf1da; color: #7f5300; border: 1px solid #ecd9ae;
+    border-radius: 999px; padding: 6px 12px; font-size: .82rem; font-weight: 600;
+}
+.badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #b8912f; }
+ul { margin: 16px 0 24px; padding-left: 20px; color: #3b3b3e; line-height: 1.6; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; padding: 0 18px; border-radius: 999px;
+    background: #111315; color: #fff; text-decoration: none; font-weight: 600;
+}
+.btn.quiet { background: transparent; color: #17181a; border: 1px solid #d1c6b2; }
+.foot { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e7e1d5; font-size: .82rem; color: #625e55; }
+@media (max-width: 400px) {
+    .offline-card { padding: 22px; border-radius: 16px; }
+    h1 { font-size: 1.35rem; }
+}

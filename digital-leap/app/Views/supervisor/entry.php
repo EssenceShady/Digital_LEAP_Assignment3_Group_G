@@ -5,30 +5,28 @@
 ?>
 <div class="page-head">
     <div>
-        <h1>Week <?= (int) $entry['week_no'] ?> review</h1>
-        <p><?= e(fmt_date($entry['date_from'])) ?> – <?= e(fmt_date($entry['date_to'])) ?> · <?= e(rtrim(rtrim(number_format((float) $entry['hours'], 1), '0'), '.')) ?> hours · <?= status_badge($entry['status']) ?></p>
+        <h1>Week <?= (int) $entry['week_no'] ?> log book review (Form E)</h1>
+        <p><?= e(fmt_date($entry['date_from'])) ?> – <?= e(fmt_date($entry['date_to'])) ?> · <?= e(fmt_hours($entry['hours'])) ?> hours · <?= status_badge($entry['status']) ?></p>
     </div>
     <div class="page-actions"><a class="btn btn-outline" href="<?= e(url('supervisor/queue')) ?>">Back to queue</a></div>
 </div>
 
-<div class="grid grid-2">
-    <section class="card">
-        <div class="card-head"><div><h2>Activities</h2></div></div>
-        <p><?= nl2br(e($entry['activities'])) ?></p>
-    </section>
-    <section class="card">
-        <div class="card-head"><div><h2>Attachments</h2></div></div>
-        <?php if ($attachments === []): ?>
-            <div class="empty"><strong>No attachment</strong>The student did not upload supporting evidence.</div>
-        <?php else: ?>
-            <ul class="timeline">
-                <?php foreach ($attachments as $doc): ?>
-                    <li><div><a href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>"><?= e($doc['original_name']) ?></a></div><div class="when"><?= number_format((int) $doc['file_size'] / 1024, 0) ?> KB · <?= review_label($doc['reviewed_at'] ?? null, $doc['reviewer_first'] ?? null, $doc['reviewer_last'] ?? null) ?></div></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-    </section>
-</div>
+<?php require APP_PATH . '/Views/shared/logbook_body.php'; ?>
+
+<section class="card">
+    <div class="card-head"><div><h2>Attachments</h2></div></div>
+    <?php if ($attachments === []): ?>
+        <div class="empty"><strong>No attachment</strong>The student did not upload supporting evidence.</div>
+    <?php else: ?>
+        <ul class="timeline">
+            <?php foreach ($attachments as $doc): ?>
+                <li><div><a href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>"><?= e($doc['original_name']) ?></a></div><div class="when"><?= number_format((int) $doc['file_size'] / 1024, 0) ?> KB · <?= review_label($doc['reviewed_at'] ?? null, $doc['reviewer_first'] ?? null, $doc['reviewer_last'] ?? null) ?></div></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+</section>
+
+<?php require APP_PATH . '/Views/shared/check_ins.php'; ?>
 
 <section class="card chat-card">
     <div class="card-head"><div><h2>Discussion</h2><p>The student, you and the mentor share this thread.</p></div></div>

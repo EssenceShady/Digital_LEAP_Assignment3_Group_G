@@ -68,7 +68,7 @@ foreach ($placements as $placement) {
         'reminder',
         'Logbook week ' . $week . ' is due',
         'Submit week ' . $week . ' of your logbook for ' . $placement['org_name'] . ' by '
-            . $due->format('l j F Y') . '. Entries still in draft are not visible to your supervisor.',
+            . $due->format('l j F Y') . '. Draft days are emailed to your supervisor each evening, but the week only enters formal review when you submit it.',
         'index.php?r=student/logbook'
     );
     $queued++;

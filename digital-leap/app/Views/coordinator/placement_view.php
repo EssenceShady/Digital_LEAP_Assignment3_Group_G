@@ -3,6 +3,8 @@
 /** @var array $timeline */
 /** @var array $docs */
 /** @var array $entryCounts */
+/** @var array $attendance */
+/** @var array{lat: float, lng: float}|null $attendancePin */
 $allowed = [
     'approved' => ['active', 'terminated'],
     'active' => ['completed', 'terminated'],
@@ -56,6 +58,37 @@ $allowed = [
 </div>
 
 <div class="card">
+    <div class="card-head">
+        <div>
+            <h2>Attendance check-ins</h2>
+            <p>The student's deliberate site check-ins. Location is captured only when they press a button; supervisors and mentors are not tracked.</p>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-sm btn-quiet" href="<?= e(url('coordinator/organisations/form', ['id' => (int) $placement['org_id']])) ?>">Site pin</a>
+        </div>
+    </div>
+    <p class="small muted">Site pin: <?= $attendancePin !== null ? e(number_format($attendancePin['lat'], 5) . ', ' . number_format($attendancePin['lng'], 5)) : 'not set — distances cannot be checked until it is recorded.' ?></p>
+    <?php if ($attendance === []): ?>
+        <div class="empty"><strong>No check-ins yet</strong>The student can check in from My placement.</div>
+    <?php else: ?>
+        <ul class="timeline">
+            <?php foreach ($attendance as $event): ?>
+                <li>
+                    <div>
+                        <strong><?= $event['type'] === 'check_in' ? 'Check in' : 'Check out' ?></strong>
+                        <span class="small muted">· <?= e(fmt_dt($event['at'])) ?> by <?= e($event['name'] !== '' ? $event['name'] : 'student') ?></span>
+                    </div>
+                    <div class="when">
+                        <?= $event['distance_m'] !== null ? e(fmt_distance($event['distance_m'])) . ' from pin' : 'No distance' ?>
+                        · <?= $event['source'] === 'device' ? 'device location' : 'attested' ?>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+</div>
+
+<div class="card">
     <div class="card-head"><div><h2>Actions</h2><p>Every action is audited with the previous and new state.</p></div></div>
     <div class="form-actions">
         <?php if ($placement['status'] === 'proposed'): ?>
@@ -100,7 +133,7 @@ $allowed = [
             <ul class="timeline">
                 <?php foreach ($timeline as $event): ?>
                     <li>
-                        <div><strong><?= e(str_replace(['placement.', '_'], ['', ' '], (string) $event['action'])) ?></strong> <span class="small muted">by user <?= e((string) ($event['user_id'] ?? 'system')) ?></span></div>
+                        <div><strong><?= e(humanise_action((string) $event['action'])) ?></strong> <span class="small muted">by user <?= e((string) ($event['user_id'] ?? 'system')) ?></span></div>
                         <div class="when"><?= e(fmt_dt($event['created_at'])) ?></div>
                     </li>
                 <?php endforeach; ?>

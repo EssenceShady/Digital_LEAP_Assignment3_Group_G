@@ -40,6 +40,13 @@ trait DivaGuide
             'prereq' => 'Nothing.',
             'label' => 'Open notifications',
         ],
+        'guidebook' => [
+            'group' => 'workspace', 'title' => 'Guidebook',
+            'body' => 'The published internship guidebook as a PDF, with every page also readable as text.',
+            'ability' => 'Open the PDF in the browser, download it, and read any of its 25 pages on screen.',
+            'prereq' => 'Nothing. It is published to every role.',
+            'label' => 'Open the guidebook',
+        ],
         'messages' => [
             'group' => 'workspace', 'title' => 'Messages',
             'body' => 'Conversations tied to a placement, so the student, mentor and host supervisor discuss the same record.',
@@ -62,14 +69,14 @@ trait DivaGuide
             'label' => 'Open my placement',
         ],
         'student/logbook' => [
-            'group' => 'evidence', 'title' => 'Logbook',
-            'body' => 'One entry per week of the placement, each reviewed by your host supervisor.',
-            'ability' => 'Write the due week, read supervisor comments and rework a returned week.',
+            'group' => 'evidence', 'title' => 'Logbook (Form E — 50%)',
+            'body' => 'One entry per week of the placement, recorded day by day as in the paper log book, each reviewed by your host supervisor.',
+            'ability' => 'Write the due week, see its daily hours and total, read supervisor comments and rework a returned week.',
             'prereq' => 'An allocated placement.',
             'label' => 'Open my logbook',
         ],
         'student/report' => [
-            'group' => 'evidence', 'title' => 'Internship Report',
+            'group' => 'evidence', 'title' => 'Internship Report (Form C)',
             'body' => 'Upload the internship report your academic mentor marks against the eight Form E criteria.',
             'ability' => 'Upload or replace the report and read the mentor assessment once it is done.',
             'prereq' => 'A placement. You can replace the file until your mentor starts the review.',
@@ -83,7 +90,7 @@ trait DivaGuide
             'label' => 'Open Career Fair 2026',
         ],
         'student/results' => [
-            'group' => 'results', 'title' => 'Results',
+            'group' => 'results', 'title' => 'Results (Form E)',
             'body' => 'Your published mark and the grade behind it.',
             'ability' => 'Read the result only after the internship office publishes it.',
             'prereq' => 'The grade sheet must be computed, moderated and published.',
@@ -97,7 +104,7 @@ trait DivaGuide
             'label' => 'Open the review queue',
         ],
         'supervisor/evaluation' => [
-            'group' => 'supervise', 'title' => 'Evaluation',
+            'group' => 'supervise', 'title' => 'Form D evaluation',
             'body' => 'Form D, the weighted host supervisor evaluation of each student.',
             'ability' => 'Score each criterion, save a draft and submit once the record is final.',
             'prereq' => 'A placement where you are the host supervisor.',
@@ -125,14 +132,14 @@ trait DivaGuide
             'label' => 'Open site visits',
         ],
         'mentor/evaluation' => [
-            'group' => 'review', 'title' => 'Evaluation',
+            'group' => 'review', 'title' => 'Mentor evaluation',
             'body' => 'The academic mentor evaluation of the placement, separate from the host supervisor Form D.',
             'ability' => 'Score each criterion and submit the evaluation.',
             'prereq' => 'A placement where you are the academic mentor.',
             'label' => 'Open the evaluation',
         ],
         'mentor/reports' => [
-            'group' => 'review', 'title' => 'Report Assessment',
+            'group' => 'review', 'title' => 'Report Assessment (Form C)',
             'body' => 'Uploaded internship reports waiting for an academic mark and comment.',
             'ability' => 'Open the report, record the mark and a short comment.',
             'prereq' => 'The student has uploaded the report.',
@@ -167,7 +174,7 @@ trait DivaGuide
             'label' => 'Open site visits',
         ],
         'coordinator/grades' => [
-            'group' => 'results', 'title' => 'Grades',
+            'group' => 'results', 'title' => 'Grades (Form E)',
             'body' => 'The grade sheet: compute from evidence, moderate with a reason, then publish.',
             'ability' => 'Compute a mark, moderate it and publish it to the student.',
             'prereq' => 'Evaluations and the report assessment must exist first.',

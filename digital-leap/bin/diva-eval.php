@@ -2,16 +2,19 @@
 declare(strict_types=1);
 
 /**
- * DIVA evaluation: the original 31 cases plus routing and basis regressions.
+ * DIVA evaluation: the original 31 cases plus routing and basis regressions,
+ * and the 60-question golden set in docs/diva-golden-set.md.
  *
  * Usage:
  *   php bin/diva-eval.php              # first active user of each role
+ *   php bin/diva-eval.php --golden      # add the golden-set run
  *   php bin/diva-eval.php --user=6      # all questions as one signed-in user
  *   php bin/diva-eval.php --answers
  *
  * All database access runs in a read-only transaction. No login or save calls.
  * The optional local model may rephrase answers if enabled by the bootstrap.
  * Intent, tier, identity and content failures produce a nonzero exit status.
+ * The whole report is written to docs/diva-eval-results.txt.
  */
 
 require dirname(__DIR__) . '/app/bootstrap.php';
@@ -35,13 +38,18 @@ register_shutdown_function(static function () use ($pdo): void {
 
 $fixedUser = null;
 $showAnswers = false;
+$goldenMode = false;
 foreach (array_slice($argv, 1) as $argument) {
     if (str_starts_with($argument, '--user=')) {
         $fixedUser = (int) substr($argument, 7);
     } elseif ($argument === '--answers') {
         $showAnswers = true;
+    } elseif ($argument === '--golden') {
+        $goldenMode = true;
     }
 }
+
+ob_start();
 
 $questions = [
     ['student', 'When is my next logbook entry due?', 'deadline.logbook', 'rules'],
@@ -367,6 +375,183 @@ if ($fixedUser !== null) {
     echo implode('; ', $labels) . "\n";
 }
 
+/**
+ * The golden table is the fixture: | # | Role | Question | Route | Category | Evidence |
+ *
+ * @return list<array{n:int,role:string,question:string,route:string,category:string,evidence:string}>
+ */
+function goldenRows(): array
+{
+    $path = dirname(__DIR__, 2) . '/docs/diva-golden-set.md';
+    if (!is_file($path)) {
+        return [];
+    }
+    $rows = [];
+    foreach (file($path, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] !== '|') {
+            continue;
+        }
+        $cells = array_map('trim', explode('|', trim($line, '|')));
+        if (count($cells) < 6 || !ctype_digit($cells[0])) {
+            continue;
+        }
+        $rows[] = [
+            'n' => (int) $cells[0],
+            'role' => strtolower($cells[1]),
+            'question' => $cells[2],
+            'route' => $cells[3],
+            'category' => $cells[4],
+            'evidence' => $cells[5],
+        ];
+    }
+    return $rows;
+}
+
+/** The same normalisation the engine uses: case-folded, single-spaced text. */
+function evalNormalise(string $text): string
+{
+    return trim((string) preg_replace('/\s+/', ' ', mb_strtolower($text)));
+}
+
+/** An independent check that a quotation really sits on the page it cites. */
+function quoteVerifies(array $item): bool
+{
+    $page = Diva::page((int) ($item['page'] ?? 0));
+    if ($page === null) {
+        return false;
+    }
+    $quote = (string) preg_replace('/\s*…\s*$/u', '', (string) ($item['value'] ?? ''));
+    if (trim($quote) === '') {
+        return false;
+    }
+    return str_contains(evalNormalise((string) $page['text']), evalNormalise($quote));
+}
+
+function isRefusal(array $contract): bool
+{
+    return str_starts_with((string) $contract['answer'], 'I stopped short of answering:')
+        || str_starts_with((string) $contract['answer'], 'I could not find a sufficiently supported answer');
+}
+
+$goldenFailed = 0;
+if ($goldenMode && $fixedUser !== null) {
+    echo "\nGolden set skipped: it switches roles, so run it without --user.\n";
+    $goldenMode = false;
+}
+
+if ($goldenMode) {
+    $rows = goldenRows();
+    echo "\n" . str_repeat('=', 104) . "\n";
+    echo 'Golden set — docs/diva-golden-set.md (' . count($rows) . " questions)\n";
+    echo str_repeat('=', 104) . "\n";
+    printf("%-3s %-11s %-46s %-18s %-14s %-9s %s\n", '#', 'Role', 'Question', 'Intent', 'Category', 'Evidence', 'Match');
+    echo str_repeat('-', 112) . "\n";
+
+    $routeHits = 0;
+    $citationHits = 0;
+    $citationRows = 0;
+    $refusalHits = 0;
+    $expectedRefusals = 0;
+    if ($rows === []) {
+        echo "No golden rows found.\n";
+        $goldenFailed++;
+    }
+
+    foreach ($rows as $row) {
+        $role = $row['role'];
+        if (!isset($contexts[$role])) {
+            $contexts[$role] = contextFor($role, null);
+        }
+        $context = $contexts[$role];
+        $_SESSION['uid'] = $context['uid'];
+        $_SESSION['role'] = $context['role'];
+        $_SESSION['name'] = $context['label'];
+        $_SESSION['perms'] = $context['perms'];
+
+        $contract = Diva::contract($row['question']);
+        $refused = isRefusal($contract);
+        $evidence = $contract['evidence'] ?? [];
+        $quotes = array_values(array_filter($evidence, static fn (array $item): bool => ($item['type'] ?? '') === 'guidebook_quote'));
+        $hasCitation = $quotes !== []
+            || in_array('guidebook_citation', array_column($evidence, 'type'), true);
+
+        $errors = [];
+        $routeOk = $row['route'] === 'any' || $contract['intent'] === $row['route'];
+        $categoryOk = $row['category'] === 'any' || ($contract['slots']['category'] ?? '') === $row['category'];
+        if ($routeOk && $categoryOk) {
+            $routeHits++;
+        } else {
+            $errors[] = 'route ' . $contract['intent'] . '/' . ($contract['slots']['category'] ?? '?')
+                . ' expected ' . $row['route'] . '/' . $row['category'];
+        }
+
+        if (in_array($row['evidence'], ['quote', 'citation'], true)) {
+            $citationRows++;
+            $evidenceOk = $row['evidence'] === 'quote'
+                ? ($quotes !== [] && !$refused)
+                : ($hasCitation && !$refused);
+            if ($row['evidence'] === 'quote' && $quotes !== []) {
+                foreach ($quotes as $quote) {
+                    if (!quoteVerifies($quote)) {
+                        $evidenceOk = false;
+                        $errors[] = 'a quotation does not appear on page ' . (int) ($quote['page'] ?? 0);
+                    }
+                }
+            }
+            if ($evidenceOk) {
+                $citationHits++;
+            } else {
+                $errors[] = $row['evidence'] . ' evidence missing';
+            }
+        } elseif ($row['evidence'] === 'record') {
+            $hasRecord = array_filter($evidence, static fn (array $item): bool => in_array($item['type'] ?? '', ['record', 'figure'], true)) !== [];
+            if (!$hasRecord || $refused) {
+                $errors[] = 'record evidence missing';
+            }
+        } elseif ($row['evidence'] === 'refusal') {
+            $expectedRefusals++;
+            if ($refused) {
+                $refusalHits++;
+            } else {
+                $errors[] = 'expected a refusal';
+            }
+        }
+        if ($row['evidence'] !== 'refusal' && $refused) {
+            $errors[] = 'refused an in-scope question';
+        }
+
+        if ($errors !== []) {
+            $goldenFailed++;
+        }
+        printf(
+            "%-3d %-11s %-46s %-18s %-14s %-9s %s\n",
+            $row['n'],
+            $role,
+            mb_strimwidth(preg_replace('/\s+/', ' ', $row['question']), 0, 44, '..'),
+            $contract['intent'],
+            (string) ($contract['slots']['category'] ?? '-'),
+            $refused ? 'refused' : ($quotes !== [] ? 'quote' : ($hasCitation ? 'citation' : (array_filter($evidence, static fn (array $item): bool => ($item['type'] ?? '') === 'record') !== [] ? 'record' : 'rule'))),
+            $errors === [] ? 'PASS' : 'FAIL: ' . implode('; ', $errors)
+        );
+    }
+
+    $total = count($rows);
+    echo str_repeat('-', 112) . "\n";
+    echo 'Route accuracy: ' . $routeHits . '/' . $total . "\n";
+    echo 'Citation accuracy: ' . ($citationRows === 0 ? 'n/a' : $citationHits . '/' . $citationRows) . "\n";
+    echo 'Refusal accuracy: ' . $refusalHits . '/' . $expectedRefusals . ' expected refusals, '
+        . ($total - $expectedRefusals) . " other rows must not refuse\n";
+    echo 'Golden cases passed: ' . ($total - $goldenFailed) . '/' . $total . "\n";
+}
+
+$report = (string) ob_get_clean();
+$resultsPath = dirname(__DIR__, 2) . '/docs/diva-eval-results.txt';
+if (is_dir(dirname($resultsPath))) {
+    file_put_contents($resultsPath, $report);
+}
+echo $report;
+
 if ($showAnswers) {
     echo "\nAnswers\n" . str_repeat('=', 104) . "\n";
     foreach ($answers as $number => $answer) {
@@ -376,4 +561,4 @@ if ($showAnswers) {
 }
 
 $pdo->rollBack();
-exit($failures === [] ? 0 : 1);
+exit($failures === [] && $goldenFailed === 0 ? 0 : 1);

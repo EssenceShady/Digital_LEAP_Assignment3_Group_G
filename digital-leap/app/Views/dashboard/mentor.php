@@ -10,7 +10,7 @@ foreach ($placements as $p) {
 <div class="page-head">
     <div>
         <h1>Mentor dashboard</h1>
-        <p>Your students, their logbooks, the visits you have scheduled and the reports awaiting assessment.</p>
+        <p>Your students, their Form E log books, the visits you have scheduled and the Form C reports awaiting assessment.</p>
     </div>
     <div class="page-actions">
         <a class="btn" href="<?= e(url('mentor/visits/form')) ?>">Schedule a visit</a>

@@ -8,7 +8,7 @@
 <div class="page-head">
     <div>
         <h1>Placements</h1>
-        <p><?= e($year) ?>. Filters apply to the academic year shown.</p>
+        <p><?= e($year) ?>. Each placement is the record behind Form A2 (industrial training agreement), Form A3 (placement agreement) and Form B (industrial training notification), which are signed on paper.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-quiet" href="<?= e(url('logbook/template')) ?>" target="_blank" rel="noopener">Log book template</a>

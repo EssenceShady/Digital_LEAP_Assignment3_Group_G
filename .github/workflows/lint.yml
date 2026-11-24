@@ -1,0 +1,46 @@
+name: lint
+
+# Syntax only: no database, no secrets, no deployment. Catches a broken PHP
+# file or JavaScript module before it is merged.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install PHP 8.0
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+          tools: none
+
+      - name: PHP syntax check
+        run: |
+          status=0
+          while IFS= read -r -d '' file; do
+            php -l "$file" || status=1
+          done < <(find digital-leap -name '*.php' -print0)
+          exit $status
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: JavaScript syntax check
+        run: |
+          status=0
+          while IFS= read -r -d '' file; do
+            node --check "$file" || status=1
+          done < <(find digital-leap/public/assets/js digital-leap/sw.js -name '*.js' -print0)
+          exit $status

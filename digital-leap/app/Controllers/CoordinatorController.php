@@ -12,6 +12,7 @@ use Leap\Core\Notify;
 use Leap\Core\Settings;
 use Leap\Core\Validator;
 use Leap\Core\View;
+use Leap\Services\Attendance;
 
 final class CoordinatorController
 {
@@ -51,6 +52,7 @@ final class CoordinatorController
         View::render('coordinator/org_form', [
             'title' => $org ? 'Edit organisation' : 'Add organisation',
             'org' => $org,
+            'geo' => $id > 0 ? Attendance::orgPoint($id) : null,
         ]);
     }
 
@@ -68,8 +70,25 @@ final class CoordinatorController
         $expiry = trim((string) \post('mou_expiry', ''));
         $capacity = (int) \post('capacity', 1);
         $status = (string) \post('status', 'active');
+        $latRaw = trim((string) \post('latitude', ''));
+        $lngRaw = trim((string) \post('longitude', ''));
+        $clearGeo = \post('clear_geo') === '1';
+        $geo = null;
 
         $errors = [];
+        if ($clearGeo) {
+            $geo = ['lat' => null, 'lng' => null];
+        } elseif ($latRaw !== '' || $lngRaw !== '') {
+            if ($latRaw === '' || $lngRaw === '') {
+                $errors[] = 'Enter both a latitude and a longitude for the site pin, or leave both blank.';
+            } elseif (!is_numeric($latRaw) || !is_numeric($lngRaw)
+                || (float) $latRaw < -90 || (float) $latRaw > 90
+                || (float) $lngRaw < -180 || (float) $lngRaw > 180) {
+                $errors[] = 'The site pin needs a latitude between -90 and 90 and a longitude between -180 and 180.';
+            } else {
+                $geo = ['lat' => (float) $latRaw, 'lng' => (float) $lngRaw];
+            }
+        }
         if (!Validator::length($name, 3, 120)) {
             $errors[] = 'Enter the organisation name.';
         }
@@ -115,7 +134,8 @@ final class CoordinatorController
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
-        Database::tx(static function () use ($id, $data, $name): void {
+        $savedId = $id;
+        Database::tx(static function () use ($id, $data, $name, &$savedId): void {
             if ($id > 0) {
                 $before = Database::one('SELECT * FROM organisation WHERE org_id = ?', [$id]);
                 Database::update('organisation', $data, 'org_id = ?', [$id]);
@@ -123,9 +143,14 @@ final class CoordinatorController
             } else {
                 $data['created_at'] = date('Y-m-d H:i:s');
                 $newId = Database::insert('organisation', $data);
+                $savedId = $newId;
                 Audit::log('organisation.created', 'organisation', $newId, null, ['name' => $name]);
             }
         });
+
+        if ($geo !== null) {
+            Attendance::setOrgPoint($savedId, $geo['lat'], $geo['lng']);
+        }
 
         \flash('success', 'Organisation saved.');
         \redirect('coordinator/organisations');
@@ -466,6 +491,8 @@ final class CoordinatorController
             'timeline' => $timeline,
             'docs' => $docs,
             'entryCounts' => $entries,
+            'attendance' => Attendance::recent($id, 12),
+            'attendancePin' => Attendance::orgPoint((int) $placement['org_id']),
         ]);
     }
 

@@ -10,6 +10,7 @@ use Leap\Core\Guard;
 use Leap\Core\Notify;
 use Leap\Core\Validator;
 use Leap\Core\View;
+use Leap\Services\Attendance;
 
 final class SupervisorController
 {
@@ -79,7 +80,13 @@ final class SupervisorController
         View::render('supervisor/entry', [
             'title' => 'Week ' . $entry['week_no'] . ' entry',
             'entry' => $entry,
+            'days' => Database::all(
+                'SELECT work_date, tasks, hours FROM logbook_day WHERE entry_id = ? ORDER BY work_date',
+                [$id]
+            ),
             'comments' => $this->comments($id),
+            'checkIns' => Attendance::recent((int) $entry['placement_id'], 8, (int) $entry['student_user']),
+            'checkInsPin' => Attendance::orgPoint((int) Database::val('SELECT org_id FROM placement WHERE placement_id = ?', [(int) $entry['placement_id']])),
             'attachments' => Database::all(
                 'SELECT d.*, rv.first_name AS reviewer_first, rv.last_name AS reviewer_last
                  FROM document d LEFT JOIN users rv ON rv.user_id = d.reviewed_by
@@ -455,7 +462,7 @@ final class SupervisorController
     private function entryFor(int $entryId): ?array
     {
         return Database::one(
-            'SELECT e.*, p.mentor_id, p.supervisor_id, s.user_id AS student_user,
+            'SELECT e.*, p.placement_id, p.mentor_id, p.supervisor_id, s.user_id AS student_user,
                     u.first_name, u.last_name
              FROM logbook_entry e
              JOIN placement p ON p.placement_id = e.placement_id

@@ -954,6 +954,10 @@
             }
         });
         form.addEventListener('submit', function (event) {
+            // The offline engine handles the submit first and empties the box;
+            // without this guard its cleared field would be marked invalid and
+            // block the next question.
+            if (event.defaultPrevented) { return; }
             if (!field.value.trim()) {
                 event.preventDefault();
                 field.setCustomValidity('Type a question first.');
@@ -977,6 +981,359 @@
         });
     }
 
+    function initLogbookDays() {
+        document.querySelectorAll('table.logbook-day-table').forEach(function (table) {
+            table.querySelectorAll('tbody tr').forEach(function (row) {
+                var field = row.querySelector('input[type="date"]');
+                var label = row.querySelector('td.day-col');
+                if (!field || !label) { return; }
+                var sync = function () {
+                    var date = new Date(field.value + 'T00:00:00');
+                    if (!field.value || isNaN(date.getTime())) { return; }
+                    label.textContent = date.toLocaleDateString('en-GB', { weekday: 'short' });
+                };
+                field.addEventListener('change', sync);
+                field.addEventListener('input', sync);
+                sync();
+            });
+        });
+    }
+
+    /* --- installable offline shell --------------------------------------- */
+
+    function leapRoot() {
+        var meta = document.querySelector('meta[name="leap-base"]');
+        return meta ? meta.getAttribute('content') || '' : '';
+    }
+
+    function initServiceWorker() {
+        if (!('serviceWorker' in navigator)) { return; }
+        // Browsers only allow service workers in a secure context. On plain
+        // HTTP (a lab machine reached by IP, for example) stay silent.
+        if (!window.isSecureContext) { return; }
+        var root = leapRoot();
+        navigator.serviceWorker.register(root + '/sw.js', { scope: (root || '') + '/' }).catch(function () {
+            /* the app keeps working online without it */
+        });
+
+        document.querySelectorAll('form[action*="logout"]').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                // Saved DIVA answers can hold personal figures, so the next
+                // person at this device must not find them.
+                try {
+                    var keys = Object.keys(window.localStorage);
+                    keys.forEach(function (key) {
+                        if (key.indexOf('leap.offline.diva.') === 0) { window.localStorage.removeItem(key); }
+                    });
+                } catch (error) { /* ignore */ }
+                var reg = navigator.serviceWorker.controller;
+                if (reg) { reg.postMessage({ type: 'leap-purge' }); }
+            });
+        });
+    }
+
+    function initNetStatus() {
+        var pills = document.querySelectorAll('[data-net-status]');
+        if (!pills.length) { return; }
+
+        // navigator.onLine only reports the device interface. A phone on Wi-Fi
+        // with the placement server down still reads "online", so the pill also
+        // tracks whether the last probe of this same origin succeeded.
+        var reachable = true;
+        var probing = false;
+        window.LeapServerReachable = true;
+
+        function paint() {
+            var online = navigator.onLine && reachable;
+            var pending = window.LeapOffline && window.LeapOffline.pendingCount ? window.LeapOffline.pendingCount() : 0;
+            var state = !online ? 'offline' : (pending > 0 ? 'syncing' : 'online');
+            var text = !online ? 'Offline' : (pending > 0 ? 'Sending ' + pending : 'Online');
+            document.querySelectorAll('[data-net-status]').forEach(function (pill) {
+                pill.setAttribute('data-state', state);
+                var label = pill.querySelector('.net-text');
+                if (label) { label.textContent = text; }
+                pill.setAttribute('aria-label', !online
+                    ? 'Offline. Drafts are saved on this device.'
+                    : (pending > 0 ? pending + ' item(s) waiting to send.' : 'Online and up to date.'));
+            });
+        }
+
+        function probe() {
+            if (probing || !navigator.onLine) { return; }
+            probing = true;
+            var done = false;
+            var finish = function (ok) {
+                if (done) { return; }
+                done = true;
+                probing = false;
+                window.LeapServerReachable = ok;
+                if (reachable !== ok) {
+                    reachable = ok;
+                    paint();
+                    if (ok && window.LeapOffline && window.LeapOffline.flush) { window.LeapOffline.flush(); }
+                }
+            };
+            var abort = ('AbortController' in window) ? new AbortController() : null;
+            var timer = setTimeout(function () { if (abort) { abort.abort(); } finish(false); }, 6000);
+            fetch(location.pathname + location.search, {
+                method: 'HEAD', cache: 'no-store', credentials: 'same-origin',
+                signal: abort ? abort.signal : undefined
+            }).then(function () {
+                clearTimeout(timer);
+                finish(true);
+            }).catch(function () {
+                clearTimeout(timer);
+                finish(false);
+            });
+        }
+
+        window.LeapPaintNet = paint;
+        window.addEventListener('online', function () {
+            reachable = true;
+            window.LeapServerReachable = true;
+            paint();
+            probe();
+            if (window.LeapOffline && window.LeapOffline.flush) { window.LeapOffline.flush(); }
+        });
+        window.addEventListener('offline', function () {
+            reachable = false;
+            window.LeapServerReachable = false;
+            paint();
+        });
+        document.addEventListener('leap-sync', paint);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) { probe(); }
+        });
+        paint();
+        probe();
+    }
+
+    function initInstallPrompt() {
+        var box = document.querySelector('[data-install-prompt]');
+        var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-install-trigger]'));
+        if (!box && !triggers.length) { return; }
+        var KEY = 'leap.install.dismissed';
+        var deferred = null;
+        var dismissed = function () {
+            try { return window.localStorage.getItem(KEY) === '1'; } catch (error) { return false; }
+        };
+        var standalone = function () {
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) { return true; }
+            return window.navigator.standalone === true;
+        };
+        var markInstalled = function () {
+            if (box) { box.hidden = true; }
+            triggers.forEach(function (trigger) { trigger.hidden = true; });
+            try { window.localStorage.setItem(KEY, '1'); } catch (error) { /* private mode */ }
+        };
+
+        // Firefox desktop has no install button of its own, so the menu item
+        // explains the manual route instead of pretending to prompt.
+        var manualSteps = function () {
+            var ua = (window.navigator.userAgent || '').toLowerCase();
+            if (ua.indexOf('firefox') > -1) {
+                return 'Firefox on the desktop has no install button of its own. Open Chrome or Edge to install Digital LEAP as an app. The offline pages still work in Firefox: keep this tab open and everything you have loaded stays readable when the server is down.';
+            }
+            if (ua.indexOf('safari') > -1 && ua.indexOf('chrome') === -1) {
+                return 'In Safari use File → Add to Dock on macOS, or Share → Add to Home Screen on iPhone and iPad.';
+            }
+            return 'In Chrome or Edge the install icon sits at the right end of the address bar; the same action is in the browser menu as "Install Digital LEAP". Reload this page if the icon has not appeared yet.';
+        };
+
+        // The panel a trigger writes into is the nearest block that holds one,
+        // so the top-bar menu and the settings page each keep their own copy.
+        var helpFor = function (trigger) {
+            var node = trigger.parentNode;
+            while (node && node.nodeType === 1) {
+                var found = node.querySelector('[data-install-help]');
+                if (found) { return found; }
+                node = node.parentNode;
+            }
+            return null;
+        };
+
+        var paintTrigger = function () {
+            triggers.forEach(function (trigger) {
+                if (standalone()) { trigger.hidden = true; return; }
+                trigger.hidden = false;
+                trigger.textContent = deferred
+                    ? (trigger.getAttribute('data-install-label') || 'Install this app')
+                    : (trigger.getAttribute('data-install-label-manual') || 'How to install this app');
+            });
+        };
+
+        if (standalone()) { markInstalled(); }
+
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();
+            deferred = event;
+            paintTrigger();
+            if (box && !dismissed()) { box.hidden = false; }
+        });
+
+        if (box) {
+            var accept = box.querySelector('[data-install-accept]');
+            var dismiss = box.querySelector('[data-install-dismiss]');
+            if (accept) {
+                accept.addEventListener('click', function () {
+                    if (!deferred) {
+                        box.hidden = true;
+                        triggers.forEach(function (trigger) {
+                            var help = helpFor(trigger);
+                            if (help) { help.textContent = manualSteps(); help.hidden = false; }
+                        });
+                        return;
+                    }
+                    deferred.prompt();
+                    if (deferred.userChoice && deferred.userChoice.then) {
+                        deferred.userChoice.then(function () { deferred = null; box.hidden = true; paintTrigger(); });
+                    } else {
+                        deferred = null;
+                        box.hidden = true;
+                        paintTrigger();
+                    }
+                });
+            }
+            if (dismiss) {
+                dismiss.addEventListener('click', function () {
+                    box.hidden = true;
+                    try { window.localStorage.setItem(KEY, '1'); } catch (error) { /* private mode */ }
+                });
+            }
+        }
+
+        triggers.forEach(function (trigger) {
+            trigger.addEventListener('click', function () {
+                if (deferred) {
+                    deferred.prompt();
+                    if (deferred.userChoice && deferred.userChoice.then) {
+                        deferred.userChoice.then(function () { deferred = null; paintTrigger(); });
+                    }
+                    return;
+                }
+                var help = helpFor(trigger);
+                if (help) {
+                    help.textContent = manualSteps();
+                    help.hidden = false;
+                }
+            });
+        });
+
+        paintTrigger();
+        window.addEventListener('appinstalled', markInstalled);
+    }
+
+    function initSettings() {
+        var form = document.querySelector('[data-settings-form]');
+        if (form) {
+            var root = document.documentElement;
+            form.querySelectorAll('[data-preview-size]').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    if (input.checked) { root.setAttribute('data-text-size', input.value); }
+                });
+            });
+            var motion = form.querySelector('[data-preview-motion]');
+            if (motion) {
+                motion.addEventListener('change', function () {
+                    if (motion.checked) { root.setAttribute('data-reduce-motion', 'on'); }
+                    else { root.removeAttribute('data-reduce-motion'); }
+                });
+            }
+        }
+
+        var panel = document.querySelector('[data-device-panel]');
+        if (!panel) { return; }
+        var uid = panel.getAttribute('data-user') || '';
+
+        function put(name, text) {
+            var slot = panel.querySelector('[data-device-' + name + ']');
+            if (slot) { slot.textContent = text; }
+        }
+        function readJson(key, fallback) {
+            try { return JSON.parse(window.localStorage.getItem(key) || 'null') || fallback; } catch (error) { return fallback; }
+        }
+        function count(n, word) {
+            return n === 1 ? '1 ' + word : n + ' ' + word + 's';
+        }
+        function divaKeys() {
+            return ['leap.offline.diva.snap.' + uid, 'leap.offline.diva.pending.' + uid];
+        }
+        function divaTotal() {
+            var saved = readJson(divaKeys()[0], {});
+            var waiting = readJson(divaKeys()[1], []);
+            return Object.keys(saved).length + waiting.length;
+        }
+        function paintCounts() {
+            put('diva', count(divaTotal(), 'answer'));
+            var pending = window.LeapOffline && window.LeapOffline.pendingCount ? window.LeapOffline.pendingCount() : 0;
+            put('pending', count(pending, 'change'));
+        }
+
+        var standaloneNow = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+            || window.navigator.standalone === true;
+        if (standaloneNow) {
+            put('install', 'Installed and running as an app');
+        } else if (!window.isSecureContext) {
+            put('install', 'Needs HTTPS before it can be installed');
+        } else if (!('serviceWorker' in navigator)) {
+            put('install', 'This browser cannot install apps');
+        } else {
+            put('install', 'Not installed on this browser');
+        }
+
+        if ('caches' in window) {
+            window.caches.keys().then(function (names) {
+                var leap = names.filter(function (name) { return name.indexOf('leap-') === 0; });
+                if (!leap.length) { put('cache', 'Nothing cached yet'); return null; }
+                return Promise.all(leap.map(function (name) {
+                    return window.caches.open(name).then(function (cache) {
+                        return cache.keys().then(function (list) { return list.length; }, function () { return 0; });
+                    }, function () { return 0; });
+                })).then(function (sizes) {
+                    var total = sizes.reduce(function (a, b) { return a + b; }, 0);
+                    put('cache', count(total, 'response') + ' in ' + count(leap.length, 'cache'));
+                });
+            }).catch(function () { put('cache', 'Not available'); });
+        } else {
+            put('cache', 'Not available in this browser');
+        }
+
+        paintCounts();
+        document.addEventListener('leap-sync', paintCounts);
+
+        var clearDiva = panel.querySelector('[data-device-clear-diva]');
+        if (clearDiva) {
+            clearDiva.addEventListener('click', function (event) {
+                if (event.defaultPrevented) { return; }
+                divaKeys().forEach(function (key) {
+                    try { window.localStorage.removeItem(key); } catch (error) { /* private mode */ }
+                });
+                paintCounts();
+                toast('Saved DIVA answers on this device are cleared.');
+            });
+        }
+
+        var clearShell = panel.querySelector('[data-device-clear-shell]');
+        if (clearShell) {
+            clearShell.addEventListener('click', function (event) {
+                if (event.defaultPrevented) { return; }
+                if (!('caches' in window)) { return; }
+                window.caches.keys().then(function (names) {
+                    // The shell cache is what makes the app work with no
+                    // connection, so only the pages browsed away are dropped.
+                    return Promise.all(names.filter(function (name) {
+                        return name.indexOf('leap-runtime') === 0;
+                    }).map(function (name) { return window.caches.delete(name); }));
+                }).then(function () {
+                    toast('Browsed pages are cleared. Open them again to re-save.');
+                    window.caches.keys().then(function (names) {
+                        put('cache', count(names.filter(function (n) { return n.indexOf('leap-') === 0; }).length, 'cache') + ' left');
+                    });
+                }).catch(function () { toast('The browser would not release the cache.'); });
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initSidebar();
         initDropdown('[data-notif-toggle]', '#notif-panel');
@@ -988,6 +1345,7 @@
         initAlerts();
         initTour();
         initConfirmations();
+        initSettings();
         initLoading();
         initPrint();
         initBars();
@@ -997,5 +1355,9 @@
         initAvatarPreview();
         initEvaluation();
         initOrgChoice();
+        initLogbookDays();
+        initServiceWorker();
+        initNetStatus();
+        initInstallPrompt();
     });
 })();

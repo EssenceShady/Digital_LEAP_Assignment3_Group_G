@@ -4,11 +4,13 @@
 /** @var array $attachments */
 /** @var string $threadRoute */
 /** @var string $backRoute */
+/** @var array<string, bool> $sentDays */
+/** @var string|null $sendDayRoute */
 ?>
 <div class="page-head">
     <div>
-        <h1>Week <?= (int) $entry['week_no'] ?> logbook entry</h1>
-        <p><?= e(fmt_date($entry['date_from'])) ?> – <?= e(fmt_date($entry['date_to'])) ?> · <?= e(rtrim(rtrim(number_format((float) $entry['hours'], 1), '0'), '.')) ?> hours</p>
+        <h1>Week <?= (int) $entry['week_no'] ?> log book entry (Form E)</h1>
+        <p><?= e(fmt_date($entry['date_from'])) ?> – <?= e(fmt_date($entry['date_to'])) ?> · <?= e(fmt_hours($entry['hours'])) ?> hours</p>
     </div>
     <div class="page-actions">
         <?php if (in_array($entry['status'], ['draft', 'returned'], true)): ?>
@@ -18,42 +20,38 @@
     </div>
 </div>
 
-<div class="grid grid-2">
-    <section class="card">
-        <div class="card-head"><div><h2>Activities</h2><p><?= status_badge($entry['status']) ?></p></div></div>
-        <p><?= nl2br(e($entry['activities'])) ?></p>
-        <?php if ($entry['submitted_at'] !== null): ?>
-            <p class="small muted">Submitted <?= e(fmt_dt($entry['submitted_at'])) ?><?= $entry['reviewed_at'] ? ' · reviewed ' . e(fmt_dt($entry['reviewed_at'])) : '' ?></p>
-        <?php endif; ?>
-    </section>
+<?php require APP_PATH . '/Views/shared/logbook_body.php'; ?>
 
-    <section class="card">
-        <div class="card-head"><div><h2>Attachments</h2><p>PDF, Word, JPG or PNG up to 5 MB.</p></div></div>
-        <?php if ($attachments === []): ?>
-            <div class="empty"><strong>No attachment</strong>Add a photo or signed sheet if it supports your entry.</div>
-        <?php else: ?>
-            <ul class="timeline">
-                <?php foreach ($attachments as $doc): ?>
-                    <li>
-                        <div><a href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>"><?= e($doc['original_name']) ?></a></div>
-                        <div class="when"><?= e(fmt_date($doc['uploaded_at'])) ?> · <?= number_format((int) $doc['file_size'] / 1024, 0) ?> KB · <?= review_label($doc['reviewed_at'] ?? null, $doc['reviewer_first'] ?? null, $doc['reviewer_last'] ?? null) ?></div>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-        <?php if (in_array($entry['status'], ['draft', 'returned', 'submitted'], true)): ?>
-            <form method="post" action="<?= e(url('student/logbook/attach')) ?>" enctype="multipart/form-data">
-                <?= csrf_field() ?>
-                <input type="hidden" name="entry_id" value="<?= (int) $entry['entry_id'] ?>">
-                <div class="field">
-                    <label for="attachment">Add a file</label>
-                    <input id="attachment" name="attachment" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
-                </div>
-                <div class="form-actions"><button class="btn btn-outline" type="submit">Upload</button></div>
-            </form>
-        <?php endif; ?>
-    </section>
-</div>
+<section class="card">
+    <div class="card-head"><div><h2>Attachments</h2><p>PDF, Word, JPG or PNG up to 5 MB. <?= status_badge($entry['status']) ?></p></div></div>
+    <?php if ($attachments === []): ?>
+        <div class="empty"><strong>No attachment</strong>Add a photo or signed sheet if it supports your entry.</div>
+    <?php else: ?>
+        <ul class="timeline">
+            <?php foreach ($attachments as $doc): ?>
+                <li>
+                    <div><a href="<?= e(url('download', ['id' => (int) $doc['doc_id']])) ?>"><?= e($doc['original_name']) ?></a></div>
+                    <div class="when"><?= e(fmt_date($doc['uploaded_at'])) ?> · <?= number_format((int) $doc['file_size'] / 1024, 0) ?> KB · <?= review_label($doc['reviewed_at'] ?? null, $doc['reviewer_first'] ?? null, $doc['reviewer_last'] ?? null) ?></div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+    <?php if (in_array($entry['status'], ['draft', 'returned', 'submitted'], true)): ?>
+        <form method="post" action="<?= e(url('student/logbook/attach')) ?>" enctype="multipart/form-data">
+            <?= csrf_field() ?>
+            <input type="hidden" name="entry_id" value="<?= (int) $entry['entry_id'] ?>">
+            <div class="field">
+                <label for="attachment">Add a file</label>
+                <input id="attachment" name="attachment" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+            </div>
+            <div class="form-actions"><button class="btn btn-outline" type="submit">Upload</button></div>
+        </form>
+    <?php endif; ?>
+</section>
+
+<?php if ($entry['submitted_at'] !== null): ?>
+    <p class="small muted">Submitted <?= e(fmt_dt($entry['submitted_at'])) ?><?= $entry['reviewed_at'] ? ' · reviewed ' . e(fmt_dt($entry['reviewed_at'])) : '' ?></p>
+<?php endif; ?>
 
 <section class="card chat-card">
     <div class="card-head"><div><h2>Discussion</h2><p>Only you, your host supervisor and your academic mentor can see this thread.</p></div></div>

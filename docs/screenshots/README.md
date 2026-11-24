@@ -1,31 +1,69 @@
 # Screenshots for the user guide and report
 
-Only `diva-welcome.png` is in this folder. The user guide and the report refer to
-screenshots; add the files below to this folder before printing, and update the
-guide or report if any label differs from what you capture.
+The captures live in `pwa/`. They were taken from the running application at
+`http://localhost/Digital_LEAP_Assignment3_Group_G/digital-leap/` on the seeded
+demo accounts, with browser chrome cropped out.
 
-Suggested set (capture at 1440 px wide, browser chrome cropped out):
+## Naming
 
-| File name | Screen to capture | Signed in as |
-| --- | --- | --- |
-| `01-sign-in.png` | Sign-in page with the demo-role buttons visible | signed out |
-| `02-student-dashboard.png` | Dashboard with the Internship progress card | mohamedalie247@gmail.com |
-| `03-student-apply.png` | Application page with five ranked choices and the CV card | mohamedalie247@gmail.com |
-| `04-student-logbook.png` | Weekly logbook list showing the week 9–12 states | mohamedalie247@gmail.com |
-| `05-supervisor-queue.png` | Queue with the status and week filters set | supervisor@brightfuture.sl |
-| `06-mentor-students.png` | Mentor students list with the filter bar | deborahjulietmoiforay@gmail.com |
-| `07-mentor-visits.png` | Visit list with the date-range filter | deborahjulietmoiforay@gmail.com |
-| `08-coordinator-placements.png` | Placements with year, status and organisation filters | bayohmusa001@gmail.com |
-| `09-coordinator-grades.png` | Grade breakdown ending in “Final mark X / 200” | bayohmusa001@gmail.com |
-| `10-management-kpis.png` | KPI page with the labelled bar charts | fatmatabfc@gmail.com |
-| `11-admin-audit.png` | Audit list with the action/user/date filters | sesayshadrachsaidu@gmail.com |
-| `12-admin-feedback.png` | Feedback inbox with rating and page filters | sesayshadrachsaidu@gmail.com |
-| `13-diva-quoted.png` | A DIVA answer beginning “Quoted from the internship guidebook, page …” | any role |
-| `14-messages.png` | A placement conversation with a quoted reply and a reaction | mohamedalie247@gmail.com |
-| `15-profile-photo.png` | Profile page with the photo preview before saving | any role |
+`<role>-<page>-<width>.png`, where `<role>` is the account used
+(student, supervisor, mentor, coordinator, management, admin), `<page>` is the
+route shown, and `<width>` is the viewport width in pixels: `1440` for desktop,
+`360` for the narrow layout. Six further files cover offline and sync states and
+use their own widths (`420` for the offline page, `460` for the sync strip).
 
-`diva-welcome.png` already exists and is linked from
-`docs/Digital_LEAP_User_Guide.md`; keep it as the welcome-state figure.
+## Current set
+
+128 files: 61 pages captured at both widths (122 files) plus six state shots.
+
+- `student-*` (15) — dashboard, apply, career fair, preferences, placement,
+  logbook list, new logbook, self-evaluation, report, results, profile,
+  messages, notifications, DIVA, DIVA report check
+- `supervisor-*` (7) — dashboard, queue, evaluation, profile, messages,
+  notifications, DIVA
+- `mentor-*` (11) — dashboard, students, visits, visit form, evaluation,
+  logbook, reports, profile, messages, notifications, DIVA
+- `coordinator-*` (11) — dashboard, applications, placements, visits,
+  organisations, grades, printable grades, profile, messages, notifications,
+  DIVA
+- `management-*` (6) — dashboard, KPIs, printable KPIs, profile, notifications,
+  DIVA
+- `admin-*` (11) — dashboard, users, user form, roles, audit, feedback, mail,
+  settings, profile, notifications, DIVA
+- `offline-fallback-420.png`, `offline-cached-page-420.png`,
+  `offline-cached-real-420.png`, `offline-fallback-real-420.png` — the offline
+  page served by the service worker while the network is down
+- `sync-strip-queued-460.png`, `sync-strip-drained-460.png` — the sync strip with
+  drafts waiting and after they have drained
+
+`diva-welcome.png` sits one level up and is the welcome-state figure linked from
+`docs/Digital_LEAP_User_Guide.md`.
+
+## Used in the report
+
+Figures 5 to 16 of `REPORT/Digital_LEAP_Assignment3_Report.docx` use these files:
+
+| Figure | File |
+| --- | --- |
+| 5 | `pwa/student-dashboard-1440.png` |
+| 6 | `pwa/student-student-apply-1440.png` |
+| 7 | `pwa/student-student-logbook-new-1440.png` |
+| 8 | `pwa/coordinator-coordinator-placements-1440.png` |
+| 9 | `pwa/supervisor-supervisor-queue-1440.png` |
+| 10 | `pwa/mentor-mentor-evaluation-1440.png` |
+| 11 | `pwa/coordinator-coordinator-grades-1440.png` |
+| 12 | `pwa/admin-admin-audit-1440.png` |
+| 13 | `pwa/student-diva-1440.png` |
+| 14 | `pwa/offline-fallback-420.png` |
+| 15 | `pwa/sync-strip-queued-460.png` |
+| 16 | `pwa/student-dashboard-360.png` |
+
+## Known gaps
+
+Two pages added late are not yet in the set: the student **My settings** page and
+the **Guidebook** view/download page. Capture them at 1440 and 360 with a
+signed-in student, save as `student-student-settings-<width>.png` and
+`student-guidebook-<width>.png`, and the set is complete.
 
 Capture from the running application only. Do not screenshot the code editor,
 the XAMPP control panel or a database client, and do not include any password
