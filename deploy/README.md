@@ -37,7 +37,7 @@ C:\xampp\php\php.exe -S 127.0.0.1:8080 router.php
 
 ## 2. Docker
 
-`deploy/Dockerfile` builds a PHP 8.0 + Apache image with `pdo_mysql`,
+`deploy/Dockerfile` builds a PHP 8.3 + Apache image with `pdo_mysql`,
 `mbstring` and `zip`, the document root at `digital-leap/`, and
 `deploy/apache-vhost.conf` as the default virtual host. `deploy/php.ini`
 raises the upload limits to match the 5 MB evidence limit and 8 MB photo
@@ -113,7 +113,7 @@ It needs no secrets and no database.
 
 ## 4. GitHub Codespaces (shareable demo link)
 
-`.devcontainer/` starts the same PHP 8.0 + Apache image as section 2, adds
+`.devcontainer/` starts the same PHP 8.3 + Apache image as section 2, adds
 MariaDB, and imports `database/digital_leap.sql` the first time the container
 is created. The application is published on port 8080 and the devcontainer
 marks that port **public**, so a forwarded link opens the running app without

@@ -166,7 +166,7 @@ digital-leap/
     knowledge/              guidebook.txt, the dated text extract DIVA searches
     logs/                   mail.log, php-error.log, server.log
 deploy/
-  Dockerfile                PHP 8.0 + Apache image with pdo_mysql
+  Dockerfile                PHP 8.3 + Apache image with pdo_mysql
   docker-compose.yml        Application plus MariaDB for a local stack
   apache-vhost.conf         DocumentRoot on digital-leap/, private folders denied
   php.ini                   Upload and session settings for the image

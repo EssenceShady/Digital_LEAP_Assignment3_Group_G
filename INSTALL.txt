@@ -12,7 +12,7 @@ database/
   digital_leap.sql       Schema (33 tables) and Sierra Leone seed data
   migrations/            Additive upgrade scripts for an existing database
 deploy/
-  Dockerfile             PHP 8.0 + Apache image
+  Dockerfile             PHP 8.3 + Apache image
   docker-compose.yml     Application plus MariaDB for a local stack
   apache-vhost.conf      Virtual host with the private folders denied
   php.ini                Upload and session settings for the image

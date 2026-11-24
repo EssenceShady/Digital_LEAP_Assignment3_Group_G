@@ -1,15 +1,14 @@
-# Digital LEAP — PHP 8.0 + Apache image.
+# Digital LEAP — PHP 8.3 + Apache image.
 #
 # Build from the repository root so the Dockerfile can copy the application:
 #   docker build -f deploy/Dockerfile -t digital-leap .
 # or use deploy/docker-compose.yml, which also starts MariaDB.
 #
-# The image contains no configuration file. The application copies
-# config/config.sample.php to config/config.php on first request, so mount a
-# real config at /var/www/html/digital-leap/config/config.php (see
-# deploy/README.md). Nothing in this image reaches the internet.
+# The image contains no configuration file. Mount a real config at
+# /var/www/html/digital-leap/config/config.php (see deploy/README.md).
+# Nothing in this image reaches the internet.
 
-FROM php:8.0-apache
+FROM php:8.3-apache-bookworm
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/digital-leap
 
@@ -28,9 +27,11 @@ COPY deploy/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 
 COPY digital-leap/ /var/www/html/digital-leap/
 
-# The application creates files in storage/ at run time; Apache runs as
-# www-data and must own that tree.
-RUN chown -R www-data:www-data /var/www/html/digital-leap/storage \
+# Runtime logs and uploads are excluded from the build context, so recreate
+# their folders before handing the tree to Apache.
+RUN mkdir -p /var/www/html/digital-leap/storage/logs \
+        /var/www/html/digital-leap/storage/uploads \
+    && chown -R www-data:www-data /var/www/html/digital-leap/storage \
     && chmod -R u+rwX,g+rwX /var/www/html/digital-leap/storage
 
 EXPOSE 80
