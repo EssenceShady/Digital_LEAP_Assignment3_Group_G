@@ -27,6 +27,12 @@ $hostCount = (int) Database::val('SELECT COUNT(*) FROM organisation WHERE status
 <section class="home-hero">
     <div class="home-hero-copy">
         <p class="home-kicker">Limkokwing University · Sierra Leone</p>
+        <figure class="home-hero-media">
+            <img src="<?= e(asset('img/campus-hero.jpg')) ?>" width="1536" height="1024"
+                 alt="Illustration of students talking on a palm-lined campus walkway at golden hour, with the coast and hills beyond."
+                 decoding="async" fetchpriority="high">
+            <figcaption>Illustrative scene</figcaption>
+        </figure>
         <h1>Every internship, from first application to published result.</h1>
         <p class="home-lead">One workspace for the whole internship: students apply and rank hosts, supervisors review weekly logbooks, mentors assess, and the office publishes a mark built from evidence. DIVA, the assistant inside the system, knows the page you are on and tells you what to do next.</p>
         <div class="home-cta">

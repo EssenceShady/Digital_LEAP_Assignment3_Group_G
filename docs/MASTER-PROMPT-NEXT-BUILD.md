@@ -25,11 +25,34 @@ wrong from the owner's point of view:
 Your job is to rebuild the presentation, simplify presence into a model a
 first-year can explain, make the app dependable on phones from 320 px to
 tablets, fix offline honestly, reseed a clean demo, update DIVA, and make a new
-Codespace open the application on first click.
+Codespace open the application on first click — then raise the finish with the
+polish work in §13.
 
 Work in phases. Finish and verify one phase before starting the next. Do not
 ask for confirmation between phases; run to completion, except for the four
 stop conditions in §12.
+
+### 0.1 Already shipped on 25 November 2026 — do not undo
+
+Three visual changes were made at the owner's request and are part of the
+baseline your build starts from. Treat them as requirements, not proposals:
+
+1. **The floating corner button is DIVA, not feedback.** `app/Views/layout.php`
+   renders `a.diva-fab` → `url('diva')`, gated on `Auth::can('diva.use')` and
+   hidden when `$route === 'diva'`. Feedback still opens from the account menu
+   (**Send feedback**) and the sidebar (**Share feedback**); `app.js` binds every
+   `[data-feedback-open]`, so never reintroduce a second floating feedback
+   button.
+2. **The sign-in backdrop is sharp.** `body.auth-shell` uses
+   `img/auth-campus.jpg` (1536 × 1024) at `center 40% / cover` with
+   `background-attachment: scroll` — never `fixed`, which stretched the old
+   952 × 340 photograph and forced a repaint on iOS.
+3. **The landing shows the place, under the label.** `figure.home-hero-media`
+   sits between `.home-kicker` and the `h1` on `app/Views/auth/landing.php`,
+   carrying `img/campus-hero.jpg` and the caption **Illustrative scene** so the
+   picture is never passed off as a photograph of the Freetown campus.
+
+Evidence: TC-246 to TC-249 in `docs/test-log.md`.
 
 ---
 
@@ -65,8 +88,11 @@ Current facts you can rely on, but re-verify before quoting them:
   (19); mentor has both.
 - `SiteCheckin::MAX_DISTANCE_M = 500`; organisation pin is the `setting` key
   `geo.org.<org_id>` (JSON `{lat,lng}`).
-- `sw.js` is at the app root, `VERSION = 'v6'`.
+- `sw.js` is at the app root, `VERSION = 'v7'`; `SHELL` also precaches
+  `campus-hero.jpg` and `auth-campus.jpg`.
 - Header wordmark is `public/assets/img/leap-wordmark-ink.png`.
+- Corner launcher is `a.diva-fab` (44 px tap target, charcoal with a gold
+  hairline) — not a feedback button. See §0.1.
 
 Demo accounts (keep working; passwords are in the seed comments and on the
 sign-in demo buttons):
@@ -218,6 +244,9 @@ public/assets/img/leap-mark.png             full badge on black (social/splash p
 public/assets/img/leap-globe.png            circular flag globe, 456 px, white removed
 public/assets/img/icon-192.png, icon-512.png  app icon
 public/assets/img/limkokwing-logo.png       LUCT lockup — footer only
+public/assets/img/diva-mark-sm.png          gold brain mark, transparent
+public/assets/img/campus-hero.jpg           1536 × 1024, 245 KB, landing hero
+public/assets/img/auth-campus.jpg           1536 × 1024, 262 KB, sign-in backdrop
 docs/brand-source/, docs/brand-preview/     originals and working copies
 ```
 
@@ -225,15 +254,26 @@ Rules: never stretch the wordmark (ratio 1.79 : 1, height 28–40 px in
 headers); no wordmark on busy photography; globe shown no larger than ~300 px
 as a raster; app icon legible at 48 px.
 
+The two campus photographs are **generated scenes, not photographs of the
+Freetown campus**, and the interface must say so wherever the meaning could be
+misread. `campus-hero.jpg` carries the visible caption *Illustrative scene*;
+if you reuse either image anywhere else, carry a caption or alt text that says
+the same. Do not put the wordmark on top of them, and do not present them as
+evidence of the real institution.
+
 ### 6.2 Landing page
 
-Rebuild `app/Views/auth/landing.php` around four blocks, in this order:
+The hero is settled and must not be redesigned again: on
+`app/Views/auth/landing.php` the copy column runs kicker
+("Limkokwing University · Sierra Leone") → `figure.home-hero-media` (the campus
+photograph, caption **Illustrative scene**) → headline → lead → CTA pair →
+four-figure proof strip, against the coordinator-dashboard preview panel on the
+right. It is two columns above 992 px and one column below, and it fits the
+first screen at 1440 × 900. Improve it only in the ways listed in §13.
 
-1. **Hero** — two-column on ≥ 992 px, single column below. Left: kicker
-   "Limkokwing University · Sierra Leone", a three-line headline, at most
-   18 words of supporting text, `[Sign in]` primary and `[See how it works]`
-   secondary, three proof chips (Offline · No external API · Audit trail).
-   Right: the CSS globe with six role labels on a ring.
+The sections below the hero are still the old long-form page. Rebuild those
+around three blocks:
+
 2. **How a placement moves** — five numbered steps: apply, allocate, arrive,
    review, publish.
 3. **Six roles, one record** — six portal tiles (student, supervisor, mentor,
@@ -243,9 +283,8 @@ Rebuild `app/Views/auth/landing.php` around four blocks, in this order:
    row: "Arrived 08:42 · 42 m", "Confirmed by supervisor · week 11",
    "Published · 68 · B+". Then one dark CTA band and a slim footer.
 
-Delete the long prose hero, the mock dashboard preview and the facts grid.
-No paragraph longer than two lines at 1280 px. Keep the page usable with
-JavaScript off.
+Cut the longest prose in the sections you rebuild; no paragraph longer than two
+lines at 1280 px. Keep the page usable with JavaScript off.
 
 ### 6.3 Loading screen
 
@@ -435,8 +474,9 @@ Acceptance: AT-18 passes; DIVA refuses a question about live location.
 
 ## 11. Phase 8 — Documentation and evidence
 
-- `docs/test-log.md`: new dated section, tests numbered from TC-246, one line
-  of evidence per test (command, status code, screenshot name).
+- `docs/test-log.md`: new dated section, tests numbered from TC-250 (TC-246 to
+  TC-249 are the 25 November launcher, backdrop and hero work), one line of
+  evidence per test (command, status code, screenshot name).
 - `docs/DEMO.md`: update the run sheet to the four verbs; add the splash and
   the Presence panel; keep it to 8 minutes.
 - `docs/Digital_LEAP_User_Guide.md`: keep prose under 2,000 words; update the
@@ -468,7 +508,91 @@ Do not commit or push unless asked in the current message.
 
 ---
 
-## 13. Definition of done
+## 13. Phase 9 — Polish that builds on 25 November
+
+Small, verifiable improvements to the work in §0.1. Each one must leave the
+demo accounts, the route counts and the offline rules untouched.
+
+### 13.1 Make the launcher an entrance, not a signpost
+
+- `diva` accepts an optional `q` parameter that pre-fills the composer (escaped,
+  never evaluated, length-capped at 500 characters). The launcher on a
+  placement page passes one question in the student's words — for example
+  "What is my next step on this placement?" — and the DIVA page lands with that
+  text in the box, not sent.
+- `Alt+Shift+D` opens DIVA from any signed-in page, declared with
+  `aria-keyshortcuts="Alt+Shift+D"` on the launcher and listed in the guided
+  tour. Do not capture the key while focus is in a text field.
+- The launcher must sit below every modal (`.feedback-layer`, install sheet,
+  tour) and disappear from print. Already true — prove it again with rectangles.
+
+Acceptance: click from `student/placement`, `coordinator/placement` and
+`mentor/visits`; each opens DIVA with the right prompt; the question is not
+sent until the user presses send; the link is absent on `diva` itself.
+
+### 13.2 Let the sign-in backdrop exist on a phone
+
+At ≤ 720 px `.auth-brand` is hidden, so the photograph is reduced to a 14 px
+frame around the card. Add a slim `figure.auth-strip` above the card (3 : 1,
+140–160 px tall, `auth-campus.jpg`, same **Illustrative scene** caption rule).
+Keep the card's contrast; do not move the form below the fold at 390 × 844.
+
+Acceptance: at 390 px the strip is visible, the card top is still inside the
+first screen, and `scrollWidth === clientWidth`.
+
+### 13.3 Serve the images at the size they are shown
+
+- Export 768 px and 1200 px variants of `campus-hero.jpg` with PowerShell
+  `System.Drawing` (quality 78–82) and use `srcset` + `sizes` on the hero.
+  Target ≤ 120 KB delivered to a 390 px phone.
+- Keep the two full-size images out of a phone's install. Either precache only
+  the variant the device needs, or leave both in the runtime cache and precache
+  none. If `SHELL` changes, bump `VERSION`.
+- Keep intrinsic `width`/`height` on every image so CLS stays 0.
+
+Acceptance: DevTools network shows the small variant on a phone, the large one
+on a 1440 desktop; the first paint keeps the headline where it was.
+
+### 13.4 Hold the quality line
+
+- White text over the scrim ≥ 4.5 : 1 at the darkest and lightest points, at
+  200 % zoom; the caption chip ≥ 4.5 : 1 over both a light and a dark part of
+  the photograph.
+- No horizontal scroll at 320, 360, 390, 768, 1024 and 1440 px on the landing,
+  sign-in, dashboard and DIVA.
+- `prefers-reduced-motion`: the launcher has no transform transition and the
+  hover lift is removed.
+
+### 13.5 Say where the pictures came from
+
+- Add `docs/assets.md`: one line per image — file, pixel size, byte size, how it
+  was produced, and the caption rule. State plainly that the two campus images
+  are generated illustrations. Link it from `README.md` next to the brand
+  assets, and repeat the disclaimer in `docs/DEMO.md` so a presenter cannot
+  claim otherwise on stage.
+
+### 13.6 Keep feedback findable now that it has no button
+
+- Add one step to the guided tour: "Send feedback" lives in the account menu
+  (and **Share feedback** in the sidebar) and reaches the office.
+- Check the empty and submitted states of the feedback form from the menu and
+  from the sidebar after the launcher change; `app.js` binds every
+  `[data-feedback-open]`, so a regression here means a selector changed.
+
+Acceptance: a new account can find feedback without being told; the tour step
+resolves to a visible control; both entry points open the same dialog.
+
+### 13.7 One more assistant surface, only if it earns its place
+
+There is room for a single contextual chip inside the placement and logbook
+screens — "Ask DIVA about this week" — using the existing `diva-fab` styling at
+inline size. Ship it only if the question it asks is specific to the record on
+screen and the answer is verifiable from live data or a guidebook page. If it
+would only open a generic chat, do not build it.
+
+---
+
+## 14. Definition of done
 
 - The Codespace link opens the landing page in a private window.
 - One sentence explains presence: *students prove arrival, supervisors confirm
@@ -482,5 +606,10 @@ Do not commit or push unless asked in the current message.
   drafts and arrivals survive a reload and sync with their captured time.
 - `demo_check.sql` passes; no test data; all six demo accounts work.
 - DIVA answers the 8 golden questions and refuses live-location claims.
+- The corner button opens DIVA on every signed-in page except DIVA, and feedback
+  is reachable in two places from every signed-in page (§13.6).
+- The sign-in backdrop is sharp at 1440 and the campus still shows on a 390 px
+  phone (§13.2); every photograph is captioned or declared in `docs/assets.md`
+  (§13.5).
 - Lint clean; route counts stated correctly everywhere; docs and test log in
   step with the code.

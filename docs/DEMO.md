@@ -106,8 +106,9 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 - **Roles:** show the permission matrix — 39 permissions across six roles.
 - **Settings:** show the practical split enforced at exactly 100.00%, and that
   Report 75 and Career Fair 25 sit outside it.
-- **Feedback:** the floating **Send feedback** button appears on every signed-in
-  page; this is the inbox.
+- **Feedback:** **Send feedback** sits in the account menu and **Share feedback**
+  at the foot of the sidebar on every signed-in page; this is the inbox. The
+  floating corner button is DIVA, not feedback.
 
 ### 6:55 – 7:40 · Offline, settings and honesty (45 s)
 

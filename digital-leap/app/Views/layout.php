@@ -311,10 +311,12 @@ $navIcons = [
 <?php endif; ?>
 
 <?php if ($user !== null): ?>
-<button class="feedback-fab" type="button" data-feedback-open aria-haspopup="dialog">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>
-    Feedback
-</button>
+<?php if (Auth::can('diva.use') && $route !== 'diva'): ?>
+<a class="diva-fab" href="<?= e(url('diva')) ?>" aria-label="Ask DIVA, the internship assistant">
+    <img src="<?= e(asset('img/diva-mark-sm.png')) ?>" alt="" aria-hidden="true" width="24" height="24">
+    <span>DIVA</span>
+</a>
+<?php endif; ?>
 <div class="feedback-layer" data-feedback-layer hidden>
     <div class="feedback-card" role="dialog" aria-modal="true" aria-labelledby="feedback-title" aria-describedby="feedback-copy">
         <div class="feedback-card-head">

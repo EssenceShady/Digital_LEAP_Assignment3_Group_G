@@ -46,7 +46,8 @@ interface provides a single password field with a show-password eye button
 that previews a chosen photo in the header before saving (and can remove
 it), card and row shortcuts, an off-canvas navigation drawer, a five-step
 guided tour, a top loading bar with button spinners, an internship progress
-tracker and a floating feedback form. Every signed-in role has a **My settings**
+tracker, a floating DIVA launcher and a feedback form reachable from the account
+menu and the sidebar. Every signed-in role has a **My settings**
 page for its own account: which notification families are copied to email,
 normal or large text, reduced motion, and what this browser is holding offline —
 installed app, saved DIVA answers, queued log book changes, cached pages — with

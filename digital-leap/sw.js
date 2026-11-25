@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const VERSION = 'v6';
+const VERSION = 'v7';
 const SHELL_CACHE = 'leap-shell-' + VERSION;
 const RUNTIME_CACHE = 'leap-runtime-' + VERSION;
 const CACHE_PREFIX = 'leap-';
@@ -35,6 +35,8 @@ const SHELL = [
   'public/assets/img/leap-globe.png',
   'public/assets/img/limkokwing-logo.png',
   'public/assets/img/diva-mark-sm.png',
+  'public/assets/img/campus-hero.jpg',
+  'public/assets/img/auth-campus.jpg',
   'public/manifest.webmanifest',
 ];
 
