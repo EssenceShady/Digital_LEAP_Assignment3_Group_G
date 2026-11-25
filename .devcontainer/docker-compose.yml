@@ -20,9 +20,12 @@ services:
       - ${localWorkspaceFolder}/digital-leap:/var/www/html/digital-leap
       - leap-storage:/var/www/html/digital-leap/storage
       - ${localWorkspaceFolder}/.devcontainer/config.codespaces.php:/var/www/html/digital-leap/config/config.php:ro
+    # service_started, not service_healthy: a slow seed must not keep Apache
+    # from starting, or the forwarded port never opens and the codespace
+    # reports a container error. setup.sh waits for the users table instead.
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   db:
