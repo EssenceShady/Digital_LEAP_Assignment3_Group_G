@@ -29,6 +29,8 @@ $hostCount = (int) Database::val('SELECT COUNT(*) FROM organisation WHERE status
         <p class="home-kicker">Limkokwing University · Sierra Leone</p>
         <figure class="home-hero-media">
             <img src="<?= e(asset('img/campus-hero.jpg')) ?>" width="1536" height="1024"
+                 srcset="<?= e(asset('img/campus-hero-768.jpg')) ?> 768w, <?= e(asset('img/campus-hero-1200.jpg')) ?> 1200w, <?= e(asset('img/campus-hero.jpg')) ?> 1536w"
+                 sizes="(max-width: 560px) calc(100vw - 28px), (max-width: 992px) calc(100vw - 48px), 610px"
                  alt="Illustration of students talking on a palm-lined campus walkway at golden hour, with the coast and hills beyond."
                  decoding="async" fetchpriority="high">
             <figcaption>Illustrative scene</figcaption>

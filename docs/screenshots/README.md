@@ -68,3 +68,12 @@ signed-in student, save as `student-student-settings-<width>.png` and
 Capture from the running application only. Do not screenshot the code editor,
 the XAMPP control panel or a database client, and do not include any password
 in a screenshot.
+
+## Phase 9 captures (25 November 2026)
+
+Six extra files in `phase9/` cover the Phase 9 polish pass: the landing hero
+at 1440 and at 390 (both showing the `srcset` delivery), the phone sign-in with
+the illustrative strip, the DIVA launcher on **My placement**, the prefilled
+DIVA composer, and the guided tour at its **Feedback has a home** step. Naming
+is `phase9-<what>-<width>.png`; the files drop the prefix inside the folder
+itself.

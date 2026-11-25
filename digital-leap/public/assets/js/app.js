@@ -334,6 +334,11 @@
             body: 'The bell collects approvals, comments, due-date reminders and released results. Read the latest five without leaving the page.'
         });
         steps.push({
+            target: '[data-tour="feedback"]',
+            title: 'Feedback has a home',
+            body: 'Send feedback sits in your account menu, and Share feedback at the foot of this sidebar. Both open the same short form and reach the internship office.'
+        });
+        steps.push({
             target: '[data-tour="profile"]',
             title: 'Make it yours',
             body: 'Click your photo to edit your details, change your password and upload a profile picture. Everything stays inside your permission set.'
@@ -385,14 +390,20 @@
             var item = list[index];
             var pad = 8;
             var rect = item.node.getBoundingClientRect();
-            if (ensure && (rect.top < 12 || rect.bottom > window.innerHeight - 12)) {
+            if (ensure) {
                 var root = document.documentElement;
                 var previous = root.style.scrollBehavior;
                 root.style.scrollBehavior = 'auto';
-                var room = Math.max(12, (window.innerHeight - Math.min(rect.height, window.innerHeight - 24)) / 2);
-                window.scrollTo(0, Math.max(0, window.scrollY + rect.top - room));
-                root.style.scrollBehavior = previous;
+                // The sidebar is its own scroller, so a window scroll alone leaves
+                // the feedback button below the fold on a 900 px viewport.
+                item.node.scrollIntoView({ block: 'nearest', inline: 'nearest' });
                 rect = item.node.getBoundingClientRect();
+                if (rect.top < 12 || rect.bottom > window.innerHeight - 12) {
+                    var room = Math.max(12, (window.innerHeight - Math.min(rect.height, window.innerHeight - 24)) / 2);
+                    window.scrollTo(0, Math.max(0, window.scrollY + rect.top - room));
+                    rect = item.node.getBoundingClientRect();
+                }
+                root.style.scrollBehavior = previous;
             }
             var top = Math.max(6, rect.top - pad);
             var left = Math.max(6, rect.left - pad);
@@ -981,6 +992,19 @@
         });
     }
 
+    function initDivaShortcut() {
+        var fab = document.querySelector('.diva-fab');
+        if (!fab) { return; }
+        document.addEventListener('keydown', function (event) {
+            if (!event.altKey || !event.shiftKey || event.ctrlKey || event.metaKey) { return; }
+            if (String(event.key || '').toLowerCase() !== 'd') { return; }
+            var node = event.target;
+            if (node && (node.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(node.tagName))) { return; }
+            event.preventDefault();
+            window.location.assign(fab.getAttribute('href'));
+        });
+    }
+
     function initLogbookDays() {
         document.querySelectorAll('table.logbook-day-table').forEach(function (table) {
             table.querySelectorAll('tbody tr').forEach(function (row) {
@@ -1351,6 +1375,7 @@
         initBars();
         initComments();
         initDiva();
+        initDivaShortcut();
         initFeedback();
         initAvatarPreview();
         initEvaluation();

@@ -160,7 +160,8 @@ digital-leap/
     assets/css/             app.css (layers) and offline.css
     assets/js/              app.js, offline.js, diva-offline.js, attendance.js
     assets/data/            diva-index.json for the offline engine
-    assets/img/             logo, DIVA mark, icon-192/512
+    assets/img/             logo, DIVA mark, icon-192/512 and the campus scenes
+                            (see `docs/assets.md` for provenance and sizes)
   storage/
     uploads/                Evidence files and profile photos, denied to direct HTTP
                             requests by storage/.htaccess (and by router.php on the
@@ -182,7 +183,8 @@ deploy/
   config.codespaces.php     Disposable config for that stack, not a dev secret
   setup.sh                  Waits for the seed, gives storage/ to www-data
 .github/workflows/lint.yml  php -l and node --check on every push, no secrets
-docs/                       test log, VERIFY, user guide, design system, DIVA sets
+docs/                       test log, VERIFY, user guide, design system, DIVA sets,
+                            assets.md (image provenance)
 ```
 
 The zip deliberately omits `config/config.php` and `storage/logs/*`; they
@@ -464,6 +466,12 @@ remains disabled and untested. SMTP delivery and the full wall-clock
 session-timeout windows also remain outside live testing. The final offline
 browser pass is evidenced by DOM text and database rows because the
 automation browser could not capture screenshots.
+
+`docs/assets.md` lists every image the app serves, with pixel and byte size and
+how each file was made. It states plainly that the two campus scenes
+(`campus-hero*.jpg`, `auth-campus.jpg`) are generated illustrations, not
+photographs, which is why the landing hero and the sign-in strip caption them
+"Illustrative scene".
 
 `docs/VERIFY.md` is the marker's script: accounts, role-by-role expected
 results, the DIVA contract checks, security checks and known limitations.

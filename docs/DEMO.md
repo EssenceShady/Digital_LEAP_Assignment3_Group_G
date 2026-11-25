@@ -34,6 +34,10 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
   mark.
 - **Say:** “Everything you will see runs on this laptop. No external API, no
   cloud service, no account to create.”
+- **If asked about the photo:** the campus scene behind the headline is a
+  generated illustration, not a photograph of the university — the caption under
+  it says “Illustrative scene” for that reason. `docs/assets.md` lists where
+  every image came from.
 - **Click:** **Student** on the sign-in demo buttons. Land on the dashboard.
 
 ### 0:40 – 2:10 · Student (90 s)
@@ -124,7 +128,7 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 
 ### 7:40 – 8:00 · Close (20 s)
 
-- **Say:** “Six roles, one schema, 33 tables, 130 routes and 242 logged test
+- **Say:** “Six roles, one schema, 33 tables, 130 routes and 261 logged test
   cases. It is honest about what it does not do: no external AI, no email
   gateway in this build, and accessibility is a stated gap, not a claim.”
 

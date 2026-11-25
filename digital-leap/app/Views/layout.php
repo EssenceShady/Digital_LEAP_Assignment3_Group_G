@@ -216,7 +216,7 @@ $navIcons = [
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M4.5 7.5l2 1.2M17.5 15.3l2 1.2M4.5 16.5l2-1.2M17.5 8.7l2-1.2"/></svg>
                 <span>My settings<small>Notifications, text size, offline data</small></span>
             </a>
-            <button type="button" class="sidebar-feedback" data-feedback-open>Share feedback</button>
+            <button type="button" class="sidebar-feedback" data-feedback-open data-tour="feedback">Share feedback</button>
             <form method="post" action="<?= e(url('logout')) ?>" class="sidebar-signout">
                 <?= csrf_field() ?>
                 <button type="submit">Sign out</button>
@@ -268,6 +268,12 @@ $navIcons = [
             <p class="auth-brand-foot">Offline-first · Six roles · Limkokwing University, Sierra Leone</p>
         </section>
         <section class="auth-panel" aria-label="Sign in or register">
+            <figure class="auth-strip">
+                <img src="<?= e(asset('img/auth-campus.jpg')) ?>" width="1536" height="1024"
+                     alt="Illustration of students on a palm-lined campus walkway at golden hour, with the coast and hills beyond."
+                     decoding="async">
+                <figcaption>Illustrative scene</figcaption>
+            </figure>
             <?php foreach (flashes() as $f): ?>
                 <div class="alert alert-<?= e($f['type']) ?>" role="status" data-dismiss>
                     <span><?= e($f['message']) ?></span>
@@ -311,8 +317,18 @@ $navIcons = [
 <?php endif; ?>
 
 <?php if ($user !== null): ?>
+<?php
+$divaPrompt = match ($route) {
+    'student/placement' => 'What is my next step on this placement?',
+    'student/logbook' => 'What is my next step on this logbook?',
+    'mentor/visits' => 'How do I record a site visit?',
+    'coordinator/placements/view' => 'What needs attention on this placement?',
+    default => '',
+};
+?>
 <?php if (Auth::can('diva.use') && $route !== 'diva'): ?>
-<a class="diva-fab" href="<?= e(url('diva')) ?>" aria-label="Ask DIVA, the internship assistant">
+<a class="diva-fab" href="<?= e($divaPrompt !== '' ? url('diva', ['q' => $divaPrompt, 'from' => $route]) : url('diva')) ?>"
+   aria-label="Ask DIVA, the internship assistant" aria-keyshortcuts="Alt+Shift+D">
     <img src="<?= e(asset('img/diva-mark-sm.png')) ?>" alt="" aria-hidden="true" width="24" height="24">
     <span>DIVA</span>
 </a>
