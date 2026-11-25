@@ -127,6 +127,7 @@ return [
     'GET mentor/visits' => [MentorController::class, 'visits', 'visit.view'],
     'GET mentor/visits/form' => [MentorController::class, 'visitForm', 'visit.manage'],
     'POST mentor/visits/save' => [MentorController::class, 'visitSave', 'visit.manage'],
+    'POST mentor/visits/checkin' => [MentorController::class, 'visitCheckin', 'visit.manage'],
     'POST mentor/visits/complete' => [MentorController::class, 'visitComplete', 'visit.manage'],
     'GET mentor/evaluation' => [MentorController::class, 'evaluation', 'evaluation.submit.mentor'],
     'POST mentor/evaluation/save' => [MentorController::class, 'saveEvaluation', 'evaluation.submit.mentor'],
@@ -147,6 +148,9 @@ return [
     'POST coordinator/placements/status' => [CoordinatorController::class, 'status', 'placement.allocate'],
     'POST coordinator/placements/type' => [CoordinatorController::class, 'type', 'placement.allocate'],
     'GET coordinator/visits' => [CoordinatorController::class, 'visits', 'visit.view'],
+    // visit.view, because only mentors hold visit.manage; the controller itself
+    // refuses every role except coordinator.
+    'POST coordinator/placements/checkin' => [CoordinatorController::class, 'siteCheckin', 'visit.view'],
     'GET coordinator/grades' => [CoordinatorController::class, 'grades', 'mark.compute'],
     'GET coordinator/grades/view' => [CoordinatorController::class, 'gradeView', 'mark.compute'],
     'POST coordinator/grades/compute' => [CoordinatorController::class, 'compute', 'mark.compute'],

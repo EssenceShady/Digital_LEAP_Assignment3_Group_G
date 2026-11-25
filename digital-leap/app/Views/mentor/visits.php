@@ -2,6 +2,7 @@
 /** @var array $visits */
 /** @var array $overdue */
 /** @var array $placements */
+/** @var array $proofs */
 ?>
 <div class="page-head">
     <div>
@@ -39,14 +40,32 @@
     <?php else: ?>
         <div class="table-wrap">
             <table class="table table--stack">
-                <thead><tr><th>Student</th><th>Scheduled</th><th>Mode</th><th>Status</th><th>Outcome</th><th></th></tr></thead>
+                <thead><tr><th>Student</th><th>Scheduled</th><th>Mode</th><th>Status</th><th>Proof</th><th>Outcome</th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($visits as $visit): ?>
-                    <tr>
+                    <?php
+                    $visitId = (int) $visit['visit_id'];
+                    $proof = $proofs[$visitId] ?? null;
+                    $physical = $visit['mode'] === 'physical';
+                    $needsProof = $physical && $visit['status'] === 'scheduled' && $proof === null;
+                    ?>
+                    <tr id="visit-<?= $visitId ?>">
                         <td data-label="Student"><strong><?= e($visit['first_name'] . ' ' . $visit['last_name']) ?></strong><div class="small muted"><?= e($visit['org_name']) ?></div></td>
                         <td data-label="Scheduled"><?= e(fmt_date($visit['scheduled_date'])) ?><?= $visit['actual_date'] ? '<div class="small muted">actual ' . e(fmt_date($visit['actual_date'])) . '</div>' : '' ?></td>
                         <td data-label="Mode"><?= e(ucfirst((string) $visit['mode'])) ?></td>
                         <td data-label="Status"><?= status_badge($visit['status']) ?><?= $visit['status'] === 'scheduled' && $visit['scheduled_date'] < date('Y-m-d') ? ' <span class="badge badge-bad">Overdue</span>' : '' ?></td>
+                        <td data-label="Proof">
+                            <?php if ($proof !== null): ?>
+                                <span class="badge badge-ok">Site verified</span>
+                                <div class="small muted"><?= e(fmt_dt($proof['at'])) ?> · <?= $proof['distance_m'] !== null ? e(fmt_distance($proof['distance_m'])) . ' from pin' : 'no site pin' ?></div>
+                            <?php elseif ($needsProof): ?>
+                                <span class="badge badge-warn">Not checked in</span>
+                            <?php elseif ($physical): ?>
+                                <span class="badge badge-muted">No location proof</span>
+                            <?php else: ?>
+                                <span class="badge badge-muted">Not required</span>
+                            <?php endif; ?>
+                        </td>
                         <td data-label="Outcome">
                             <?php if ($visit['status'] === 'completed'): ?>
                                 <div class="small"><?= e($visit['findings']) ?></div>
@@ -62,31 +81,51 @@
                     </tr>
                     <?php if ($visit['status'] === 'scheduled'): ?>
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
+                                <?php if ($needsProof): ?>
+                                    <form method="post" action="<?= e(url('mentor/visits/checkin')) ?>" data-sitecheckin-form>
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="visit_id" value="<?= $visitId ?>">
+                                        <input type="hidden" name="lat" value="">
+                                        <input type="hidden" name="lng" value="">
+                                        <input type="hidden" name="accuracy" value="">
+                                        <p class="small muted" data-checkin-status role="status" aria-live="polite">Press this while you are at the site. Your browser will ask for location permission.</p>
+                                        <div class="form-actions"><button class="btn btn-outline" type="submit">Check in at site</button></div>
+                                    </form>
+                                <?php elseif ($proof !== null && $physical): ?>
+                                    <p class="small muted">Checked in at the site on <?= e(fmt_dt($proof['at'])) ?><?= $proof['distance_m'] !== null ? ' (' . e(fmt_distance($proof['distance_m'])) . ' from the pin)' : '' ?>.</p>
+                                <?php endif; ?>
                                 <details>
                                     <summary class="small"><strong>Record the outcome</strong></summary>
                                     <form method="post" action="<?= e(url('mentor/visits/complete')) ?>" enctype="multipart/form-data" data-confirm="Mark this visit as completed?">
                                         <?= csrf_field() ?>
-                                        <input type="hidden" name="visit_id" value="<?= (int) $visit['visit_id'] ?>">
+                                        <input type="hidden" name="visit_id" value="<?= $visitId ?>">
                                         <div class="form-grid">
                                             <div class="field">
-                                                <label for="actual-<?= (int) $visit['visit_id'] ?>">Actual date</label>
-                                                <input id="actual-<?= (int) $visit['visit_id'] ?>" name="actual_date" type="date" value="<?= e(date('Y-m-d')) ?>" required>
+                                                <label for="actual-<?= $visitId ?>">Actual date</label>
+                                                <input id="actual-<?= $visitId ?>" name="actual_date" type="date" value="<?= e(date('Y-m-d')) ?>" required>
                                             </div>
                                             <div class="field">
-                                                <label for="report-<?= (int) $visit['visit_id'] ?>">Visit report (optional)</label>
-                                                <input id="report-<?= (int) $visit['visit_id'] ?>" name="report" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                                <label for="report-<?= $visitId ?>">Visit report (optional)</label>
+                                                <input id="report-<?= $visitId ?>" name="report" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                             </div>
                                             <div class="field full">
-                                                <label for="findings-<?= (int) $visit['visit_id'] ?>">Findings</label>
-                                                <textarea id="findings-<?= (int) $visit['visit_id'] ?>" name="findings" rows="3" required></textarea>
+                                                <label for="findings-<?= $visitId ?>">Findings</label>
+                                                <textarea id="findings-<?= $visitId ?>" name="findings" rows="3" required></textarea>
                                             </div>
                                             <div class="field full">
-                                                <label for="recommendations-<?= (int) $visit['visit_id'] ?>">Recommendations</label>
-                                                <textarea id="recommendations-<?= (int) $visit['visit_id'] ?>" name="recommendations" rows="3" required></textarea>
+                                                <label for="recommendations-<?= $visitId ?>">Recommendations</label>
+                                                <textarea id="recommendations-<?= $visitId ?>" name="recommendations" rows="3" required></textarea>
                                             </div>
                                         </div>
-                                        <div class="form-actions"><button class="btn" type="submit">Complete visit</button></div>
+                                        <div class="form-actions">
+                                            <button class="btn" type="submit"<?= $needsProof ? ' disabled' : '' ?>>Complete visit</button>
+                                            <?php if ($needsProof): ?>
+                                                <span class="hint">Check in at the site before completing a physical visit.</span>
+                                            <?php elseif (!$physical): ?>
+                                                <span class="hint">Virtual and phone visits do not need a site check-in.</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </form>
                                 </details>
                             </td>

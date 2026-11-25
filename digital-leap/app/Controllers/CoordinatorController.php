@@ -13,6 +13,7 @@ use Leap\Core\Settings;
 use Leap\Core\Validator;
 use Leap\Core\View;
 use Leap\Services\Attendance;
+use Leap\Services\SiteCheckin;
 
 final class CoordinatorController
 {
@@ -493,7 +494,45 @@ final class CoordinatorController
             'entryCounts' => $entries,
             'attendance' => Attendance::recent($id, 12),
             'attendancePin' => Attendance::orgPoint((int) $placement['org_id']),
+            'siteCheckins' => SiteCheckin::recent($id, 20),
         ]);
+    }
+
+    public function siteCheckin(): void
+    {
+        $id = (int) \post('placement_id', 0);
+        $placement = $this->findPlacement($id);
+        if ($placement === null) {
+            http_response_code(403);
+            View::error(403);
+            return;
+        }
+
+        $lat = null;
+        $lng = null;
+        $accuracy = null;
+        $latRaw = \post('lat');
+        $lngRaw = \post('lng');
+        if ($latRaw !== null && $latRaw !== '' && $lngRaw !== null && $lngRaw !== '') {
+            $lat = (float) $latRaw;
+            $lng = (float) $lngRaw;
+            if (\post('accuracy') !== null && \post('accuracy') !== '') {
+                $accuracy = (float) \post('accuracy');
+            }
+        }
+
+        $result = SiteCheckin::record(
+            (int) Auth::id(),
+            'coordinator',
+            $placement,
+            null,
+            $lat,
+            $lng,
+            $accuracy,
+            (string) \post('purpose', '')
+        );
+        \flash($result['ok'] ? 'success' : 'error', $result['message']);
+        \redirect('coordinator/placements/view', ['id' => $id], 'staff-visits');
     }
 
     public function approve(): void
@@ -652,6 +691,10 @@ final class CoordinatorController
              ORDER BY v.scheduled_date DESC', $params
         );
         $today = date('Y-m-d');
+        $placementIds = array_values(array_unique(array_map(
+            static fn (array $v): int => (int) $v['placement_id'],
+            $visits
+        )));
 
         View::render('coordinator/visits', [
             'title' => 'Site visits overview',
@@ -662,6 +705,8 @@ final class CoordinatorController
             'visits' => $visits,
             'overdue' => array_values(array_filter($visits, static fn (array $v): bool => $v['status'] === 'scheduled' && $v['scheduled_date'] < $today)),
             'upcoming' => array_values(array_filter($visits, static fn (array $v): bool => $v['status'] === 'scheduled' && $v['scheduled_date'] >= $today)),
+            'proofs' => SiteCheckin::proofsFor($placementIds),
+            'coordinatorCheckins' => SiteCheckin::recentCoordinator(12),
         ]);
     }
 

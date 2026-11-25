@@ -65,8 +65,9 @@ placement, logbook, both evaluations, the site visit, the report and publication
 site** and **Check out** — press one when you arrive or leave, once a day each. Your
 location is read only at that moment and is stored with the record; if you decline it,
 the check-in is saved as attested and you can carry on. Each record shows the time and,
-once the coordinator has set the site pin, how far you were from it. Only students are
-tracked, and only at their own placement.
+once the coordinator has set the site pin, how far you were from it. Students are tracked
+only at their own placement; staff record their own site visits separately, under
+**Visits**.
 
 **Writing a logbook entry (student, Form E — 50%).** Open **Logbook (Form E)** and choose
 the week. The entry
@@ -109,7 +110,13 @@ criteria, is advisory and carries no marks.
 **The rest of the assessment chain.** The academic mentor opens **Logbook review (Form E)** to review
 entries the supervisor has approved; a comment moves the entry to mentor-reviewed.
 **Visits** records each site visit with its date, mode and outcome, and filters by student,
-status and date range. **Report assessment (Form C)** assesses the internship report (75 of the 200 marks) and
+status and date range. A physical visit needs a GPS **check-in at the site** before it
+can be completed: press the button on the visit row when you arrive, the browser reads
+your location once, and the visit shows **Site verified** with the time and distance. A
+reading more than 500 m from the site pin is refused; virtual and phone visits need none.
+Coordinators record their own monitoring check-ins under **Staff site visits** on the
+placement page, and the coordinator's **Visits** screen lists those alongside the mentors'.
+**Report assessment (Form C)** assesses the internship report (75 of the 200 marks) and
 lists the Career Fair submissions with their timing; opening a file marks it reviewed. The
 mentor's own evaluation (40/35/25) is recorded for information and carries no marks.
 

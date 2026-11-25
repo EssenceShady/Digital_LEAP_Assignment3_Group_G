@@ -61,10 +61,13 @@ deadline, late status and mentor review. Students check in and out at their
 placement from **My placement**: the browser's location is read only at that
 moment, the record shows the distance from the site pin the coordinator sets on
 the organisation, and declining the prompt records an attested check-in instead.
-Only students are tracked, and no third-party map or location service is
-involved. A finished log book day can also be sent to the host supervisor and
-academic mentor straight away from the day's row, while the full week is still
-emailed when the student submits. Every signed-in role has a
+Staff visits are GPS-verified too: a mentor checks in at the site before a
+physical visit can be completed, a coordinator records a monitoring check-in on
+the placement, both are refused beyond 500 m from the pin, and every record is
+attributed by name, role, time and distance. No third-party map or location
+service is involved. A finished log book day can also be sent to the host
+supervisor and academic mentor straight away from the day's row, while the full
+week is still emailed when the student submits. Every signed-in role has a
 **Guidebook** page that opens the published 25-page guidebook PDF in the
 browser and offers the same file as a download, with a page list that opens
 the PDF at the chosen page (DIVA's citations keep a plain-text page that links
@@ -110,7 +113,7 @@ digital-leap/
   .htaccess                 Apache rewrite and security headers
   app/
     bootstrap.php           Paths, autoloader, config, headers, session, dispatch
-    routes.php              The 128-entry route table
+    routes.php              The 130-entry route table
     helpers.php             e(), flash(), redirect(), csrf_field(), settings()
     Core/
       Auth.php              Sign-in, password hashing, sessions, lockout
@@ -129,7 +132,8 @@ digital-leap/
       Validator.php         Server-side field validation
       View.php              Layout rendering and error pages
     Services/
-      Attendance.php        Site check-ins, haversine distance, organisation pin
+      Attendance.php        Student check-ins, haversine distance, organisation pin
+      SiteCheckin.php       GPS-verified staff visits, 500 m rule, per-visit proof
       LogbookDigest.php     Daily and weekly record emails, per-day dedupe
       Diva.php              DIVA intents, guidebook retrieval, answer assembly
       DivaContract.php      The shared answer contract, evidence and verifier
@@ -223,8 +227,8 @@ rewrites `/student/logbook` to the same front controller.
 | Messaging | 8 | `messages`, `messages/thread`, `messages/poll`, `messages/send` |
 | Student | 24 | `student/preferences`, `student/logbook`, `student/placement`, `student/attendance/check`, `student/report`, `student/career-fair`, `student/results` |
 | Supervisor | 7 | `supervisor/queue`, `supervisor/entry/comment`, `supervisor/evaluation` |
-| Mentor | 12 | `mentor/students`, `mentor/visits`, `mentor/reports` |
-| Coordinator | 21 | `coordinator/placements`, `coordinator/grades`, `coordinator/letter` |
+| Mentor | 13 | `mentor/students`, `mentor/visits`, `mentor/visits/checkin`, `mentor/reports` |
+| Coordinator | 22 | `coordinator/placements`, `coordinator/placements/checkin`, `coordinator/grades`, `coordinator/letter` |
 | Management | 3 | `management/kpis`, `management/export`, `management/print` |
 | Administrator | 15 | `admin/users`, `admin/roles`, `admin/settings`, `admin/audit`, `admin/feedback`, `admin/mail` |
 

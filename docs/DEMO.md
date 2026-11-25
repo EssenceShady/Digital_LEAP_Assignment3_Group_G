@@ -68,7 +68,10 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 - Sign in as mentor.
 - **Students:** search `Mohamed`, status *Active* — one row remains. “The
   organisation list only holds organisations this mentor is placed with.”
-- **Visits:** show one completed and two scheduled, filtered by date range.
+- **Visits:** show one completed and two scheduled, filtered by date range. Each
+  row carries its GPS proof — **Site verified** with the distance, or **Not
+  checked in** while a physical visit is still pending. “A physical visit cannot
+  be completed until the mentor checks in at the site, within 500 m of the pin.”
 - **Report assessment (Form C):** open Mohamed's report and show the assessment
   criteria; **Mentor evaluation** is advisory and carries no marks.
 
@@ -78,6 +81,9 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 - **Allocate:** try allocating student 5 again for 2026/2027 — the duplicate is
   refused. Try a supervisor from another organisation — refused. “Capacity and
   ownership are enforced by the database and the controller.”
+- **Visits:** every mentor visit's proof, then **Staff site visits** on a
+  placement — “Coordinators record their own monitoring check-in here, and it is
+  attributed by name, role, time and distance, exactly like the mentor's.”
 - **Grades (Form E):** open placement 2. Logbook, Form D, self, report and
   Career Fair columns are visible; enter the Career Fair score, **Compute**,
   **Moderate**, **Publish**. Point at **Final mark 114.50 / 200 = 57.25%, grade
@@ -117,7 +123,7 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 
 ### 7:40 – 8:00 · Close (20 s)
 
-- **Say:** “Six roles, one schema, 33 tables, 128 routes and 237 logged test
+- **Say:** “Six roles, one schema, 33 tables, 130 routes and 242 logged test
   cases. It is honest about what it does not do: no external AI, no email
   gateway in this build, and accessibility is a stated gap, not a claim.”
 

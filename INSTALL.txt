@@ -184,7 +184,12 @@ the organisation form, the distance from that pin are stored. Declining
 the prompt still records an attested check-in, so nothing depends on the
 permission being granted. The shipped Permissions-Policy header allows
 geolocation for this site only (geolocation=(self)); no map, geocoder or
-other internet service is contacted. A finished day in the log book can
+other internet service is contacted. Staff visits use the same reading:
+a mentor presses Check in at site on the visit row before completing a
+physical visit, and a coordinator records a monitoring check-in on the
+placement page. Both are refused if the reading is more than 500 m from
+the site pin, and both are stored with the name, role, time and distance;
+virtual and phone visits need no check-in. A finished day in the log book can
 also be sent to the host supervisor and academic mentor straight away
 with Send on its row; the full week still goes to both on submit.
 

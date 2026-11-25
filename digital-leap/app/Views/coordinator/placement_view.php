@@ -5,6 +5,7 @@
 /** @var array $entryCounts */
 /** @var array $attendance */
 /** @var array{lat: float, lng: float}|null $attendancePin */
+/** @var array $siteCheckins */
 $allowed = [
     'approved' => ['active', 'terminated'],
     'active' => ['completed', 'terminated'],
@@ -61,7 +62,7 @@ $allowed = [
     <div class="card-head">
         <div>
             <h2>Attendance check-ins</h2>
-            <p>The student's deliberate site check-ins. Location is captured only when they press a button; supervisors and mentors are not tracked.</p>
+            <p>The student's deliberate site check-ins. Location is captured only when they press a button. Staff record their own site visits separately.</p>
         </div>
         <div class="page-actions">
             <a class="btn btn-sm btn-quiet" href="<?= e(url('coordinator/organisations/form', ['id' => (int) $placement['org_id']])) ?>">Site pin</a>
@@ -81,6 +82,49 @@ $allowed = [
                     <div class="when">
                         <?= $event['distance_m'] !== null ? e(fmt_distance($event['distance_m'])) . ' from pin' : 'No distance' ?>
                         · <?= $event['source'] === 'device' ? 'device location' : 'attested' ?>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+</div>
+
+<div class="card" id="staff-visits">
+    <div class="card-head">
+        <div>
+            <h2>Staff site visits</h2>
+            <p>The coordinator and the student's mentor record a GPS-verified visit while they are on site. A check-in more than 500 m from the pin is refused.</p>
+        </div>
+    </div>
+    <p class="small muted">Site pin: <?= $attendancePin !== null ? e(number_format($attendancePin['lat'], 5) . ', ' . number_format($attendancePin['lng'], 5)) : 'not set — the distance cannot be checked until it is recorded.' ?></p>
+    <form method="post" action="<?= e(url('coordinator/placements/checkin')) ?>" data-sitecheckin-form>
+        <?= csrf_field() ?>
+        <input type="hidden" name="placement_id" value="<?= (int) $placement['placement_id'] ?>">
+        <input type="hidden" name="lat" value="">
+        <input type="hidden" name="lng" value="">
+        <input type="hidden" name="accuracy" value="">
+        <div class="form-grid">
+            <div class="field">
+                <label for="visit-purpose">Purpose (optional)</label>
+                <input id="visit-purpose" name="purpose" type="text" maxlength="160" placeholder="Routine monitoring visit">
+            </div>
+        </div>
+        <p class="small muted" data-checkin-status role="status" aria-live="polite">Record this while you are at the site. Your browser will ask for location permission.</p>
+        <div class="form-actions"><button class="btn" type="submit">Check in at this site</button></div>
+    </form>
+    <?php if ($siteCheckins === []): ?>
+        <div class="empty"><strong>No staff visits yet</strong>The mentor records a visit from the site visit list; you can record a monitoring visit above.</div>
+    <?php else: ?>
+        <ul class="timeline">
+            <?php foreach ($siteCheckins as $event): ?>
+                <li>
+                    <div>
+                        <strong><?= e($event['name'] !== '' ? $event['name'] : 'Staff') ?></strong>
+                        <span class="small muted">· <?= e(ucfirst($event['role'])) ?> · <?= e(fmt_dt($event['at'])) ?></span>
+                    </div>
+                    <div class="when">
+                        <?= $event['distance_m'] !== null ? e(fmt_distance($event['distance_m'])) . ' from pin' : 'No site pin' ?>
+                        · device location<?= $event['purpose'] !== '' ? ' · ' . e($event['purpose']) : '' ?>
                     </div>
                 </li>
             <?php endforeach; ?>

@@ -13,8 +13,8 @@ use Leap\Core\Settings;
  * organisation's pin lives in the setting table under geo.org.<id>.
  *
  * Location is captured only when the student presses check in or out.
- * Tracking happens for students at their own placement; supervisors,
- * mentors and staff are not tracked.
+ * Tracking covers students at their own placement; staff record separate
+ * GPS site visits through SiteCheckin.
  */
 final class Attendance
 {

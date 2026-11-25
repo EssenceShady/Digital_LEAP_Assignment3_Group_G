@@ -13,6 +13,7 @@ use Leap\Core\Upload;
 use Leap\Core\Validator;
 use Leap\Core\View;
 use Leap\Services\Attendance;
+use Leap\Services\SiteCheckin;
 use RuntimeException;
 
 final class MentorController
@@ -230,6 +231,10 @@ final class MentorController
             $visits,
             static fn (array $v): bool => $v['status'] === 'scheduled' && $v['scheduled_date'] < $today
         ));
+        $placementIds = array_values(array_unique(array_map(
+            static fn (array $v): int => (int) $v['placement_id'],
+            $visits
+        )));
 
         View::render('mentor/visits', [
             'title' => 'Site visits',
@@ -239,6 +244,7 @@ final class MentorController
             'to' => $to,
             'visits' => $visits,
             'overdue' => $overdue,
+            'proofs' => SiteCheckin::proofsFor($placementIds),
             'placements' => $this->placements(),
         ]);
     }
@@ -318,11 +324,53 @@ final class MentorController
         \redirect('mentor/visits');
     }
 
+    public function visitCheckin(): void
+    {
+        $visitId = (int) \post('visit_id', 0);
+        $visit = Database::one(
+            'SELECT v.*, p.org_id FROM site_visit v
+             JOIN placement p ON p.placement_id = v.placement_id
+             WHERE v.visit_id = ? AND v.mentor_id = ?',
+            [$visitId, (int) Auth::id()]
+        );
+        if ($visit === null) {
+            Audit::log('visit.denied', 'site_visit', $visitId);
+            http_response_code(403);
+            View::error(403);
+            return;
+        }
+        if ($visit['status'] !== 'scheduled') {
+            \flash('error', 'Only a scheduled visit can be checked in.');
+            \redirect('mentor/visits');
+        }
+        if ($visit['mode'] !== 'physical') {
+            \flash('error', 'A ' . $visit['mode'] . ' visit does not need a site check-in.');
+            \redirect('mentor/visits');
+        }
+
+        $lat = null;
+        $lng = null;
+        $accuracy = null;
+        $latRaw = \post('lat');
+        $lngRaw = \post('lng');
+        if ($latRaw !== null && $latRaw !== '' && $lngRaw !== null && $lngRaw !== '') {
+            $lat = (float) $latRaw;
+            $lng = (float) $lngRaw;
+            if (\post('accuracy') !== null && \post('accuracy') !== '') {
+                $accuracy = (float) \post('accuracy');
+            }
+        }
+
+        $result = SiteCheckin::record((int) Auth::id(), 'mentor', $visit, $visitId, $lat, $lng, $accuracy, 'Supervision visit');
+        \flash($result['ok'] ? 'success' : 'error', $result['message']);
+        \redirect('mentor/visits', [], 'visit-' . $visitId);
+    }
+
     public function visitComplete(): void
     {
         $visitId = (int) \post('visit_id', 0);
         $visit = Database::one(
-            'SELECT v.*, p.student_id, s.user_id AS student_user, u.first_name, u.last_name
+            'SELECT v.*, p.student_id, p.org_id, s.user_id AS student_user, u.first_name, u.last_name
              FROM site_visit v
              JOIN placement p ON p.placement_id = v.placement_id
              JOIN student s ON s.student_id = p.student_id
@@ -339,6 +387,21 @@ final class MentorController
         if ($visit['status'] === 'completed') {
             \flash('error', 'That visit is already completed.');
             \redirect('mentor/visits');
+        }
+        if ($visit['mode'] === 'physical') {
+            $proof = SiteCheckin::forVisit((int) $visit['placement_id'], $visitId, (int) Auth::id());
+            if ($proof === null) {
+                \flash('error', 'Check in at the site before completing a physical visit.');
+                \redirect('mentor/visits', [], 'visit-' . $visitId);
+            }
+            $org = Attendance::orgPoint((int) $visit['org_id']);
+            if ($org !== null && $proof['lat'] !== null && $proof['lng'] !== null) {
+                $distance = Attendance::distance((float) $proof['lat'], (float) $proof['lng'], $org['lat'], $org['lng']);
+                if ($distance > SiteCheckin::MAX_DISTANCE_M) {
+                    \flash('error', 'Your check-in is ' . fmt_distance($distance) . ' from the site pin. A physical visit cannot be completed beyond ' . SiteCheckin::MAX_DISTANCE_M . ' m.');
+                    \redirect('mentor/visits', [], 'visit-' . $visitId);
+                }
+            }
         }
 
         $actual = (string) \post('actual_date', '');
