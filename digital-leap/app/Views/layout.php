@@ -68,7 +68,7 @@ $navIcons = [
 <html lang="en" data-text-size="<?= e($textSize) ?>"<?= $calmMotion ? ' data-reduce-motion="on"' : '' ?>>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?= e($title) ?> · Digital LEAP</title>
 <meta name="theme-color" content="#111315">
 <meta name="application-name" content="Digital LEAP">
@@ -93,7 +93,7 @@ $navIcons = [
             <span></span><span></span><span></span>
         </button>
         <a class="brand" href="<?= e(url('dashboard')) ?>" data-tour="brand">
-            <img class="brand-logo" src="<?= e(asset('img/limkokwing-logo.png')) ?>" alt="Limkokwing University of Creative Technology, Sierra Leone">
+            <img class="brand-logo" src="<?= e(asset('img/leap-wordmark-ink.png')) ?>" alt="LEAP — Limkokwing Entrepreneurship Acceleration Platform, Sierra Leone">
             <span class="brand-text">Digital LEAP<small>Internship Management</small></span>
         </a>
     </div>
@@ -252,7 +252,7 @@ $navIcons = [
     <?php if ($isAuthPage): ?>
         <section class="auth-brand" aria-label="About Digital LEAP">
             <div class="auth-brand-top">
-                <span class="logo-tile"><img src="<?= e(asset('img/limkokwing-logo.png')) ?>" alt="Limkokwing University of Creative Technology, Sierra Leone"></span>
+                <span class="logo-tile"><img src="<?= e(asset('img/leap-wordmark-ink.png')) ?>" alt="LEAP — Limkokwing Entrepreneurship Acceleration Platform, Sierra Leone"></span>
                 <span class="auth-kicker">Limkokwing University<br>Sierra Leone</span>
             </div>
             <div class="auth-copy">

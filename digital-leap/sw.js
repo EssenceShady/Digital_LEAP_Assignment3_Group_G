@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const VERSION = 'v4';
+const VERSION = 'v6';
 const SHELL_CACHE = 'leap-shell-' + VERSION;
 const RUNTIME_CACHE = 'leap-runtime-' + VERSION;
 const CACHE_PREFIX = 'leap-';
@@ -28,6 +28,11 @@ const SHELL = [
   'public/assets/data/diva-index.json',
   'public/assets/img/icon-192.png',
   'public/assets/img/icon-512.png',
+  'public/assets/img/leap-mark.png',
+  'public/assets/img/leap-badge.png',
+  'public/assets/img/leap-wordmark-ink.png',
+  'public/assets/img/leap-wordmark-ivory.png',
+  'public/assets/img/leap-globe.png',
   'public/assets/img/limkokwing-logo.png',
   'public/assets/img/diva-mark-sm.png',
   'public/manifest.webmanifest',

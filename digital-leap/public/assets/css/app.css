@@ -1337,9 +1337,13 @@ select {
 .net-pill[data-state="offline"] { border-color: #ead3a4; background: var(--amber-bg); color: #6f4800; }
 .net-pill[data-state="offline"] .net-dot { background: var(--amber); box-shadow: 0 0 0 3px rgba(127, 83, 0, .14); }
 .net-pill[data-state="syncing"] .net-dot { background: var(--blue); box-shadow: 0 0 0 3px rgba(36, 90, 141, .14); }
+/* Public pages have no app header, so the status chip belongs in a
+   corner that holds no control: bottom-right, clear of the sync strip
+   on the left and of the header actions at every width. */
 .net-pill--float {
     position: fixed;
-    top: 14px;
+    top: auto;
+    bottom: 16px;
     right: 14px;
     z-index: 60;
     box-shadow: var(--shadow);
@@ -2828,6 +2832,7 @@ body.feedback-open { overflow: hidden; }
         z-index: var(--z-sidebar);
         width: min(300px, 84vw);
         height: 100vh;
+        height: 100dvh;
         padding-top: 22px;
         transform: translateX(-104%);
         transition: transform var(--slow) var(--ease);
@@ -2842,9 +2847,19 @@ body.feedback-open { overflow: hidden; }
     .diva-history { margin-top: 12px; }
     .diva-privacy { margin-top: 12px; padding-top: 12px; }
     .diva-privacy p { margin-bottom: 10px; }
-    .diva-chat .diva-stream { max-height: 58vh; min-height: 260px; padding: 16px; }
+    .diva-chat .diva-stream { max-height: 58vh; max-height: 58dvh; min-height: 260px; padding: 16px; }
     .diva-welcome { padding: 12px 0; }
     .diva-chat-head { padding: 14px 16px; }
+}
+
+/* ---- device edges: notch and home-indicator safe areas */
+@supports (padding: max(0px)) {
+    .topbar {
+        padding-left: max(clamp(14px, 2.4vw, 28px), env(safe-area-inset-left));
+        padding-right: max(clamp(14px, 2.4vw, 28px), env(safe-area-inset-right));
+    }
+    .site-foot { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+    .sidebar { padding-top: max(22px, env(safe-area-inset-top)); }
 }
 
 @media (max-width: 768px) {
@@ -2852,6 +2867,7 @@ body.feedback-open { overflow: hidden; }
     .feature-grid { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
     .apply-steps { grid-template-columns: 1fr; gap: 6px; }
+    .home-actions .btn { white-space: nowrap; }
     .apply-step { padding: 10px 12px; }
     .receipt { flex-wrap: wrap; }
     .receipt-actions { width: 100%; justify-content: flex-start; }
@@ -2950,6 +2966,10 @@ body.feedback-open { overflow: hidden; }
     .chart-label { grid-column: 1 / -1; }
     .tracker-step { grid-template-columns: 28px minmax(0, 1fr); }
     .tracker-state { grid-column: 2; padding-top: 0; }
+    .home-brand span { display: none; }
+    .home-actions .btn { min-height: 34px; padding: 0 10px; font-size: .74rem; }
+    .net-pill--float { padding: 7px; }
+    .net-pill--float .net-text { display: none; }
 }
 
 /* Micro-screen exception: below 400 px the brand text and the two

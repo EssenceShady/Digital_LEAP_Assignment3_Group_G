@@ -9,7 +9,7 @@ $hostCount = (int) Database::val('SELECT COUNT(*) FROM organisation WHERE status
 ?>
 <header class="home-nav">
     <a class="home-brand" href="<?= e(url('')) ?>">
-        <img src="<?= e(asset('img/limkokwing-logo.png')) ?>" alt="Limkokwing University of Creative Technology, Sierra Leone">
+        <img src="<?= e(asset('img/leap-wordmark-ink.png')) ?>" alt="LEAP — Limkokwing Entrepreneurship Acceleration Platform, Sierra Leone">
         <span>Digital LEAP<small>Internship management</small></span>
     </a>
     <nav class="home-links" aria-label="On this page">
