@@ -1631,7 +1631,7 @@ select {
 
 body.auth-shell {
     min-height: 100vh;
-    background: #0a0b0c url("../img/auth-campus.jpg") center 40% / cover no-repeat;
+    background: #0a0b0c url("../img/campus-graduation.jpg") center 36% / cover no-repeat;
 }
 body.auth-shell::before {
     content: "";
@@ -1646,9 +1646,8 @@ body.auth-shell::before {
 body.auth-shell .public-main { position: relative; z-index: 1; }
 body.auth-shell .site-foot { position: relative; z-index: 1; }
 
-/* The brand column is hidden on phones, so the same scene reappears as a
-   slim strip above the card. Same rule as the landing hero: the picture is
-   a generated illustration and the caption says so. */
+/* The brand column is hidden on phones, so the supplied graduation photograph
+   reappears as a slim strip above the card. */
 .auth-strip {
     display: none;
     position: relative;
@@ -2929,11 +2928,17 @@ body.feedback-open { overflow: hidden; }
     .main { padding: 22px 18px 46px; }
 
     .diva-shell { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-    .diva-aside { position: static; margin: 0; }
+    .diva-main { order: 1; }
+    .diva-aside { order: 2; position: static; margin: 0; }
     .diva-history { margin-top: 12px; }
     .diva-privacy { margin-top: 12px; padding-top: 12px; }
     .diva-privacy p { margin-bottom: 10px; }
-    .diva-chat .diva-stream { max-height: 58vh; max-height: 58dvh; min-height: 260px; padding: 16px; }
+    .diva-chat {
+        height: calc(100vh - 196px);
+        height: calc(100dvh - 196px);
+        min-height: 460px;
+    }
+    .diva-chat .diva-stream { min-height: 0; max-height: none; padding: 16px; }
     .diva-welcome { padding: 12px 0; }
     .diva-chat-head { padding: 14px 16px; }
 }
@@ -3460,7 +3465,32 @@ html[data-reduce-motion="on"] .diva-fab:focus-visible { transform: none; }
 .diva-chat-head h2 { font-size: .88rem; margin: 0 0 2px; overflow-wrap: anywhere; }
 .diva-chat-head .small { font-size: .7rem; }
 .diva-chat-head form { flex-shrink: 0; margin: 0; }
-.diva-chat .diva-stream { min-height: 330px; max-height: 55vh; padding: 24px; gap: 24px; scroll-behavior: auto; }
+/* A chat should behave like a chat: the history is the scroller, the composer
+   stays in view. Without a bounded card the stream was a 55 vh box that the
+   page scrolled past, and on a phone it started below the fold. */
+.diva-chat {
+    height: clamp(520px, calc(100vh - 220px), 860px);
+    height: clamp(520px, calc(100dvh - 220px), 860px);
+    min-height: 0;
+}
+.diva-chat .diva-stream {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    padding: 24px;
+    gap: 24px;
+    scroll-behavior: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+}
+.diva-chat .diva-stream::-webkit-scrollbar { width: 10px; }
+.diva-chat .diva-stream::-webkit-scrollbar-track { background: transparent; }
+.diva-chat .diva-stream::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: var(--line-strong);
+    background-clip: padding-box;
+}
 .diva-chat .diva-response .chat-bubble { background: transparent; border: 0; padding: 0; margin: 0; max-width: calc(100% - 44px); }
 .diva-chat .is-mine .chat-bubble { margin: 0; background: var(--gold-soft); }
 .diva-message-text { white-space: pre-wrap; line-height: 1.75; }

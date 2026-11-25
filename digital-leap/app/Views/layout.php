@@ -269,10 +269,12 @@ $navIcons = [
         </section>
         <section class="auth-panel" aria-label="Sign in or register">
             <figure class="auth-strip">
-                <img src="<?= e(asset('img/auth-campus.jpg')) ?>" width="1536" height="1024"
-                     alt="Illustration of students on a palm-lined campus walkway at golden hour, with the coast and hills beyond."
+                <img src="<?= e(asset('img/campus-graduation-960.jpg')) ?>" width="1904" height="680"
+                     srcset="<?= e(asset('img/campus-graduation-960.jpg')) ?> 960w, <?= e(asset('img/campus-graduation.jpg')) ?> 1904w"
+                     sizes="(max-width: 560px) calc(100vw - 28px), 480px"
+                     alt="Limkokwing graduates in caps and gowns throwing their mortarboards during a graduation ceremony."
                      decoding="async">
-                <figcaption>Illustrative scene</figcaption>
+                <figcaption>Limkokwing graduation</figcaption>
             </figure>
             <?php foreach (flashes() as $f): ?>
                 <div class="alert alert-<?= e($f['type']) ?>" role="status" data-dismiss>

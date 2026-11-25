@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS message;
 DROP TABLE IF EXISTS conversation_member;
 DROP TABLE IF EXISTS conversation;
 DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS sync_op;
 DROP TABLE IF EXISTS user_preference;
 DROP TABLE IF EXISTS email_queue;
 DROP TABLE IF EXISTS notification;

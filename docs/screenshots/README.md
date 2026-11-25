@@ -76,4 +76,20 @@ at 1440 and at 390 (both showing the `srcset` delivery), the phone sign-in with
 the illustrative strip, the DIVA launcher on **My placement**, the prefilled
 DIVA composer, and the guided tour at its **Feedback has a home** step. Naming
 is `phase9-<what>-<width>.png`; the files drop the prefix inside the folder
-itself.
+itself. `phase9/signin-390.png` predates the owner's request to restore the
+supplied photograph, so use `phase10/signin-390.png` for anything current.
+
+## Phase 10 captures (25 November 2026)
+
+Four files in `phase10/` record the owner-requested corrections:
+
+| File | Shows |
+| --- | --- |
+| `signin-1440.png` | The sign-in backdrop as the owner's own graduation photograph, enlarged 2× and sharpened |
+| `signin-390.png` | The same photograph as the 150 px strip above the card, captioned **Limkokwing graduation** |
+| `diva-scroll-1440.png` | A six-turn DIVA conversation inside the bounded chat card, composer pinned below it |
+| `diva-scroll-390.png` | The phone layout: chat first, history below, stream open at the newest answer |
+
+The two DIVA captures were taken on a temporary six-turn conversation that was
+deleted from the database afterwards, so the shipped demo data stays clean.
+

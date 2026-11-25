@@ -951,8 +951,8 @@
         if (window.matchMedia('(max-width: 900px)').matches) { history.open = false; }
         var questions = stream.querySelectorAll('.chat-msg.is-mine');
         if (questions.length) {
-            var latest = questions[questions.length - 1];
-            stream.scrollTop = latest.offsetTop - stream.offsetTop;
+            // Open at the newest answer, not at the last question's old offset.
+            stream.scrollTop = stream.scrollHeight;
         }
         field.addEventListener('input', function () {
             count.textContent = Array.from(field.value).length;

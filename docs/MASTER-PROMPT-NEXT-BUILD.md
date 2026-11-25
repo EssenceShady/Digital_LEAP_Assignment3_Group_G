@@ -43,10 +43,11 @@ baseline your build starts from. Treat them as requirements, not proposals:
    (**Send feedback**) and the sidebar (**Share feedback**); `app.js` binds every
    `[data-feedback-open]`, so never reintroduce a second floating feedback
    button.
-2. **The sign-in backdrop is sharp.** `body.auth-shell` uses
-   `img/auth-campus.jpg` (1536 × 1024) at `center 40% / cover` with
-   `background-attachment: scroll` — never `fixed`, which stretched the old
-   952 × 340 photograph and forced a repaint on iOS.
+2. **The sign-in backdrop is the owner's photograph.** `body.auth-shell` uses
+   `img/campus-graduation.jpg` (1904 × 680, the supplied graduation photograph
+   enlarged 2× and sharpened) at `center 36% / cover` with
+   `background-attachment: scroll` — never `fixed`, which forced a repaint on
+   iOS. Do not replace it with a generated scene; enhance it in place.
 3. **The landing shows the place, under the label.** `figure.home-hero-media`
    sits between `.home-kicker` and the `h1` on `app/Views/auth/landing.php`,
    carrying `img/campus-hero.jpg` and the caption **Illustrative scene** so the
@@ -88,8 +89,8 @@ Current facts you can rely on, but re-verify before quoting them:
   (19); mentor has both.
 - `SiteCheckin::MAX_DISTANCE_M = 500`; organisation pin is the `setting` key
   `geo.org.<org_id>` (JSON `{lat,lng}`).
-- `sw.js` is at the app root, `VERSION = 'v7'`; `SHELL` also precaches
-  `campus-hero.jpg` and `auth-campus.jpg`.
+- `sw.js` is at the app root, `VERSION = 'v10'`; `SHELL` precaches the CSS, JS,
+  logo and icons but not the photographic backdrops.
 - Header wordmark is `public/assets/img/leap-wordmark-ink.png`.
 - Corner launcher is `a.diva-fab` (44 px tap target, charcoal with a gold
   hairline) — not a feedback button. See §0.1.
@@ -246,7 +247,8 @@ public/assets/img/icon-192.png, icon-512.png  app icon
 public/assets/img/limkokwing-logo.png       LUCT lockup — footer only
 public/assets/img/diva-mark-sm.png          gold brain mark, transparent
 public/assets/img/campus-hero.jpg           1536 × 1024, 245 KB, landing hero
-public/assets/img/auth-campus.jpg           1536 × 1024, 262 KB, sign-in backdrop
+public/assets/img/campus-graduation.jpg     1904 × 680, 229 KB, sign-in backdrop
+public/assets/img/campus-graduation-960.jpg 960 × 343, 92 KB, phone strip
 docs/brand-source/, docs/brand-preview/     originals and working copies
 ```
 
@@ -254,12 +256,12 @@ Rules: never stretch the wordmark (ratio 1.79 : 1, height 28–40 px in
 headers); no wordmark on busy photography; globe shown no larger than ~300 px
 as a raster; app icon legible at 48 px.
 
-The two campus photographs are **generated scenes, not photographs of the
-Freetown campus**, and the interface must say so wherever the meaning could be
-misread. `campus-hero.jpg` carries the visible caption *Illustrative scene*;
-if you reuse either image anywhere else, carry a caption or alt text that says
-the same. Do not put the wordmark on top of them, and do not present them as
-evidence of the real institution.
+`campus-hero.jpg` is a **generated scene, not a photograph of the Freetown
+campus**, and the landing page must say so: it carries the visible caption
+*Illustrative scene*. Do not put the wordmark on top of it and do not present
+it as evidence of the real institution. `campus-graduation.jpg` is the owner's
+own graduation photograph — caption it *Limkokwing graduation*, enhance it in
+place, and never swap it for a generated scene.
 
 ### 6.2 Landing page
 
@@ -532,9 +534,9 @@ sent until the user presses send; the link is absent on `diva` itself.
 
 ### 13.2 Let the sign-in backdrop exist on a phone
 
-At ≤ 720 px `.auth-brand` is hidden, so the photograph is reduced to a 14 px
+At ≤ 560 px `.auth-brand` is hidden, so the photograph is reduced to a 14 px
 frame around the card. Add a slim `figure.auth-strip` above the card (3 : 1,
-140–160 px tall, `auth-campus.jpg`, same **Illustrative scene** caption rule).
+150 px tall, `campus-graduation-960.jpg`, caption **Limkokwing graduation**).
 Keep the card's contrast; do not move the form below the fold at 390 × 844.
 
 Acceptance: at 390 px the strip is visible, the card top is still inside the
@@ -543,7 +545,8 @@ first screen, and `scrollWidth === clientWidth`.
 ### 13.3 Serve the images at the size they are shown
 
 - Export 768 px and 1200 px variants of `campus-hero.jpg` with PowerShell
-  `System.Drawing` (quality 78–82) and use `srcset` + `sizes` on the hero.
+  `System.Drawing` (quality 78–82) and use `srcset` + `sizes` on the hero; the
+  graduation photograph likewise ships a 960 px candidate for the strip.
   Target ≤ 120 KB delivered to a 390 px phone.
 - Keep the two full-size images out of a phone's install. Either precache only
   the variant the device needs, or leave both in the runtime cache and precache

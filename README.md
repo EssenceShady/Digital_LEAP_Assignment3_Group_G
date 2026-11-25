@@ -160,7 +160,8 @@ digital-leap/
     assets/css/             app.css (layers) and offline.css
     assets/js/              app.js, offline.js, diva-offline.js, attendance.js
     assets/data/            diva-index.json for the offline engine
-    assets/img/             logo, DIVA mark, icon-192/512 and the campus scenes
+    assets/img/             logo, DIVA mark, icon-192/512, the generated landing
+                            hero and the team's graduation photograph
                             (see `docs/assets.md` for provenance and sizes)
   storage/
     uploads/                Evidence files and profile photos, denied to direct HTTP
@@ -184,7 +185,7 @@ deploy/
   setup.sh                  Waits for the seed, gives storage/ to www-data
 .github/workflows/lint.yml  php -l and node --check on every push, no secrets
 docs/                       test log, VERIFY, user guide, design system, DIVA sets,
-                            assets.md (image provenance)
+                            assets.md (image provenance), GPS-GUIDE.md
 ```
 
 The zip deliberately omits `config/config.php` and `storage/logs/*`; they
@@ -468,10 +469,12 @@ browser pass is evidenced by DOM text and database rows because the
 automation browser could not capture screenshots.
 
 `docs/assets.md` lists every image the app serves, with pixel and byte size and
-how each file was made. It states plainly that the two campus scenes
-(`campus-hero*.jpg`, `auth-campus.jpg`) are generated illustrations, not
-photographs, which is why the landing hero and the sign-in strip caption them
-"Illustrative scene".
+how each file was made. It states plainly that the landing hero
+(`campus-hero*.jpg`) is a generated illustration, captioned "Illustrative
+scene", while the sign-in surface (`campus-graduation*.jpg`) is the team's own
+graduation photograph, enlarged for sharpness and captioned "Limkokwing
+graduation". `docs/GPS-GUIDE.md` explains how check-ins are recorded, what each
+role sees, and what the stored evidence proves.
 
 `docs/VERIFY.md` is the marker's script: accounts, role-by-role expected
 results, the DIVA contract checks, security checks and known limitations.
