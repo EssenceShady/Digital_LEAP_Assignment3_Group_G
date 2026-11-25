@@ -6,20 +6,23 @@
 # only storage/ lives in a volume (Apache runs as www-data there), and the
 # config is the disposable one in this folder.
 #
-# ${localWorkspaceFolder} is supplied by the devcontainer CLI. Running this
-# file with plain `docker compose` will not work without setting it.
+# Every path below is relative to this file. The Codespaces devcontainer CLI
+# does not export localWorkspaceFolder for compose interpolation, so the
+# ${localWorkspaceFolder} form expanded to nothing and the build looked for
+# .devcontainer/deploy/Dockerfile. Relative paths resolve against .devcontainer/
+# in both Codespaces and a local devcontainer run.
 
 services:
   app:
     build:
-      context: ${localWorkspaceFolder}
+      context: ..
       dockerfile: deploy/Dockerfile
     ports:
       - "8080:80"
     volumes:
-      - ${localWorkspaceFolder}/digital-leap:/var/www/html/digital-leap
+      - ../digital-leap:/var/www/html/digital-leap
       - leap-storage:/var/www/html/digital-leap/storage
-      - ${localWorkspaceFolder}/.devcontainer/config.codespaces.php:/var/www/html/digital-leap/config/config.php:ro
+      - ../.devcontainer/config.codespaces.php:/var/www/html/digital-leap/config/config.php:ro
     # service_started, not service_healthy: a slow seed must not keep Apache
     # from starting, or the forwarded port never opens and the codespace
     # reports a container error. setup.sh waits for the users table instead.
@@ -35,7 +38,7 @@ services:
       MARIADB_DATABASE: digital_leap
     volumes:
       - leap-db:/var/lib/mysql
-      - ${localWorkspaceFolder}/database/digital_leap.sql:/docker-entrypoint-initdb.d/10-digital-leap.sql:ro
+      - ../database/digital_leap.sql:/docker-entrypoint-initdb.d/10-digital-leap.sql:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
