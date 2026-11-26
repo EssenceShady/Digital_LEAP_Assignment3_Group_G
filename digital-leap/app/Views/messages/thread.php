@@ -7,13 +7,18 @@
 use Leap\Core\Auth;
 
 $me = (int) Auth::id();
-$names = array_map(static fn (array $m): string => $m['first_name'] . ' ' . $m['last_name'], $members);
+$studentName = trim($conversation['student_first'] . ' ' . $conversation['student_last']);
+// The student is a member too; naming them twice in the header reads like a bug.
+$names = array_values(array_filter(
+    array_map(static fn (array $m): string => trim($m['first_name'] . ' ' . $m['last_name']), $members),
+    static fn (string $name): bool => $name !== '' && $name !== $studentName
+));
 ?>
 <div class="page-head">
     <div>
         <a class="link-quiet small" href="<?= e(url('messages')) ?>">&larr; All conversations</a>
         <h1><?= e($conversation['subject']) ?></h1>
-        <p><?= e($conversation['org_name']) ?> · <?= e($conversation['student_first'] . ' ' . $conversation['student_last']) ?> · <?= e(implode(', ', $names)) ?></p>
+        <p><?= e($conversation['org_name']) ?> · <?= e($studentName) ?><?= $names !== [] ? ' · ' . e(implode(', ', $names)) : '' ?></p>
     </div>
     <div class="page-actions">
         <a class="btn btn-outline" href="<?= e(url('messages')) ?>">Back to inbox</a>

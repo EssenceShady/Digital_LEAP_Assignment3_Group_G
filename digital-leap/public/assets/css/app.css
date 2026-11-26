@@ -1841,69 +1841,150 @@ body.landing-shell .public-main { width: min(1240px, 100%); padding: 0 clamp(16p
     text-transform: uppercase;
 }
 
+/* The hero is copy first, then the photograph as a full-width stage, then the
+   numbers. Nothing is written across the students' faces. */
 .home-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
-    gap: clamp(28px, 4vw, 56px);
-    align-items: center;
-    padding: clamp(34px, 5vw, 64px) 0 clamp(28px, 4vw, 48px);
+    justify-items: center;
+    gap: clamp(20px, 3vw, 32px);
+    padding: clamp(32px, 4.6vw, 60px) 0 clamp(22px, 3vw, 34px);
+    text-align: center;
 }
-.home-hero-media {
+.home-hero-copy { max-width: 900px; }
+.home-hero h1 {
+    max-width: 22ch;
+    margin: 14px auto 18px;
+    font-family: var(--font-serif);
+    font-size: clamp(2.35rem, 4.9vw, 4rem);
+    font-weight: 400;
+    letter-spacing: -.028em;
+    line-height: 1.03;
+    text-wrap: balance;
+}
+.home-lead { max-width: 64ch; margin: 0 auto; color: var(--muted); font-size: clamp(.94rem, .95vw, 1.02rem); line-height: 1.72; text-wrap: pretty; }
+.home-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.home-hero .home-cta { justify-content: center; margin-top: 26px; }
+.home-proof {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    margin: 0;
+    padding: 18px 0 0;
+    border-top: 1px solid var(--line);
+    text-align: center;
+}
+.home-proof > div { padding: 0 14px; }
+.home-proof > div + div { border-left: 1px solid var(--line); }
+.home-proof dt { color: var(--muted); font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.home-proof dd { margin: 3px 0 0; font-size: .95rem; font-weight: 700; }
+
+/* the photograph, drifting slowly, with a floating globe seal */
+
+.home-stage { position: relative; width: 100%; margin: 0; }
+.home-stage-frame {
     position: relative;
-    margin: 18px 0 4px;
     overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 16px;
+    isolation: isolate;
+    border-radius: clamp(16px, 2vw, 24px);
     background: var(--brand);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 34px 70px -46px rgba(17, 19, 21, .65);
 }
-.home-hero-media img {
+.home-stage-photo {
     display: block;
     width: 100%;
-    height: clamp(180px, 21vw, 232px);
+    height: clamp(320px, 43vw, 540px);
     object-fit: cover;
     object-position: 50% 44%;
+    transform: scale(1.04);
+    animation: leapDrift 30s ease-in-out infinite alternate;
+    will-change: transform;
 }
-.home-hero-media figcaption {
+.home-stage-sheen {
     position: absolute;
-    right: 10px;
-    bottom: 10px;
-    padding: 4px 9px;
-    border-radius: 999px;
-    background: rgba(11, 13, 14, .74);
-    color: #fff;
+    inset: -30%;
+    background: linear-gradient(105deg, transparent 44%, rgba(255, 255, 255, .2) 50%, transparent 56%);
+    transform: translateX(-75%) rotate(3deg);
+    opacity: 0;
+    mix-blend-mode: screen;
+    animation: leapSheen 9.5s ease-in-out 2s infinite;
+    pointer-events: none;
+}
+.home-stage-seal {
+    position: absolute;
+    top: clamp(-26px, -2.2vw, -16px);
+    left: clamp(16px, 2.6vw, 34px);
+    z-index: 2;
+    width: clamp(74px, 8.5vw, 112px);
+    height: auto;
+    border-radius: 50%;
+    box-shadow: 0 18px 36px -16px rgba(0, 0, 0, .55), 0 0 0 4px rgba(246, 243, 236, .92);
+    animation: leapSeal 6.5s ease-in-out infinite alternate;
+}
+.home-stage-seal img { display: block; width: 100%; height: auto; border-radius: 50%; }
+.home-stage-caption {
+    position: absolute;
+    right: clamp(10px, 1.4vw, 18px);
+    bottom: clamp(10px, 1.4vw, 16px);
+    z-index: 2;
+    max-width: calc(100% - 20px);
+    padding: 5px 11px;
+    border-radius: 14px;
+    background: rgba(11, 13, 14, .62);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #f2eee4;
     font-size: .56rem;
     font-weight: 650;
     letter-spacing: .12em;
     text-transform: uppercase;
 }
-.home-hero h1 {
-    max-width: 16ch;
-    margin: 12px 0 16px;
-    font-family: var(--font-serif);
-    font-size: clamp(2.3rem, 4.2vw, 3.7rem);
-    font-weight: 400;
-    letter-spacing: -.025em;
-    line-height: 1.03;
+
+@keyframes leapDrift {
+    from { transform: scale(1.04) translate3d(0, 0, 0); }
+    to { transform: scale(1.1) translate3d(-1.8%, -1.4%, 0); }
 }
-.home-lead { max-width: 54ch; margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.72; }
-.home-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
-.home-proof {
+@keyframes leapSheen {
+    0%, 52% { transform: translateX(-75%) rotate(3deg); opacity: 0; }
+    60% { opacity: .9; }
+    92%, 100% { transform: translateX(75%) rotate(3deg); opacity: 0; }
+}
+@keyframes leapSeal {
+    from { transform: translateY(0) rotate(-2.5deg); }
+    to { transform: translateY(-9px) rotate(2.5deg); }
+}
+
+/* the mock dashboard now has a section of its own */
+
+.home-workspace {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, auto));
-    justify-content: start;
-    gap: 10px 32px;
-    margin: 30px 0 0;
-    padding: 18px 0 0;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: clamp(24px, 3.5vw, 48px);
+    align-items: center;
+    margin: clamp(36px, 5vw, 60px) 0 0;
+    padding: clamp(24px, 3.6vw, 44px);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: linear-gradient(170deg, #fff, #fbf8f1);
+}
+.home-workspace h2 { margin: 10px 0 10px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(1.6rem, 2.7vw, 2.2rem); line-height: 1.14; text-wrap: balance; }
+.home-workspace-copy > p:last-of-type { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.68; }
+.home-notes { display: grid; margin: 22px 0 0; padding: 0; list-style: none; }
+.home-notes li {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 0;
     border-top: 1px solid var(--line);
 }
-.home-proof dt { color: var(--muted); font-size: .64rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-.home-proof dd { margin: 3px 0 0; font-size: .95rem; font-weight: 700; }
+.home-notes li:last-child { padding-bottom: 0; }
+.home-note-no { color: var(--gold); font-family: var(--font-serif); font-size: 1.02rem; line-height: 1.3; }
+.home-notes li > span:last-child { display: grid; gap: 2px; color: var(--muted); font-size: .78rem; line-height: 1.5; }
+.home-notes strong { color: var(--ink); font-size: .82rem; }
 
 /* product preview built from markup, not a screenshot */
 
-.home-hero-panel { position: relative; }
-.home-hero-panel::before {
+.home-preview-panel { position: relative; min-width: 0; }
+.home-preview-panel::before {
     content: "";
     position: absolute;
     inset: 12% -6% -8% 10%;
@@ -2086,9 +2167,11 @@ body.landing-shell .public-main { width: min(1240px, 100%); padding: 0 clamp(16p
 .home-fineprint { margin-top: 20px; color: #8f8c84; font-size: .72rem; }
 
 @media (max-width: 992px) {
-    .home-hero { grid-template-columns: 1fr; padding-top: 32px; }
-    .home-hero h1 { max-width: 20ch; }
-    .home-hero-panel { max-width: 620px; }
+    .home-hero { padding-top: 32px; }
+    .home-hero h1 { max-width: 24ch; }
+    .home-stage-photo { height: clamp(300px, 56vw, 460px); }
+    .home-workspace { grid-template-columns: 1fr; }
+    .home-workspace .home-preview-panel { max-width: 680px; }
     .home-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .home-steps li::after { display: none; }
     .home-diva, .home-evidence { grid-template-columns: 1fr; }
@@ -2101,7 +2184,9 @@ body.landing-shell .public-main { width: min(1240px, 100%); padding: 0 clamp(16p
     .home-brand img { height: 34px; }
     .home-brand small { display: none; }
     .home-actions .btn { min-height: 36px; padding: 0 11px; font-size: .76rem; }
-    .home-proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .home-proof { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; }
+    .home-proof > div + div { border-left: 0; }
+    .home-proof > div:nth-child(even) { border-left: 1px solid var(--line); }
     .home-role-grid, .home-steps { grid-template-columns: 1fr; }
     .home-facts { grid-template-columns: 1fr; }
     .home-cta { flex-direction: column; align-items: stretch; }
@@ -2110,11 +2195,14 @@ body.landing-shell .public-main { width: min(1240px, 100%); padding: 0 clamp(16p
     .home-trust { justify-content: flex-start; gap: 8px 20px; }
     .preview-body { grid-template-columns: 1fr; min-height: 0; }
     .preview-side { display: none; }
-    .home-diva, .home-evidence, .home-cta-band { border-radius: 16px; }
-    .home-hero-panel::before { display: none; }
-    .home-hero-media { margin-top: 14px; border-radius: 12px; }
-    .home-hero-media img { height: 168px; }
-    .home-hero-media figcaption { right: 8px; bottom: 8px; font-size: .52rem; }
+    .preview-kpis { gap: 6px; }
+    .preview-kpis div { padding: 8px; }
+    .preview-kpis span { letter-spacing: .02em; font-size: .54rem; }
+    .home-diva, .home-evidence, .home-cta-band, .home-workspace { border-radius: 16px; }
+    .home-preview-panel::before { display: none; }
+    .home-stage-photo { height: clamp(250px, 64vw, 380px); object-position: 58% 42%; }
+    .home-stage-seal { width: 66px; top: -14px; left: 12px; box-shadow: 0 14px 28px -14px rgba(0, 0, 0, .55), 0 0 0 3px rgba(246, 243, 236, .92); }
+    .home-stage-caption { left: 12px; right: auto; bottom: 10px; max-width: calc(100% - 100px); font-size: .5rem; }
 }
 
 
@@ -2891,7 +2979,7 @@ body.feedback-open { overflow: hidden; }
     .diva-shell { grid-template-columns: 210px minmax(0, 1fr); }
     /* The rotated gold plate behind the preview used to hang past the last
        column and add 5 px of page scroll at 1024. Keep it flush below 1280. */
-    .home-hero-panel::before { right: 0; }
+    .home-preview-panel::before { right: 0; }
 }
 
 @media (max-width: 992px) {
@@ -3760,4 +3848,286 @@ html[data-reduce-motion="on"] .diva-fab:focus-visible { transform: none; }
 }
 
 
+}
+
+/* -------------------------------------------- device edges and phone chat */
+/* env() is zero unless the page is drawn under the system bars (installed app
+   or an edge-to-edge browser), so none of this changes a laptop. */
+
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+}
+
+.topbar {
+    height: calc(72px + var(--safe-top));
+    padding: var(--safe-top) max(clamp(14px, 2.4vw, 28px), var(--safe-right)) 0 max(clamp(14px, 2.4vw, 28px), var(--safe-left));
+}
+/* The status bar is dark (theme-color), the header is white: without its own
+   strip the white header sits under light status icons and hides them. */
+.topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: var(--safe-top);
+    background: var(--brand);
+    pointer-events: none;
+}
+.main { padding-bottom: calc(52px + var(--safe-bottom)); }
+.site-foot { padding-bottom: calc(18px + var(--safe-bottom)); }
+.diva-fab { right: calc(14px + var(--safe-right)); bottom: calc(14px + var(--safe-bottom)); }
+
+/* clip, not hidden: hidden would make the card a scroll container, and a
+   sticky composer inside one pins to the card instead of the viewport. */
+.chat-card { overflow: clip; }
+
+@media (max-width: 560px) {
+    .topbar {
+        height: calc(64px + var(--safe-top));
+        padding: var(--safe-top) max(12px, var(--safe-right)) 0 max(12px, var(--safe-left));
+    }
+    .main { padding-bottom: calc(46px + var(--safe-bottom)); }
+}
+
+/* One scroll region on a phone: the page. The stream used to keep
+   overflow-y:auto and overscroll-behavior:contain with no height limit, so it
+   could never scroll while contain stopped the page from scrolling either:
+   every swipe that began on a message did nothing. Natural height and visible
+   overflow remove that dead container; the composer rides the bottom edge. */
+@media (max-width: 768px) {
+    .chat-card,
+    .diva-chat {
+        height: auto;
+        min-height: 0;
+        max-height: none;
+    }
+    .chat-stream,
+    .diva-chat .diva-stream {
+        flex: 0 0 auto;
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
+    }
+    .chat-composer,
+    .diva-composer {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        padding-bottom: calc(15px + var(--safe-bottom));
+        border-radius: 0 0 14px 14px;
+        box-shadow: 0 -10px 22px rgba(24, 20, 12, .07);
+    }
+    body[data-page="messages/thread"] .diva-fab,
+    body[data-page="messages/thread"] .page-actions { display: none; }
+}
+
+
+/* ------------------------------------------------------------ boot splash */
+/* The overlay markup sits in every page, but html.leap-booting is only set by
+   boot.js on the first page of a tab, so a normal navigation never sees it.
+   Unlayered on purpose: it must beat every layer without !important. */
+
+.leap-boot {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 240;
+    place-items: center;
+    padding: calc(26px + env(safe-area-inset-top)) 24px calc(30px + env(safe-area-inset-bottom));
+    background:
+        radial-gradient(720px 460px at 50% 26%, rgba(216, 183, 92, .15), transparent 70%),
+        radial-gradient(900px 620px at 50% 118%, rgba(74, 118, 108, .14), transparent 72%),
+        #0b0d0e;
+    color: #efeadd;
+    overscroll-behavior: contain;
+    touch-action: none;
+}
+html.leap-booting .leap-boot,
+.leap-boot.is-leaving { display: grid; }
+.leap-boot.is-leaving {
+    opacity: 0;
+    transition: opacity .42s ease;
+    pointer-events: none;
+}
+.leap-boot-inner { display: grid; justify-items: center; text-align: center; }
+
+.leap-boot-orb {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(200px, 33vw, 280px);
+    aspect-ratio: 1;
+    margin-bottom: clamp(22px, 3vw, 30px);
+    perspective: 900px;
+    animation: leapBob 5.4s ease-in-out infinite alternate;
+}
+.leap-boot-orb::before {
+    content: "";
+    position: absolute;
+    inset: -8%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 46%, rgba(216, 183, 92, .24), rgba(216, 183, 92, 0) 70%);
+    pointer-events: none;
+}
+.leap-boot-ring {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.leap-boot-ring-a {
+    inset: 1%;
+    border: 1px solid rgba(216, 183, 92, .4);
+    animation: leapRing 17s linear infinite;
+}
+.leap-boot-ring-b {
+    inset: 13%;
+    border: 1px dashed rgba(255, 255, 255, .16);
+    animation: leapRing 24s linear infinite reverse;
+}
+.leap-boot-globe {
+    position: relative;
+    z-index: 1;
+    width: 74%;
+    aspect-ratio: 1;
+    transform-style: preserve-3d;
+    animation: leapCoin 8s cubic-bezier(.4, .1, .6, .9) infinite;
+}
+.leap-boot-face {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    backface-visibility: hidden;
+    box-shadow:
+        0 26px 54px -24px rgba(0, 0, 0, .95),
+        0 0 0 3px rgba(216, 183, 92, .26),
+        0 0 70px -10px rgba(216, 183, 92, .32);
+}
+.leap-boot-face img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.leap-boot-face-back { transform: rotateY(180deg); }
+.leap-boot-face-back img { transform: scaleX(-1); }
+.leap-boot-glint {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(118deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, .34) 50%, rgba(255, 255, 255, 0) 62%);
+    mix-blend-mode: screen;
+    transform: translateZ(2px) rotateY(0deg);
+    animation: leapGlint 8s cubic-bezier(.4, .1, .6, .9) infinite;
+    pointer-events: none;
+}
+
+.leap-boot-wordmark { display: block; height: clamp(30px, 4.2vw, 42px); width: auto; margin-bottom: 10px; }
+.leap-boot-line {
+    margin: 0 0 clamp(24px, 3vw, 32px);
+    color: #8f8a7e;
+    font-size: .62rem;
+    font-weight: 650;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+.leap-boot-line span + span::before { content: " · "; }
+.leap-boot-meter {
+    width: clamp(150px, 22vw, 190px);
+    height: 4px;
+    margin-bottom: 13px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .16);
+}
+.leap-boot-meter span {
+    display: block;
+    width: 6%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--gold, #b8912f), var(--gold-2, #d8b75c));
+    animation: leapMeter 2.6s cubic-bezier(.25, .6, .2, 1) forwards;
+}
+.leap-boot-status {
+    margin: 0;
+    color: #cbc5b7;
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+}
+
+@keyframes leapCoin {
+    from { transform: rotateX(8deg) rotateY(0deg); }
+    to { transform: rotateX(8deg) rotateY(360deg); }
+}
+@keyframes leapGlint {
+    from { transform: translateZ(2px) rotateY(-360deg); }
+    to { transform: translateZ(2px) rotateY(0deg); }
+}
+@keyframes leapRing {
+    from { transform: rotateX(72deg) rotateZ(0deg); }
+    to { transform: rotateX(72deg) rotateZ(360deg); }
+}
+@keyframes leapBob {
+    from { transform: translateY(0); }
+    to { transform: translateY(-8px); }
+}
+@keyframes leapMeter {
+    from { width: 6%; }
+    to { width: 94%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .leap-boot-orb, .leap-boot-globe, .leap-boot-glint,
+    .leap-boot-ring-a, .leap-boot-ring-b, .leap-boot-meter span { animation: none; }
+    .leap-boot-meter span { width: 64%; transform: none; }
+    .home-stage-photo { animation: none; transform: none; }
+    .home-stage-sheen { animation: none; opacity: 0; }
+    .home-stage-seal { animation: none; }
+}
+html[data-reduce-motion="on"] .leap-boot-orb,
+html[data-reduce-motion="on"] .leap-boot-globe,
+html[data-reduce-motion="on"] .leap-boot-glint,
+html[data-reduce-motion="on"] .leap-boot-ring-a,
+html[data-reduce-motion="on"] .leap-boot-ring-b,
+html[data-reduce-motion="on"] .leap-boot-meter span { animation: none; }
+html[data-reduce-motion="on"] .leap-boot-meter span { width: 64%; transform: none; }
+html[data-reduce-motion="on"] .home-stage-photo { animation: none; transform: none; }
+html[data-reduce-motion="on"] .home-stage-sheen { animation: none; opacity: 0; }
+html[data-reduce-motion="on"] .home-stage-seal { animation: none; }
+
+@media (max-width: 480px) {
+    .leap-boot-line { letter-spacing: .1em; font-size: .56rem; }
+    .leap-boot-line span { display: block; }
+    .leap-boot-line span + span::before { content: none; }
+    .leap-boot-status { letter-spacing: .16em; font-size: .62rem; }
+}
+
+@media print {
+    .leap-boot { display: none !important; }
+}
+
+
+/* ------------------------------------------------------------ scroll reveal */
+/* initReveal() adds .js-reveal only when IntersectionObserver exists, motion
+   is allowed and there is something to reveal, so without JavaScript the
+   landing is fully visible and nothing waits on an animation. */
+
+.js-reveal [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .62s cubic-bezier(.2, .7, .2, 1), transform .62s cubic-bezier(.2, .7, .2, 1);
+}
+.js-reveal [data-reveal].is-in { opacity: 1; transform: none; }
+.js-reveal .home-steps [data-reveal]:nth-child(2),
+.js-reveal .home-role-grid [data-reveal]:nth-child(2) { transition-delay: 60ms; }
+.js-reveal .home-steps [data-reveal]:nth-child(3),
+.js-reveal .home-role-grid [data-reveal]:nth-child(3) { transition-delay: 120ms; }
+.js-reveal .home-steps [data-reveal]:nth-child(4),
+.js-reveal .home-role-grid [data-reveal]:nth-child(4) { transition-delay: 180ms; }
+.js-reveal .home-steps [data-reveal]:nth-child(5),
+.js-reveal .home-role-grid [data-reveal]:nth-child(5) { transition-delay: 240ms; }
+.js-reveal .home-role-grid [data-reveal]:nth-child(6) { transition-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+    .js-reveal [data-reveal] { opacity: 1; transform: none; transition: none; }
 }

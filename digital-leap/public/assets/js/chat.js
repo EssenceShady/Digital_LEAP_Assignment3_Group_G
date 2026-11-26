@@ -19,10 +19,23 @@
     var msgOut = document.querySelector('[data-reply-msg]');
 
     function endOfThread() {
-        var last = stream.lastElementChild;
-        if (last && typeof last.scrollIntoView === 'function') {
-            last.scrollIntoView({ block: 'end' });
+        // Desktop scrolls the transcript. A phone scrolls the page and pins the
+        // composer over its lower edge, so the newest message must come to rest
+        // above that edge and not behind it.
+        if (stream.scrollHeight > stream.clientHeight + 4) {
+            stream.scrollTop = stream.scrollHeight;
+            return;
         }
+        var last = stream.lastElementChild;
+        var doc = document.documentElement;
+        if (!last || doc.scrollHeight <= window.innerHeight + 4) {
+            return;
+        }
+        var covered = form && form.getBoundingClientRect().top > 0
+            ? window.innerHeight - form.getBoundingClientRect().top + 16
+            : 0;
+        var target = window.scrollY + last.getBoundingClientRect().bottom - window.innerHeight + covered;
+        window.scrollTo(0, Math.max(0, Math.min(target, doc.scrollHeight - window.innerHeight)));
     }
 
     window.requestAnimationFrame(endOfThread);

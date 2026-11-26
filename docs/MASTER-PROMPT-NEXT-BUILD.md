@@ -32,10 +32,11 @@ Work in phases. Finish and verify one phase before starting the next. Do not
 ask for confirmation between phases; run to completion, except for the four
 stop conditions in §12.
 
-### 0.1 Already shipped on 25 November 2026 — do not undo
+### 0.1 Already shipped — do not undo
 
-Three visual changes were made at the owner's request and are part of the
-baseline your build starts from. Treat them as requirements, not proposals:
+These visual changes were made at the owner's request (25 November, extended on
+26 November 2026) and are part of the baseline your build starts from. Treat
+them as requirements, not proposals:
 
 1. **The floating corner button is DIVA, not feedback.** `app/Views/layout.php`
    renders `a.diva-fab` → `url('diva')`, gated on `Auth::can('diva.use')` and
@@ -48,12 +49,24 @@ baseline your build starts from. Treat them as requirements, not proposals:
    enlarged 2× and sharpened) at `center 36% / cover` with
    `background-attachment: scroll` — never `fixed`, which forced a repaint on
    iOS. Do not replace it with a generated scene; enhance it in place.
-3. **The landing shows the place, under the label.** `figure.home-hero-media`
-   sits between `.home-kicker` and the `h1` on `app/Views/auth/landing.php`,
-   carrying `img/campus-hero.jpg` and the caption **Illustrative scene** so the
-   picture is never passed off as a photograph of the Freetown campus.
+3. **The landing is the owner's campus photograph, with the globe as its
+   seal.** `app/Views/auth/landing.php` centres the copy above a full-width
+   `figure.home-stage` carrying `img/campus-flags.jpg` (1320 × 741, the supplied
+   flag-waving crowd) with `campus-flags-960.jpg` below 768 px, and the supplied
+   globe as `img/globe-flag-sphere.png/.webp` in a `<picture>` seal. The caption
+   reads **Students at Limkokwing University, Sierra Leone**. No paragraph sits
+   over a face; the proof strip sits below the photograph. Do not replace either
+   image with a generated scene.
+4. **The boot splash turns the owner's globe.** `div.leap-boot[data-leap-boot]`
+   lives in `layout.php`; `public/assets/js/boot.js` loads synchronously in the
+   head, writes `sessionStorage['leap.booted']` and adds `html.leap-booting`
+   only on a cold tab. The coin is two back-to-back `<picture>` faces with
+   `backface-visibility: hidden`; CSS spins it, the glint counter-rotates, two
+   rings orbit and a determinate meter fills. Once per tab, 1.0–2.6 s
+   (450–1400 ms calm), never on a back navigation, skipped without JS or
+   storage. See §6.3.
 
-Evidence: TC-246 to TC-249 in `docs/test-log.md`.
+Evidence: TC-246 to TC-249 and TC-271 to TC-278 in `docs/test-log.md`.
 
 ---
 
@@ -89,8 +102,9 @@ Current facts you can rely on, but re-verify before quoting them:
   (19); mentor has both.
 - `SiteCheckin::MAX_DISTANCE_M = 500`; organisation pin is the `setting` key
   `geo.org.<org_id>` (JSON `{lat,lng}`).
-- `sw.js` is at the app root, `VERSION = 'v10'`; `SHELL` precaches the CSS, JS,
-  logo and icons but not the photographic backdrops.
+- `sw.js` is at the app root, `VERSION = 'v12'`; `SHELL` precaches the CSS, JS
+  (including `js/boot.js`), the globe sphere, logo and icons but not the
+  photographic backdrops.
 - Header wordmark is `public/assets/img/leap-wordmark-ink.png`.
 - Corner launcher is `a.diva-fab` (44 px tap target, charcoal with a gold
   hairline) — not a feedback button. See §0.1.
@@ -242,70 +256,79 @@ public/assets/img/leap-wordmark-ink.png     transparent charcoal wordmark (light
 public/assets/img/leap-wordmark-ivory.png   transparent ivory wordmark (dark surfaces)
 public/assets/img/leap-wordmark-gold.png    transparent gold wordmark (accents only)
 public/assets/img/leap-mark.png             full badge on black (social/splash plate)
-public/assets/img/leap-globe.png            circular flag globe, 456 px, white removed
+public/assets/img/leap-globe.png            older 456 px globe crop, kept but unused on screen
+public/assets/img/globe-flag-sphere.png     340 × 340 globe crop, splash coin + landing seal
+public/assets/img/globe-flag-sphere.webp    the same crop in WebP, 22 KB
+public/assets/img/campus-flags.jpg          1320 × 741, 261 KB, landing stage
+public/assets/img/campus-flags-960.jpg      960 × 539, 109 KB, phone candidate
+public/assets/img/campus-graduation.jpg     1904 × 680, 229 KB, sign-in backdrop
+public/assets/img/campus-graduation-960.jpg 960 × 343, 92 KB, phone strip
 public/assets/img/icon-192.png, icon-512.png  app icon
 public/assets/img/limkokwing-logo.png       LUCT lockup — footer only
 public/assets/img/diva-mark-sm.png          gold brain mark, transparent
-public/assets/img/campus-hero.jpg           1536 × 1024, 245 KB, landing hero
-public/assets/img/campus-graduation.jpg     1904 × 680, 229 KB, sign-in backdrop
-public/assets/img/campus-graduation-960.jpg 960 × 343, 92 KB, phone strip
 docs/brand-source/, docs/brand-preview/     originals and working copies
 ```
 
 Rules: never stretch the wordmark (ratio 1.79 : 1, height 28–40 px in
-headers); no wordmark on busy photography; globe shown no larger than ~300 px
-as a raster; app icon legible at 48 px.
+headers); no wordmark on busy photography; the globe sphere shown no larger
+than ~210 CSS px; app icon legible at 48 px.
 
-`campus-hero.jpg` is a **generated scene, not a photograph of the Freetown
-campus**, and the landing page must say so: it carries the visible caption
-*Illustrative scene*. Do not put the wordmark on top of it and do not present
-it as evidence of the real institution. `campus-graduation.jpg` is the owner's
-own graduation photograph — caption it *Limkokwing graduation*, enhance it in
-place, and never swap it for a generated scene.
+`campus-flags.jpg` and `campus-graduation.jpg` are the owner's own photographs.
+Caption the landing stage *Students at Limkokwing University, Sierra Leone* and
+the sign-in picture *Limkokwing graduation*; enhance them in place and never
+swap either for a generated scene. The globe is likewise supplied artwork: crop
+it, never redraw it. No generated scene should be reintroduced on these
+surfaces.
 
 ### 6.2 Landing page
 
-The hero is settled and must not be redesigned again: on
-`app/Views/auth/landing.php` the copy column runs kicker
-("Limkokwing University · Sierra Leone") → `figure.home-hero-media` (the campus
-photograph, caption **Illustrative scene**) → headline → lead → CTA pair →
-four-figure proof strip, against the coordinator-dashboard preview panel on the
-right. It is two columns above 992 px and one column below, and it fits the
-first screen at 1440 × 900. Improve it only in the ways listed in §13.
+The landing was restructured on 26 November 2026 around the owner's photograph
+and is settled: on `app/Views/auth/landing.php` a centred copy block (kicker →
+`h1` capped at 22 ch → 64 ch lead → CTA pair) sits above a full-width
+`figure.home-stage` — the flag-waving crowd, a sheen, the globe seal and a
+caption chip — with the four-figure proof strip below it. The coordinator
+dashboard preview now lives in `section.home-workspace#workspace` beside three
+numbered notes, not in the hero. The hero is one column at every width; the
+stage photo is `clamp(320px, 43vw, 540px)` tall on desktop and
+`clamp(250px, 64vw, 380px)` on a phone. Keep text off the faces. At ≤ 768 px
+the caption chip moves to the lower left, `max-width: calc(100% - 100px)`, so
+the fixed Online status dot in the lower right never covers it. Improve it
+only in the ways listed in §13.
 
-The sections below the hero are still the old long-form page. Rebuild those
-around three blocks:
+The sections below the hero are the three rebuilt blocks: **How a placement
+moves** (five numbered steps), **Six roles, one record** (six portal tiles) and
+**Proof, not paperwork** (three evidence cards, then one dark CTA band and a
+slim footer). Keep them.
 
-2. **How a placement moves** — five numbered steps: apply, allocate, arrive,
-   review, publish.
-3. **Six roles, one record** — six portal tiles (student, supervisor, mentor,
-   coordinator, management, administration) linking to sign-in with the role
-   preselected where the demo buttons support it.
-4. **Proof, not paperwork** — three evidence cards, each showing a real sample
-   row: "Arrived 08:42 · 42 m", "Confirmed by supervisor · week 11",
-   "Published · 68 · B+". Then one dark CTA band and a slim footer.
+Scroll reveal: `initReveal()` adds `js-reveal` and `.is-in` through
+`IntersectionObserver` on 17 `[data-reveal]` nodes; the hidden state exists only
+under `html.js-reveal`, so the page is fully visible without JavaScript, and
+both reduced-motion paths skip the effect.
 
-Cut the longest prose in the sections you rebuild; no paragraph longer than two
-lines at 1280 px. Keep the page usable with JavaScript off.
+### 6.3 Boot splash
 
-### 6.3 Loading screen
+Shipped form, in `layout.php` and `public/assets/js/boot.js`:
 
-- HTML/CSS only, present in `layout.php` for public and app pages, removed
-  after `load` or 2.5 s, whichever comes first, minimum 900 ms.
-- The globe is CSS: a shaded circle, flag-coloured bands moved by
-  `background-position` inside a circular mask, two elliptical meridian rings
-  (one gold) at different speeds, the crest panel fixed at the centre.
-  `prefers-reduced-motion` → static globe, 300 ms fade, no fact rotation.
-- One fact line, changing every 1.6 s: "12 weeks · Forms A–I" · "200 marks ·
-  seven components" · "GPS proof · 500 m rule" · "Works offline after one
-  visit" · "Your data stays on this server".
-- Shown once per session (`sessionStorage`), never on a back navigation, never
-  blocking a ready page. It must appear instantly from the HTML, before any
-  network request.
+- The markup is present on every page; CSS displays it only under
+  `html.leap-booting`, which `boot.js` adds on a cold tab and removes on leave.
+  A second navigation never shows it.
+- `boot.js` is synchronous in the head so the overlay exists at first paint. It
+  writes `sessionStorage['leap.booted']` immediately; with no storage or no JS
+  the splash is skipped entirely and no page depends on it.
+- Timing: minimum 1,000 ms and maximum 2,600 ms from navigation start; reduced
+  motion 450 / 1,400 ms. On finish the overlay fades 420 ms and is hidden.
+- The coin is two `<picture>` faces back to back (`backface-visibility: hidden`,
+  the back mirrored `scaleX(-1)`), spun by `leapCoin` over 8 s; the glint
+  counter-rotates in `screen` blend; two rings orbit at 17 s and 24 s; the orb
+  bobs 8 px. A determinate meter fills 6 %→94 % over 2.6 s.
+- The wordmark is the ivory variant, the subtitle is two spans (stacked ≤480 px)
+  and the background is two radial gradients on `#0b0d0e`.
+- Reduced motion stops every animation and leaves the meter at 64 %. `@media
+  print` hides the overlay.
 
-Acceptance: first load in an incognito window shows the globe splash; a second
-load does not; reduced-motion shows a static globe; landing fits one screen at
-1440 × 900 and is readable at 360 px with no horizontal scroll.
+Acceptance: a cold tab shows the turning globe; a second load does not; a phone
+shows the same composition with a visible meter fill; reduced-motion shows a
+still frame; the landing fits without horizontal scroll at 360 px.
 
 ---
 
@@ -544,13 +567,14 @@ first screen, and `scrollWidth === clientWidth`.
 
 ### 13.3 Serve the images at the size they are shown
 
-- Export 768 px and 1200 px variants of `campus-hero.jpg` with PowerShell
-  `System.Drawing` (quality 78–82) and use `srcset` + `sizes` on the hero; the
-  graduation photograph likewise ships a 960 px candidate for the strip.
-  Target ≤ 120 KB delivered to a 390 px phone.
-- Keep the two full-size images out of a phone's install. Either precache only
-  the variant the device needs, or leave both in the runtime cache and precache
-  none. If `SHELL` changes, bump `VERSION`.
+- Shipped: `campus-flags.jpg` (1320 × 741) with `campus-flags-960.jpg` below
+  768 px through a media `<source>`, and `campus-graduation.jpg` with its 960 px
+  candidate for the sign-in strip. The phone candidates are 109 KB and 92 KB,
+  under the 120 KB target; the globe ships as 22 KB of WebP with a PNG
+  fallback.
+- Keep the full-size photographs out of a phone's install. Both stay in the
+  runtime cache and neither is precached; the globe sphere is precached because
+  the splash needs it at first paint. If `SHELL` changes, bump `VERSION`.
 - Keep intrinsic `width`/`height` on every image so CLS stays 0.
 
 Acceptance: DevTools network shows the small variant on a phone, the large one
@@ -568,11 +592,12 @@ on a 1440 desktop; the first paint keeps the headline where it was.
 
 ### 13.5 Say where the pictures came from
 
-- Add `docs/assets.md`: one line per image — file, pixel size, byte size, how it
-  was produced, and the caption rule. State plainly that the two campus images
-  are generated illustrations. Link it from `README.md` next to the brand
-  assets, and repeat the disclaimer in `docs/DEMO.md` so a presenter cannot
-  claim otherwise on stage.
+- Keep `docs/assets.md`: one line per image — file, pixel size, byte size, how
+  it was produced, and the caption rule. State plainly that the landing crowd,
+  the sign-in graduation and the globe are the owner's own files, enhanced
+  locally and never swapped for generated stand-ins. Link it from `README.md`
+  next to the brand assets, and keep the provenance line in `docs/DEMO.md` so a
+  presenter can answer the question accurately on stage.
 
 ### 13.6 Keep feedback findable now that it has no button
 

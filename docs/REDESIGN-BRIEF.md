@@ -156,7 +156,7 @@ The Limkokwing globe is the *seal* on that identity, not a repaint.
 
 Installed copies live in `digital-leap/public/assets/img/`. The header, auth
 tile and landing header now use `leap-wordmark-ink.png`; the footer keeps the
-LUCT lockup. `sw.js` precaches the wordmarks under `VERSION = 'v10'`. The
+LUCT lockup. `sw.js` precaches the wordmarks under `VERSION = 'v12'`. The
 shipped app icon is the white tile with the ink LEAP wordmark (it matches the
 header `.logo-tile`); the charcoal-and-gold icon above is the earlier preview
 and is no longer installed.
@@ -215,6 +215,11 @@ paragraph longer than two lines at 1280 px.
 The globe in the hero is the CSS globe from §5, held still except for a slow
 meridian sweep, with role names on a ring. It is decorative: `aria-hidden`.
 
+*Implemented 26 November 2026:* the hero is now the owner's flag-waving campus
+photograph with the supplied globe crop as a seal, and the copy sits above the
+picture rather than beside it. The CSS globe was not built — the owner supplied
+artwork that is used as a turning coin on the splash instead (§5).
+
 ### 4.3 What the hero must do in five seconds
 
 1. Say the domain: internships at Limkokwing Sierra Leone.
@@ -243,6 +248,12 @@ as the still fallback:
   (static globe, no fact rotation, 300 ms fade).
 - Critical: the splash lives in the HTML, not behind a fetch, so it appears even
   when the network is gone.
+
+*Implemented 26 November 2026:* the owner asked for the supplied globe itself to
+turn, so the coin is the 340 px globe crop on two back-to-back faces; the CSS
+globe and the rotating fact line were not built. The shipped timings are 1.0 s
+minimum and 2.6 s maximum (450 / 1,400 ms calm), and the meter is determinate.
+See `docs/MASTER-PROMPT-NEXT-BUILD.md` §6.3 for the current behaviour.
 
 ---
 

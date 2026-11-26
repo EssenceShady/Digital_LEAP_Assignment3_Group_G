@@ -81,7 +81,7 @@ supplied photograph, so use `phase10/signin-390.png` for anything current.
 
 ## Phase 10 captures (25 November 2026)
 
-Four files in `phase10/` record the owner-requested corrections:
+Eight files in `phase10/` record the owner-requested corrections:
 
 | File | Shows |
 | --- | --- |
@@ -89,7 +89,32 @@ Four files in `phase10/` record the owner-requested corrections:
 | `signin-390.png` | The same photograph as the 150 px strip above the card, captioned **Limkokwing graduation** |
 | `diva-scroll-1440.png` | A six-turn DIVA conversation inside the bounded chat card, composer pinned below it |
 | `diva-scroll-390.png` | The phone layout: chat first, history below, stream open at the newest answer |
+| `chat-390.png` | A placement thread on a 390 × 844 phone with 28 / 48 px system insets: dark status strip, header and thread head clear of the icons, page scrolled with the composer pinned over the card's lower edge |
+| `chat-scrolled-390.png` | The same thread after a drag that began on a message — the page moved, which it could not do before |
+| `diva-390.png` | DIVA at 390 px as one page scroller, composer at the safe-area edge, no inner box |
+| `chat-1440.png` | The desktop thread unchanged: bounded card, transcript's own scrollbar, **Back to inbox** and the DIVA launcher still present |
 
 The two DIVA captures were taken on a temporary six-turn conversation that was
 deleted from the database afterwards, so the shipped demo data stays clean.
 
+
+## Phase 11 captures (26 November 2026)
+
+Nine files in `phase11/` record the boot splash and the landing page rebuilt
+around the owner's own globe and campus photographs:
+
+| File | Shows |
+| --- | --- |
+| `splash-1440.png` | The boot splash mid-turn on a cold tab: the globe coin showing its flag face, two orbit rings, the ivory wordmark, the two-line subtitle and the gold meter part-filled |
+| `splash-390.png` | The same splash on a 390 × 844 phone at DPR 3, with the subtitle stacked on two lines and the meter fill visible |
+| `splash-390-reduced.png` | The calm variant: same composition with every animation stopped and the meter resting at 64 % |
+| `landing-1440.png` | The restructured landing: centred copy, then the flag-waving crowd filling the column with the globe seal, caption and proof bar below |
+| `landing-390.png` | The phone landing at 390 px: the 960 px candidate in the stage, the caption chip bottom-left on two lines and no horizontal scroll |
+| `stage-390.png` | The stage alone on a phone, showing the drift crop, the seal at the upper left and the caption cleared of the Online dot at the lower left |
+| `workspace-1440.png` | `section.home-workspace`: the three numbered notes beside the coordinator dashboard mock |
+| `workspace-390.png` | The same section stacked to one column on a phone |
+| `roles-1440.png` | The six role cards after their scroll-reveal stagger |
+
+The splash captures were taken on a fresh tab with cleared session storage; a
+second navigation shows no splash. All captures come from the running
+application at `http://localhost/Digital_LEAP_Assignment3_Group_G/digital-leap/`.

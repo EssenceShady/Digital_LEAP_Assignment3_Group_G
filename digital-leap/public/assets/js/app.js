@@ -952,7 +952,21 @@
         var questions = stream.querySelectorAll('.chat-msg.is-mine');
         if (questions.length) {
             // Open at the newest answer, not at the last question's old offset.
-            stream.scrollTop = stream.scrollHeight;
+            // On a phone the page scrolls and the composer sits over the bottom
+            // edge, so the answer must stop above it, not behind it.
+            if (stream.scrollHeight > stream.clientHeight + 4) {
+                stream.scrollTop = stream.scrollHeight;
+            } else {
+                var lastTurn = stream.lastElementChild;
+                var doc = document.documentElement;
+                if (lastTurn && doc.scrollHeight > window.innerHeight + 4) {
+                    var covered = form && form.getBoundingClientRect().top > 0
+                        ? window.innerHeight - form.getBoundingClientRect().top + 16
+                        : 0;
+                    var target = window.scrollY + lastTurn.getBoundingClientRect().bottom - window.innerHeight + covered;
+                    window.scrollTo(0, Math.max(0, Math.min(target, doc.scrollHeight - window.innerHeight)));
+                }
+            }
         }
         field.addEventListener('input', function () {
             count.textContent = Array.from(field.value).length;
@@ -1132,6 +1146,22 @@
         probe();
     }
 
+    function initReveal() {
+        var targets = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
+        if (!targets.length || !('IntersectionObserver' in window)) { return; }
+        if (document.documentElement.getAttribute('data-reduce-motion') === 'on') { return; }
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return; }
+        document.documentElement.classList.add('js-reveal');
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) { return; }
+                entry.target.classList.add('is-in');
+                observer.unobserve(entry.target);
+            });
+        }, { rootMargin: '0px 0px -6% 0px', threshold: 0.1 });
+        targets.forEach(function (target) { observer.observe(target); });
+    }
+
     function initInstallPrompt() {
         var box = document.querySelector('[data-install-prompt]');
         var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-install-trigger]'));
@@ -1188,11 +1218,34 @@
 
         if (standalone()) { markInstalled(); }
 
+        // On the landing page the photograph is the first impression, so the
+        // install bar waits until the visitor has scrolled past the hero.
+        var boxPending = false;
+        var revealBox = function () {
+            if (boxPending || dismissed()) { return; }
+            boxPending = true;
+            if (!document.body.classList.contains('landing-shell') || window.scrollY >= window.innerHeight * 0.7) {
+                box.hidden = false;
+                return;
+            }
+            var timer = 0;
+            var show = function () {
+                window.clearTimeout(timer);
+                window.removeEventListener('scroll', onScroll);
+                box.hidden = false;
+            };
+            var onScroll = function () {
+                if (window.scrollY >= window.innerHeight * 0.7) { show(); }
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            timer = window.setTimeout(show, 12000);
+        };
+
         window.addEventListener('beforeinstallprompt', function (event) {
             event.preventDefault();
             deferred = event;
             paintTrigger();
-            if (box && !dismissed()) { box.hidden = false; }
+            if (box && !dismissed()) { revealBox(); }
         });
 
         if (box) {
@@ -1384,5 +1437,6 @@
         initServiceWorker();
         initNetStatus();
         initInstallPrompt();
+        initReveal();
     });
 })();

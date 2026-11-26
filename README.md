@@ -469,12 +469,15 @@ browser pass is evidenced by DOM text and database rows because the
 automation browser could not capture screenshots.
 
 `docs/assets.md` lists every image the app serves, with pixel and byte size and
-how each file was made. It states plainly that the landing hero
-(`campus-hero*.jpg`) is a generated illustration, captioned "Illustrative
-scene", while the sign-in surface (`campus-graduation*.jpg`) is the team's own
-graduation photograph, enlarged for sharpness and captioned "Limkokwing
-graduation". `docs/GPS-GUIDE.md` explains how check-ins are recorded, what each
-role sees, and what the stored evidence proves.
+how each file was made. Both scenes are the team's own photographs: the landing
+stage (`campus-flags*.jpg`) is the supplied flag-waving crowd outside the
+university, captioned "Students at Limkokwing University, Sierra Leone", and the
+sign-in surface (`campus-graduation*.jpg`) is the supplied graduation portrait,
+enlarged for sharpness and captioned "Limkokwing graduation". The flag globe is
+the owner's artwork, used as the landing seal and as the turning coin on the
+boot splash. The earlier generated `campus-hero*.jpg` scene is gone.
+`docs/GPS-GUIDE.md` explains how check-ins are recorded, what each role sees,
+and what the stored evidence proves.
 
 `docs/VERIFY.md` is the marker's script: accounts, role-by-role expected
 results, the DIVA contract checks, security checks and known limitations.

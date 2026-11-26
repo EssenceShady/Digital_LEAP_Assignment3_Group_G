@@ -68,7 +68,7 @@ $navIcons = [
 <html lang="en" data-text-size="<?= e($textSize) ?>"<?= $calmMotion ? ' data-reduce-motion="on"' : '' ?>>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title><?= e($title) ?> · Digital LEAP</title>
 <meta name="theme-color" content="#111315">
 <meta name="application-name" content="Digital LEAP">
@@ -81,10 +81,35 @@ $navIcons = [
 <link rel="icon" type="image/png" sizes="192x192" href="<?= e(asset('img/icon-192.png')) ?>">
 <link rel="apple-touch-icon" href="<?= e(asset('img/icon-192.png')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
+<script src="<?= e(asset('js/boot.js')) ?>"></script>
 </head>
 <body class="<?= $user !== null ? 'app-shell' : ($isAuthPage ? 'auth-shell' : 'landing-shell') ?>" data-role="<?= e($user !== null ? (string) Auth::role() : 'guest') ?>" data-page="<?= e($route) ?>">
 <a class="skip-link" href="#main">Skip to main content</a>
 <div class="loadbar" data-loadbar aria-hidden="true"><span></span></div>
+
+<div class="leap-boot" data-leap-boot aria-hidden="true">
+    <div class="leap-boot-inner">
+        <div class="leap-boot-orb">
+            <span class="leap-boot-ring leap-boot-ring-a"></span>
+            <span class="leap-boot-ring leap-boot-ring-b"></span>
+            <div class="leap-boot-globe">
+                <picture class="leap-boot-face">
+                    <source type="image/webp" srcset="<?= e(asset('img/globe-flag-sphere.webp')) ?>">
+                    <img src="<?= e(asset('img/globe-flag-sphere.png')) ?>" width="340" height="340" alt="" decoding="async">
+                </picture>
+                <picture class="leap-boot-face leap-boot-face-back">
+                    <source type="image/webp" srcset="<?= e(asset('img/globe-flag-sphere.webp')) ?>">
+                    <img src="<?= e(asset('img/globe-flag-sphere.png')) ?>" width="340" height="340" alt="" decoding="async">
+                </picture>
+                <span class="leap-boot-glint"></span>
+            </div>
+        </div>
+        <img class="leap-boot-wordmark" src="<?= e(asset('img/leap-wordmark-ivory.png')) ?>" width="1013" height="566" alt="Digital LEAP">
+        <p class="leap-boot-line"><span>Internship management</span><span>Limkokwing University, Sierra Leone</span></p>
+        <div class="leap-boot-meter"><span></span></div>
+        <p class="leap-boot-status">Preparing your workspace</p>
+    </div>
+</div>
 
 <?php if ($user !== null): ?>
 <header class="topbar">

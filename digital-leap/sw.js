@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const VERSION = 'v10';
+const VERSION = 'v12';
 const SHELL_CACHE = 'leap-shell-' + VERSION;
 const RUNTIME_CACHE = 'leap-runtime-' + VERSION;
 const CACHE_PREFIX = 'leap-';
@@ -24,10 +24,13 @@ const SHELL = [
   'public/assets/css/offline.css',
   'public/assets/css/app.css',
   'public/assets/js/app.js',
+  'public/assets/js/boot.js',
   'public/assets/js/diva-offline.js',
   'public/assets/data/diva-index.json',
   'public/assets/img/icon-192.png',
   'public/assets/img/icon-512.png',
+  'public/assets/img/globe-flag-sphere.webp',
+  'public/assets/img/globe-flag-sphere.png',
   'public/assets/img/leap-mark.png',
   'public/assets/img/leap-badge.png',
   'public/assets/img/leap-wordmark-ink.png',

@@ -31,14 +31,15 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 
 - **Show:** the public landing page. Say what the system does in one sentence:
   it digitises the Digital LEAP internship from ranked preference to published
-  mark.
+  mark. A cold tab opens with the boot splash: the supplied flag globe turns as
+  a coin while the meter fills, then the landing appears.
 - **Say:** “Everything you will see runs on this laptop. No external API, no
   cloud service, no account to create.”
-- **If asked about the photo:** the campus scene behind the headline is a
-  generated illustration, not a photograph of the university — the caption under
-  it says “Illustrative scene” for that reason. The sign-in page uses the team's
-  own graduation photograph, credited as “Limkokwing graduation”. `docs/assets.md`
-  lists where every image came from.
+- **If asked about the photo:** the flag-waving crowd on the landing page and
+  the graduation scene on the sign-in page are the team's own photographs,
+  captioned “Students at Limkokwing University, Sierra Leone” and “Limkokwing
+  graduation”. The globe on the splash and the seal on the photo are the
+  owner's artwork. `docs/assets.md` lists where every image came from.
 - **Click:** **Student** on the sign-in demo buttons. Land on the dashboard.
 
 ### 0:40 – 2:10 · Student (90 s)
