@@ -275,13 +275,13 @@ $navIcons = [
         <span class="net-dot" aria-hidden="true"></span><span class="net-text">Online</span>
     </p>
     <?php if ($isAuthPage): ?>
-        <section class="auth-brand" aria-label="About Digital LEAP">
+        <section class="auth-brand" aria-label="About Digital LEAP Internship Management">
             <div class="auth-brand-top">
                 <span class="logo-tile"><img src="<?= e(asset('img/leap-wordmark-ink.png')) ?>" alt="LEAP — Limkokwing Entrepreneurship Acceleration Platform, Sierra Leone"></span>
-                <span class="auth-kicker">Limkokwing University<br>Sierra Leone</span>
+                <span class="auth-kicker">Digital Leap Internship Management</span>
             </div>
             <div class="auth-copy">
-                <p class="auth-eyebrow">Digital LEAP</p>
+                <p class="auth-eyebrow">Limkokwing University · Sierra Leone</p>
                 <h1>Where internships become evidence.</h1>
                 <p class="auth-lead">One workspace for placements, weekly logbooks, supervision, assessment and results — built to work offline on the university’s own machines.</p>
                 <ul class="auth-points">

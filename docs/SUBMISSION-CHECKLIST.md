@@ -15,7 +15,7 @@ will actually be submitted.
 | Schema and seed | `database/digital_leap.sql`, `database/migrations/` | Imports into a clean database; 33 tables |
 | Install notes | `INSTALL.txt`, `README.md` | Demo accounts, Codespaces link and troubleshooting present |
 | Marker's walkthrough | `docs/VERIFY.md` | Section 3 lists the six demo accounts |
-| Test evidence | `docs/test-log.md` | Runs from TC-01 to TC-278 |
+| Test evidence | `docs/test-log.md` | Runs from TC-01 to TC-280 |
 | Screenshots | `docs/screenshots/` | 152 PNGs in `pwa/` (128), `phase9/` (6), `phase10/` (8), `phase11/` (9) and `diva-welcome.png` |
 | Demo script | `docs/DEMO.md` | Eight minutes, six roles |
 | UAT template | `docs/UAT-SIGNOFF.md` | Blank; signed by real testers only |

@@ -3122,7 +3122,14 @@ body.feedback-open { overflow: hidden; }
     .icon-btn, .nav-toggle { width: 38px; height: 38px; }
     .avatar { width: 36px; height: 36px; flex-basis: 36px; }
     .auth-layout { padding: 16px 14px 34px; gap: 22px; }
-    .auth-brand { display: none; }
+    /* Phones keep the lockup but drop the headline block: the name still has
+       to sit beside the logo, the argument for the page does not fit. */
+    .auth-brand { display: block; }
+    .auth-copy, .auth-brand-foot { display: none; }
+    .auth-brand-top { gap: 10px; margin: 0 0 4px; }
+    .auth-brand-top .logo-tile { padding: 6px 9px; border-radius: 10px; box-shadow: 0 8px 18px rgba(0, 0, 0, .22); }
+    .auth-brand-top .logo-tile img { height: 32px; }
+    .auth-brand-top .auth-kicker { padding-left: 10px; font-size: .62rem; letter-spacing: .1em; line-height: 1.5; }
     .auth-strip { display: block; }
     .auth-panel .auth-card, .auth-panel > .alert, .auth-card { max-width: 100%; }
     .auth-card .card, .auth-card-inner { padding: 20px 16px; border-radius: 16px; }

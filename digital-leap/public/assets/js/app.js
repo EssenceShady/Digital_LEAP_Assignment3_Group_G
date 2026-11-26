@@ -1218,13 +1218,17 @@
 
         if (standalone()) { markInstalled(); }
 
-        // On the landing page the photograph is the first impression, so the
-        // install bar waits until the visitor has scrolled past the hero.
+        // The landing photograph and the auth form are what the visitor came
+        // for, so the bar waits: past the hero on the landing, and never on
+        // the auth pages, where it would sit over the fields or the submit.
+        // The offer returns on the landing and on the signed-in shell.
         var boxPending = false;
         var revealBox = function () {
             if (boxPending || dismissed()) { return; }
             boxPending = true;
-            if (!document.body.classList.contains('landing-shell') || window.scrollY >= window.innerHeight * 0.7) {
+            var bodyClass = document.body.classList;
+            if (bodyClass.contains('auth-shell')) { return; }
+            if (!bodyClass.contains('landing-shell') || window.scrollY >= window.innerHeight * 0.7) {
                 box.hidden = false;
                 return;
             }

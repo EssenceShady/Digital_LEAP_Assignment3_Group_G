@@ -156,7 +156,7 @@ The Limkokwing globe is the *seal* on that identity, not a repaint.
 
 Installed copies live in `digital-leap/public/assets/img/`. The header, auth
 tile and landing header now use `leap-wordmark-ink.png`; the footer keeps the
-LUCT lockup. `sw.js` precaches the wordmarks under `VERSION = 'v12'`. The
+LUCT lockup. `sw.js` precaches the wordmarks under `VERSION = 'v13'`. The
 shipped app icon is the white tile with the ink LEAP wordmark (it matches the
 header `.logo-tile`); the charcoal-and-gold icon above is the earlier preview
 and is no longer installed.

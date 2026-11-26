@@ -66,7 +66,7 @@ them as requirements, not proposals:
    (450–1400 ms calm), never on a back navigation, skipped without JS or
    storage. See §6.3.
 
-Evidence: TC-246 to TC-249 and TC-271 to TC-278 in `docs/test-log.md`.
+Evidence: TC-246 to TC-249, TC-271 to TC-280 in `docs/test-log.md`.
 
 ---
 
@@ -102,9 +102,12 @@ Current facts you can rely on, but re-verify before quoting them:
   (19); mentor has both.
 - `SiteCheckin::MAX_DISTANCE_M = 500`; organisation pin is the `setting` key
   `geo.org.<org_id>` (JSON `{lat,lng}`).
-- `sw.js` is at the app root, `VERSION = 'v12'`; `SHELL` precaches the CSS, JS
+- `sw.js` is at the app root, `VERSION = 'v13'`; `SHELL` precaches the CSS, JS
   (including `js/boot.js`), the globe sphere, logo and icons but not the
   photographic backdrops.
+- The sign-in lockup reads **Digital Leap Internship Management** beside the
+  wordmark, with **Limkokwing University · Sierra Leone** as the gold line above
+  the headline; on phones the lockup survives as a compact 32 px row.
 - Header wordmark is `public/assets/img/leap-wordmark-ink.png`.
 - Corner launcher is `a.diva-fab` (44 px tap target, charcoal with a gold
   hairline) — not a feedback button. See §0.1.
@@ -557,13 +560,15 @@ sent until the user presses send; the link is absent on `diva` itself.
 
 ### 13.2 Let the sign-in backdrop exist on a phone
 
-At ≤ 560 px `.auth-brand` is hidden, so the photograph is reduced to a 14 px
-frame around the card. Add a slim `figure.auth-strip` above the card (3 : 1,
-150 px tall, `campus-graduation-960.jpg`, caption **Limkokwing graduation**).
-Keep the card's contrast; do not move the form below the fold at 390 × 844.
+At ≤ 560 px the brand column collapses to a compact lockup — the 32 px
+wordmark tile and **Digital Leap Internship Management** on one row, with the
+headline block and foot line dropped — and the photograph becomes a slim
+`figure.auth-strip` above the card (3 : 1, 150 px tall, `campus-graduation-960.jpg`,
+caption **Limkokwing graduation**). Keep the card's contrast; do not move the
+form below the fold at 390 × 844.
 
-Acceptance: at 390 px the strip is visible, the card top is still inside the
-first screen, and `scrollWidth === clientWidth`.
+Acceptance: at 390 px the lockup and strip are visible, the card top is still
+inside the first screen, and `scrollWidth === clientWidth`.
 
 ### 13.3 Serve the images at the size they are shown
 
