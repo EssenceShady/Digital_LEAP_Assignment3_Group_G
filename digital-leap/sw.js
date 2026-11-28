@@ -11,7 +11,7 @@
  */
 'use strict';
 
-const VERSION = 'v13';
+const VERSION = 'v14';
 const SHELL_CACHE = 'leap-shell-' + VERSION;
 const RUNTIME_CACHE = 'leap-runtime-' + VERSION;
 const CACHE_PREFIX = 'leap-';

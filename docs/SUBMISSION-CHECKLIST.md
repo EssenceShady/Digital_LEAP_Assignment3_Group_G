@@ -8,15 +8,15 @@ will actually be submitted.
 | Item | Where | Check |
 | --- | --- | --- |
 | Report, editable | `REPORT/Digital_LEAP_Assignment3_Report.docx` | Opens in Word; 41 pages; contents page lists Appendix A before Conclusion and References |
-| Report, printable | `REPORT/Digital_LEAP_Assignment3_Report.pdf` | Same page count as the DOCX; figures 2 and 3 show 33 tables |
+| Report, printable | `REPORT/Digital_LEAP_Assignment3_Report.pdf` | Same 41-page count as the DOCX; Figure 2 shows all 33 logical-model tables |
 | Figures | `REPORT/figures/` | Four PNGs, with matching `.svg` and `.drawio` |
 | Application | `digital-leap/` | Runs with PHP 8.0+ and MariaDB 10.4+ |
 | Codespaces demo | `.devcontainer/` | Builds PHP 8 + MariaDB and imports the seed; see `deploy/README.md` §4 |
 | Schema and seed | `database/digital_leap.sql`, `database/migrations/` | Imports into a clean database; 33 tables |
 | Install notes | `INSTALL.txt`, `README.md` | Demo accounts, Codespaces link and troubleshooting present |
 | Marker's walkthrough | `docs/VERIFY.md` | Section 3 lists the six demo accounts |
-| Test evidence | `docs/test-log.md` | Runs from TC-01 to TC-280 |
-| Screenshots | `docs/screenshots/` | 152 PNGs in `pwa/` (128), `phase9/` (6), `phase10/` (8), `phase11/` (9) and `diva-welcome.png` |
+| Test evidence | `docs/test-log.md` | Runs from TC-01 to TC-286 |
+| Screenshots | `docs/screenshots/` | 159 PNGs in `pwa/` (128), `phase9/` (6), `phase10/` (8), `phase11/` (9), `phase12/` (7) and `diva-welcome.png` |
 | Demo script | `docs/DEMO.md` | Eight minutes, six roles |
 | UAT template | `docs/UAT-SIGNOFF.md` | Blank; signed by real testers only |
 | Licence | `LICENSE` | MIT for code, CC BY 4.0 for report and documentation |

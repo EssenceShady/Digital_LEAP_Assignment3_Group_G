@@ -30,9 +30,10 @@ password; passwords are case-sensitive, and the eye button beside the field reve
 you have typed. A demonstration copy offers one-click buttons for each demo role.
 
 A new account arrives with an initial password that must be changed at first sign-in: the
-system redirects to **Profile** until the new one is saved. A password needs at least eight
-characters, an uppercase letter, a lowercase letter and a number. Five wrong passwords in
-a row lock the account for fifteen minutes; an administrator can unlock it.
+system opens **Account and security** on its **Security** tab until the new one is saved. A
+password needs at least eight characters, an uppercase letter, a lowercase letter and a
+number. Five wrong passwords in a row lock the account for fifteen minutes; an
+administrator can unlock it.
 
 **Finding your way around.** The left menu lists the pages your role may open; on a phone
 it collapses into a drawer. The bell shows notifications and an inbox preview, and the
@@ -140,11 +141,23 @@ session settings, the audit trail and the feedback inbox. Audit filters by actio
 user and date range; feedback filters by rating and source page. Every filter is a plain
 GET form, so a filtered view can be bookmarked and never changes a record.
 
-**Profile photo.** **Profile** accepts a JPG, PNG or WebP image up to 8 MB, previews it in
-the header before saving, and can remove it again. Where no photo exists the person's
-initials are shown. A photo is served only to someone who could already see that person in
-the product — yourself, staff with directory access, or a participant in the same
-placement, conversation or logbook thread.
+**Account and security.** One page, two tabs. The identity card at the top carries your
+photo, name, role and ID; behind it **Account** holds your first and last name, phone
+number, email and CV, and **Security** holds your password, the four rules it must meet and
+the sign-in notes. The tab you were last on survives a reload, because the address keeps it
+(`#account` or `#security`), and the tab row is fully keyboard operable — arrow keys, Home
+and End move between the two.
+
+**Profile photo.** Choose **Choose photo**, or click the circle, and the browser asks for a
+JPG, PNG or WebP image up to 8 MB. Before anything is sent, a round editor opens over the
+page: drag the picture to frame it, use the zoom slider or the − and + buttons to scale it
+between 100 % and 300 %, or nudge it with the arrow keys. The square is saved as a JPEG and
+clipped to a circle wherever it appears, so the framing you choose here is the framing every
+screen shows. **Use this photo** fills the
+preview and **Save photo** uploads it; **Cancel** keeps the old one. **Remove** puts your
+initials back. A photo is served only to
+someone who could already see that person in the product — yourself, staff with directory
+access, or a participant in the same placement, conversation or logbook thread.
 
 **My settings.** Every role has the same page, and it only ever changes your own account.
 Four boxes choose which notifications are also copied to email — logbook, placement,

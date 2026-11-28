@@ -118,3 +118,26 @@ around the owner's own globe and campus photographs:
 The splash captures were taken on a fresh tab with cleared session storage; a
 second navigation shows no splash. All captures come from the running
 application at `http://localhost/Digital_LEAP_Assignment3_Group_G/digital-leap/`.
+
+
+## Phase 12 captures (28 November 2026)
+
+Seven files in `phase12/` record the rebuilt account surface. The owner's two
+account-modal references set the structure — tabs, a large round portrait and a
+crop dialog — while the palette stayed the application's own.
+
+| File | Shows |
+| --- | --- |
+| `profile-desktop.png` | The full page at 1440 px: status line, identity card with the initials circle and photo controls, the **Account** / **Security** tab row, the details form, the account summary and the CV card |
+| `profile-security.png` | The **Security** tab: padlocked password card, the four rules as a two-column checklist, **Account protection** with the email on one line, and the numbered **Stay secure** notes |
+| `profile-editor.png` | The crop dialog over the page: the graduation photo inside a 640 px canvas with the circular guide and dimmed surround, the zoom row at 1.6×, and the error slot empty |
+| `profile-tablet.png` | The same page at 768 px: one account column, the two side cards still side by side, the identity card stacked and the photo controls in a row |
+| `profile-phone390.png` | The 390 px phone layout: the tab row as two equal buttons, the photo form centred, and one column of cards with no sideways scroll |
+| `profile-phone320.png` | The 320 px floor: 284 px column, the programme badge wrapping by word, and the same controls intact |
+| `profile-editor-320.png` | The crop dialog at 320 px, 284 px wide at x 18–302 with a 232 px canvas, fully inside the viewport |
+
+The captures were taken in headless Chrome at 1440 × 1000, 768 × 1024,
+390 × 844 and 320 × 720. The photo shown in the editor is
+`public/assets/img/campus-graduation-960.jpg`; it was loaded into the file
+input and cancelled or applied in the dialog, never saved, so the seeded
+accounts still carry their original photos.

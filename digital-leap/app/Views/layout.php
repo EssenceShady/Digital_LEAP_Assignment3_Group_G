@@ -191,7 +191,7 @@ $navIcons = [
                         <small><?= e($user['email']) ?></small>
                     </div>
                 </div>
-                <a href="<?= e(url('profile')) ?>">My profile and photo</a>
+                <a href="<?= e(url('profile')) ?>">Account and security</a>
                 <?php if (Auth::can('diva.use')): ?>
                     <a href="<?= e(url('diva')) ?>">Ask DIVA</a>
                 <?php endif; ?>
@@ -235,7 +235,7 @@ $navIcons = [
         <div class="sidebar-foot">
             <a class="sidebar-profile" href="<?= e(url('profile')) ?>">
                 <?= avatar_html(['user_id' => (int) ($user['user_id'] ?? 0), 'first_name' => (string) $user['first_name'], 'last_name' => (string) $user['last_name']], 'sidebar-avatar') ?>
-                <span><?= e($user['first_name'] . ' ' . $user['last_name']) ?><small>Edit profile</small></span>
+                <span><?= e($user['first_name'] . ' ' . $user['last_name']) ?><small>Account and security</small></span>
             </a>
             <a class="sidebar-settings" href="<?= e(url('settings')) ?>">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M4.5 7.5l2 1.2M17.5 15.3l2 1.2M4.5 16.5l2-1.2M17.5 8.7l2-1.2"/></svg>

@@ -32,65 +32,110 @@ final class ProfileController
         }
 
         View::render('profile', [
-            'title' => 'My profile',
+            'title' => 'Account and security',
             'user' => $user,
             'student' => $student,
             'cv' => $cv,
+            'mustChangePassword' => !empty($_SESSION['must_change_password']),
         ]);
     }
 
     public function save(): void
     {
+        $userId = (int) Auth::id();
+        $action = (string) \post('profile_action', 'details');
+        $user = Database::one('SELECT * FROM users WHERE user_id = ?', [$userId]);
+
+        if ($user === null) {
+            \flash('error', 'Your account record could not be loaded.');
+            \redirect('profile');
+        }
+
+        if ($action === 'password') {
+            $this->savePassword($userId, $user);
+            return;
+        }
+
+        $this->saveDetails($userId);
+    }
+
+    private function saveDetails(int $userId): void
+    {
         $first = trim((string) \post('first_name', ''));
         $last = trim((string) \post('last_name', ''));
         $phone = trim((string) \post('phone', ''));
-        $current = (string) \post('current_password', '');
-        $new = (string) \post('new_password', '');
-        $confirm = (string) \post('new_password_confirm', '');
 
         $errors = [];
         if (mb_strlen($first) < 2 || mb_strlen($last) < 2) {
             $errors[] = 'Enter both your first name and surname.';
         }
-        if ($new !== '') {
-            if ($current === '') {
-                $errors[] = 'Enter your current password to change it.';
-            }
-            if (($policy = \password_policy_error($new)) !== null) {
-                $errors[] = $policy;
-            }
-            if ($new !== $confirm) {
-                $errors[] = 'The new passwords do not match.';
-            }
-        }
-
-        $user = Database::one('SELECT * FROM users WHERE user_id = ?', [(int) Auth::id()]);
-
-        if ($errors === [] && $new !== '') {
-            if ($user === null || !password_verify($current, (string) $user['password_hash'])) {
-                $errors[] = 'Your current password is incorrect.';
-            }
+        if ($phone !== '' && !preg_match('/^[0-9+()\s-]{6,24}$/', $phone)) {
+            $errors[] = 'Enter a phone number using digits, spaces, +, - or brackets.';
         }
 
         if ($errors !== []) {
             foreach ($errors as $message) {
                 \flash('error', $message);
             }
-            \redirect('profile');
+            \redirect('profile', [], 'account');
         }
 
-        $data = ['first_name' => $first, 'last_name' => $last, 'phone' => $phone === '' ? null : $phone];
-        if ($new !== '') {
-            $data['password_hash'] = password_hash($new, PASSWORD_DEFAULT);
-            $data['must_change_password'] = 0;
-            $_SESSION['must_change_password'] = 0;
-        }
-        Database::update('users', $data, 'user_id = ?', [(int) Auth::id()]);
+        Database::update('users', [
+            'first_name' => $first,
+            'last_name' => $last,
+            'phone' => $phone === '' ? null : $phone,
+        ], 'user_id = ?', [$userId]);
 
         $_SESSION['name'] = $first . ' ' . $last;
-        Audit::log('profile.update', 'user', (int) Auth::id(), null, ['password_changed' => $new !== '']);
-        \flash('success', 'Your profile has been updated.');
-        \redirect('profile');
+        Audit::log('profile.update', 'user', $userId);
+        \flash('success', 'Your details have been saved.');
+        \redirect('profile', [], 'account');
+    }
+
+    private function savePassword(int $userId, array $user): void
+    {
+        $current = (string) \post('current_password', '');
+        $new = (string) \post('new_password', '');
+        $confirm = (string) \post('new_password_confirm', '');
+
+        $errors = [];
+        if ($current === '') {
+            $errors[] = 'Enter your current password.';
+        }
+        if ($new === '') {
+            $errors[] = 'Enter a new password.';
+        } else {
+            if (($policy = \password_policy_error($new)) !== null) {
+                $errors[] = $policy;
+            }
+            if ($new !== $confirm) {
+                $errors[] = 'The new passwords do not match.';
+            }
+            if ($current !== '' && $new === $current) {
+                $errors[] = 'Choose a new password that differs from your current one.';
+            }
+        }
+
+        if ($errors === [] && !password_verify($current, (string) $user['password_hash'])) {
+            $errors[] = 'Your current password is incorrect.';
+        }
+
+        if ($errors !== []) {
+            foreach ($errors as $message) {
+                \flash('error', $message);
+            }
+            \redirect('profile', [], 'security');
+        }
+
+        Database::update('users', [
+            'password_hash' => password_hash($new, PASSWORD_DEFAULT),
+            'must_change_password' => 0,
+        ], 'user_id = ?', [$userId]);
+        $_SESSION['must_change_password'] = 0;
+
+        Audit::log('profile.password', 'user', $userId);
+        \flash('success', 'Your password has been updated.');
+        \redirect('profile', [], 'security');
     }
 
     public function cv(): void

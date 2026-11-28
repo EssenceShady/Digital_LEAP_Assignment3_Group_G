@@ -135,7 +135,7 @@ The sign-in page offers all six as one-click demo buttons, so no typing on stage
 
 ### 7:40 – 8:00 · Close (20 s)
 
-- **Say:** “Six roles, one schema, 33 tables, 130 routes and 267 logged test
+- **Say:** “Six roles, one schema, 33 tables, 130 routes and 286 logged test
   cases. It is honest about what it does not do: no external AI, no email
   gateway in this build, and accessibility is a stated gap, not a claim.”
 

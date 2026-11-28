@@ -141,7 +141,7 @@
 
     function initPasswordMeters() {
         document.querySelectorAll('input[autocomplete="new-password"]').forEach(function (input) {
-            if (/confirm/i.test(input.name) || input.type !== 'password') { return; }
+            if (/confirm/i.test(input.name) || input.type !== 'password' || input.hasAttribute('data-no-meter')) { return; }
             var meter = document.createElement('div');
             meter.className = 'pw-meter';
             meter.setAttribute('data-score', '0');
@@ -813,55 +813,255 @@
         });
     }
 
-    function initAvatarPreview() {
+    function initAccountTabs() {
+        var shell = document.querySelector('[data-account-tabs]');
+        if (!shell) { return; }
+        var tabs = Array.prototype.slice.call(shell.querySelectorAll('[data-account-tab]'));
+        var panels = Array.prototype.slice.call(shell.querySelectorAll('[data-account-panel]'));
+        if (!tabs.length || !panels.length) { return; }
+
+        function activate(name, focus) {
+            var matched = false;
+            tabs.forEach(function (tab) {
+                var on = tab.getAttribute('data-account-tab') === name;
+                if (on) { matched = true; }
+                tab.classList.toggle('is-active', on);
+                tab.setAttribute('aria-selected', on ? 'true' : 'false');
+                tab.setAttribute('tabindex', on ? '0' : '-1');
+            });
+            if (!matched) { return; }
+            panels.forEach(function (panel) {
+                panel.hidden = panel.getAttribute('data-account-panel') !== name;
+            });
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', '#' + name);
+            }
+            if (focus) {
+                var active = shell.querySelector('[data-account-tab="' + name + '"]');
+                if (active) { active.focus({ preventScroll: true }); }
+            }
+        }
+
+        tabs.forEach(function (tab, index) {
+            tab.addEventListener('click', function () {
+                activate(tab.getAttribute('data-account-tab'), false);
+            });
+            tab.addEventListener('keydown', function (event) {
+                var next = null;
+                if (event.key === 'ArrowRight') { next = (index + 1) % tabs.length; }
+                if (event.key === 'ArrowLeft') { next = (index - 1 + tabs.length) % tabs.length; }
+                if (event.key === 'Home') { next = 0; }
+                if (event.key === 'End') { next = tabs.length - 1; }
+                if (next === null) { return; }
+                event.preventDefault();
+                activate(tabs[next].getAttribute('data-account-tab'), true);
+            });
+        });
+
+        var hash = (window.location.hash || '').replace('#', '');
+        if (hash === 'security' || hash === 'account') {
+            activate(hash, false);
+        }
+    }
+
+    function initAvatarEditor() {
         var form = document.querySelector('[data-avatar-form]');
         if (!form) { return; }
         var input = form.querySelector('[data-avatar-input]');
-        var preview = form.querySelector('[data-avatar-preview]');
-        var hint = form.querySelector('[data-avatar-hint]');
-        if (!input) { return; }
-        var defaultHint = hint ? hint.textContent : '';
-        var hero = form.closest('.profile-hero');
-        var big = hero ? hero.querySelector('.profile-avatar-large') : null;
-        var current = big ? big.querySelector('[data-avatar-current]') : null;
-        var initials = big ? big.querySelector('[data-avatar-initials]') : null;
-        var initialsHtml = initials ? initials.outerHTML : '';
-        var originalSrc = current ? current.getAttribute('src') : null;
-        var created = false;
+        var dialog = document.querySelector('[data-avatar-dialog]');
+        if (!input || !dialog) { return; }
 
-        function showBig(url) {
-            if (!big) { return; }
-            if (!current) {
-                current = document.createElement('img');
-                current.setAttribute('data-avatar-current', '');
-                current.alt = 'Your profile photo';
-                big.insertBefore(current, big.firstChild);
-                created = true;
-            }
-            if (initials) { initials.hidden = true; }
-            current.src = url;
+        var canvas = dialog.querySelector('[data-photo-canvas]');
+        var ctx = canvas ? canvas.getContext('2d') : null;
+        if (!ctx) { return; }
+
+        var zoomInput = dialog.querySelector('[data-photo-zoom]');
+        var errorNode = dialog.querySelector('[data-photo-error]');
+        var avatar = form.querySelector('.account-avatar');
+        var titleNode = form.querySelector('[data-avatar-title]');
+        var hint = form.querySelector('[data-avatar-hint]');
+        var saveButton = form.querySelector('[data-avatar-save]');
+        var defaultHint = hint ? hint.textContent : '';
+        var defaultTitle = titleNode ? titleNode.textContent : '';
+        var size = canvas.width || 640;
+        var state = {
+            image: null, baseScale: 1, zoom: 1, x: 0, y: 0,
+            dragging: false, startX: 0, startY: 0, originX: 0, originY: 0,
+            objectUrl: null, lastFocus: null
+        };
+        var appliedFile = null;
+        var previewUrl = null;
+
+        function dims() {
+            var scale = state.baseScale * state.zoom;
+            return {
+                w: state.image.naturalWidth * scale,
+                h: state.image.naturalHeight * scale
+            };
         }
 
-        function resetBig() {
-            if (big && current && originalSrc) {
-                current.src = originalSrc;
-            } else if (big && created && current) {
-                current.remove();
-                current = null;
-                created = false;
-                if (initialsHtml) {
-                    big.insertAdjacentHTML('afterbegin', initialsHtml);
-                    initials = big.querySelector('[data-avatar-initials]');
+        function clamp() {
+            var d = dims();
+            state.x = d.w <= size ? (size - d.w) / 2 : Math.min(0, Math.max(size - d.w, state.x));
+            state.y = d.h <= size ? (size - d.h) / 2 : Math.min(0, Math.max(size - d.h, state.y));
+        }
+
+        function paint() {
+            if (!state.image) { return; }
+            var d = dims();
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = '#0b1512';
+            ctx.fillRect(0, 0, size, size);
+            ctx.drawImage(state.image, state.x, state.y, d.w, d.h);
+
+            var radius = size / 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, size, size);
+            ctx.arc(radius, radius, radius, 0, Math.PI * 2, true);
+            ctx.fillStyle = 'rgba(4, 12, 8, 0.58)';
+            ctx.fill('evenodd');
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(radius, radius, radius - 1.5, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function showError(message) {
+            if (!errorNode) { return; }
+            errorNode.textContent = message;
+            errorNode.hidden = false;
+        }
+
+        function clearError() {
+            if (errorNode) { errorNode.textContent = ''; errorNode.hidden = true; }
+        }
+
+        function openDialog() {
+            state.lastFocus = document.activeElement;
+            if (typeof dialog.showModal === 'function') {
+                if (!dialog.open) { dialog.showModal(); }
+            } else {
+                dialog.setAttribute('open', '');
+            }
+        }
+
+        function closeDialog() {
+            if (typeof dialog.close === 'function' && dialog.open) {
+                dialog.close();
+            } else {
+                dialog.removeAttribute('open');
+            }
+            if (state.lastFocus && typeof state.lastFocus.focus === 'function') {
+                state.lastFocus.focus({ preventScroll: true });
+            }
+        }
+
+        function setInputFile(file) {
+            try {
+                var transfer = new DataTransfer();
+                transfer.items.add(file);
+                input.files = transfer.files;
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function updatePreview(blob) {
+            if (!avatar) { return; }
+            if (previewUrl && window.URL) { window.URL.revokeObjectURL(previewUrl); }
+            previewUrl = window.URL && window.URL.createObjectURL ? window.URL.createObjectURL(blob) : '';
+            var current = avatar.querySelector('[data-avatar-current]');
+            if (current) {
+                current.src = previewUrl;
+            } else {
+                var initials = avatar.querySelector('[data-avatar-initials]');
+                var image = document.createElement('img');
+                image.setAttribute('data-avatar-current', '');
+                image.alt = 'Your profile photo';
+                image.src = previewUrl;
+                if (initials) {
+                    avatar.replaceChild(image, initials);
+                } else {
+                    avatar.insertBefore(image, avatar.firstChild);
                 }
             }
-            if (initials) { initials.hidden = false; }
+            if (titleNode) { titleNode.textContent = 'Profile photo'; }
+            if (hint) {
+                hint.textContent = 'Photo ready. Choose Save photo to apply it.';
+                hint.classList.remove('error');
+            }
+            if (saveButton) { saveButton.disabled = false; }
         }
 
         function fail(message) {
-            if (hint) { hint.textContent = message; hint.classList.add('error'); }
-            if (preview) { preview.classList.remove('has-image'); preview.removeAttribute('src'); }
-            resetBig();
+            if (hint) {
+                hint.textContent = message;
+                hint.classList.add('error');
+            }
             input.value = '';
+        }
+
+        function restoreSelection() {
+            clearError();
+            if (appliedFile && setInputFile(appliedFile)) {
+                return;
+            }
+            input.value = '';
+            if (saveButton) { saveButton.disabled = true; }
+            if (hint) {
+                hint.textContent = defaultHint;
+                hint.classList.remove('error');
+            }
+            if (titleNode) { titleNode.textContent = defaultTitle; }
+        }
+
+        function cancelEdit() {
+            closeDialog();
+            restoreSelection();
+        }
+
+        function setZoom(next) {
+            if (!state.image) { return; }
+            next = Math.max(1, Math.min(3, next));
+            var ratio = next / state.zoom;
+            var centre = size / 2;
+            state.x = centre - (centre - state.x) * ratio;
+            state.y = centre - (centre - state.y) * ratio;
+            state.zoom = next;
+            if (zoomInput) { zoomInput.value = String(next); }
+            clamp();
+            paint();
+        }
+
+        function openEditor(file) {
+            clearError();
+            if (state.objectUrl && window.URL) { window.URL.revokeObjectURL(state.objectUrl); }
+            state.objectUrl = window.URL && window.URL.createObjectURL ? window.URL.createObjectURL(file) : '';
+            var image = new Image();
+            image.onload = function () {
+                if (!image.naturalWidth || !image.naturalHeight) {
+                    fail('That image could not be read. Choose another photo.');
+                    return;
+                }
+                state.image = image;
+                state.baseScale = Math.max(size / image.naturalWidth, size / image.naturalHeight);
+                state.zoom = 1;
+                state.x = (size - image.naturalWidth * state.baseScale) / 2;
+                state.y = (size - image.naturalHeight * state.baseScale) / 2;
+                if (zoomInput) { zoomInput.value = '1'; }
+                paint();
+                openDialog();
+                canvas.focus({ preventScroll: true });
+            };
+            image.onerror = function () {
+                fail('That image could not be opened. Choose a JPG, PNG or WebP photo.');
+            };
+            image.src = state.objectUrl;
         }
 
         input.addEventListener('change', function () {
@@ -876,26 +1076,134 @@
                 fail('Choose a JPG, PNG or WebP image.');
                 return;
             }
-            if (hint) {
-                var size = file.size >= 1024 * 1024
-                    ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
-                    : Math.max(1, Math.round(file.size / 1024)) + ' KB';
-                hint.textContent = file.name + ' · ' + size + ' · ready to save';
-            }
-            if (window.URL && window.URL.createObjectURL) {
-                var url = window.URL.createObjectURL(file);
-                if (preview) {
-                    preview.src = url;
-                    preview.classList.add('has-image');
-                }
-                showBig(url);
+            openEditor(file);
+        });
+
+        if (zoomInput) {
+            zoomInput.addEventListener('input', function () {
+                setZoom(parseFloat(zoomInput.value) || 1);
+            });
+        }
+
+        var zoomOut = dialog.querySelector('[data-photo-zoom-out]');
+        var zoomIn = dialog.querySelector('[data-photo-zoom-in]');
+        if (zoomOut) {
+            zoomOut.addEventListener('click', function () { setZoom(state.zoom - 0.15); });
+        }
+        if (zoomIn) {
+            zoomIn.addEventListener('click', function () { setZoom(state.zoom + 0.15); });
+        }
+
+        canvas.addEventListener('pointerdown', function (event) {
+            if (!state.image) { return; }
+            event.preventDefault();
+            state.dragging = true;
+            state.startX = event.clientX;
+            state.startY = event.clientY;
+            state.originX = state.x;
+            state.originY = state.y;
+            canvas.classList.add('is-dragging');
+            if (canvas.setPointerCapture) {
+                try { canvas.setPointerCapture(event.pointerId); } catch (error) { /* ignore */ }
             }
         });
 
-        form.addEventListener('reset', function () {
-            if (hint) { hint.textContent = defaultHint; hint.classList.remove('error'); }
-            if (preview) { preview.classList.remove('has-image'); preview.removeAttribute('src'); }
-            resetBig();
+        canvas.addEventListener('pointermove', function (event) {
+            if (!state.dragging || !state.image) { return; }
+            var rect = canvas.getBoundingClientRect();
+            var factor = rect.width > 0 ? size / rect.width : 1;
+            state.x = state.originX + (event.clientX - state.startX) * factor;
+            state.y = state.originY + (event.clientY - state.startY) * factor;
+            clamp();
+            paint();
+        });
+
+        function endDrag(event) {
+            if (!state.dragging) { return; }
+            state.dragging = false;
+            canvas.classList.remove('is-dragging');
+            if (canvas.releasePointerCapture && event && event.pointerId !== undefined) {
+                try { canvas.releasePointerCapture(event.pointerId); } catch (error) { /* ignore */ }
+            }
+        }
+
+        canvas.addEventListener('pointerup', endDrag);
+        canvas.addEventListener('pointercancel', endDrag);
+
+        canvas.addEventListener('keydown', function (event) {
+            if (!state.image) { return; }
+            var step = event.shiftKey ? 48 : 16;
+            var moved = true;
+            switch (event.key) {
+                case 'ArrowLeft': state.x += step; break;
+                case 'ArrowRight': state.x -= step; break;
+                case 'ArrowUp': state.y += step; break;
+                case 'ArrowDown': state.y -= step; break;
+                default: moved = false;
+            }
+            if (!moved) { return; }
+            event.preventDefault();
+            clamp();
+            paint();
+        });
+
+        dialog.querySelectorAll('[data-photo-cancel]').forEach(function (button) {
+            button.addEventListener('click', cancelEdit);
+        });
+
+        dialog.addEventListener('cancel', function (event) {
+            event.preventDefault();
+            cancelEdit();
+        });
+
+        var applyButton = dialog.querySelector('[data-photo-apply]');
+        if (applyButton) {
+            applyButton.addEventListener('click', function () {
+                if (!state.image) { return; }
+                var output = document.createElement('canvas');
+                output.width = size;
+                output.height = size;
+                var outCtx = output.getContext('2d');
+                if (!outCtx) { showError('Your browser could not process the photo. Try another image.'); return; }
+                var d = dims();
+                outCtx.fillStyle = '#ffffff';
+                outCtx.fillRect(0, 0, size, size);
+                outCtx.drawImage(state.image, state.x, state.y, d.w, d.h);
+
+                output.toBlob(function (blob) {
+                    if (!blob) {
+                        showError('The photo could not be processed. Try another image.');
+                        return;
+                    }
+                    var file;
+                    try {
+                        file = new File([blob], 'profile-photo.jpg', { type: 'image/jpeg' });
+                    } catch (error) {
+                        showError('Your browser cannot prepare the edited photo. Try another image.');
+                        return;
+                    }
+                    if (!setInputFile(file)) {
+                        showError('Your browser cannot attach the edited photo. Try another image.');
+                        return;
+                    }
+                    appliedFile = file;
+                    updatePreview(blob);
+                    closeDialog();
+                    toast('Photo ready. Choose Save photo to apply it.');
+                    if (saveButton) { saveButton.focus({ preventScroll: true }); }
+                }, 'image/jpeg', 0.9);
+            });
+        }
+
+        form.addEventListener('submit', function () {
+            if (saveButton && !saveButton.disabled) {
+                saveButton.classList.add('is-loading');
+                saveButton.setAttribute('aria-busy', 'true');
+            }
+        });
+
+        window.addEventListener('beforeunload', function () {
+            if (state.objectUrl && window.URL) { window.URL.revokeObjectURL(state.objectUrl); }
         });
     }
 
@@ -1434,7 +1742,8 @@
         initDiva();
         initDivaShortcut();
         initFeedback();
-        initAvatarPreview();
+        initAccountTabs();
+        initAvatarEditor();
         initEvaluation();
         initOrgChoice();
         initLogbookDays();

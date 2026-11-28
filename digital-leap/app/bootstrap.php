@@ -138,7 +138,7 @@ if (!$isCli) {
         $route = trim((string) ($_GET['r'] ?? ''), '/');
         if (!in_array($route, ['profile', 'logout'], true)) {
             flash('info', 'Choose a new password before continuing.');
-            redirect('profile');
+            redirect('profile', [], 'security');
         }
     }
 
